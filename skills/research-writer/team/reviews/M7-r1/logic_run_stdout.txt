@@ -1,0 +1,7 @@
+[ok] discussion-logic packs prepared
+- corpus: /private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.iC3wRhvrdu/prl_style_corpus_fixture
+- out:    /private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.iC3wRhvrdu/discussion_logic
+- packs:  /private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.iC3wRhvrdu/discussion_logic/packs
+- skipped existing: 0
+[summary] packs=1/1 dual=1/1 missing: claude=0 gemini=0
+[summary] progress: /private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.iC3wRhvrdu/discussion_logic/PROGRESS.md

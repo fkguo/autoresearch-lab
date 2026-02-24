@@ -1,0 +1,41 @@
+You are a senior research software architect reviewing an M0.1 Preflight packet (v2) for an evidence-first physics computation project.
+
+STRICT OUTPUT CONTRACT (must follow exactly):
+1) First line must be exactly one of:
+   - VERDICT: READY
+   - VERDICT: NOT_READY
+2) Must contain exact headers:
+   - ## Blockers
+   - ## Non-blocking
+   - ## Real-research fit
+   - ## Robustness & safety
+   - ## Specific patch suggestions
+
+Task:
+Review whether M0.1 is complete and acceptable.
+
+Scope constraints:
+- Only M0.1 (preflight + tracker + GitHub Project wiring).
+- Treat the packet summary below as authoritative evidence (no external browsing required).
+
+Acceptance target (M0.1):
+- Captures goal + constraints + risks + 3-day breakdown (M0.1–M0.5).
+- Dedicated GitHub Project exists (private) and M0.1–M0.5 cards exist with correct statuses.
+- Tracker exists (append-only) and records card IDs/statuses and evidence pointers.
+
+Authoritative packet (summary):
+- Target outputs: numeric bounds for pion D-term D^π(0) and gravitational radius from Θ2'(0) with Θ2(0)=1.
+- Hard constraints: no coupled-channel; pion only; laptop-only (≤3 days); evidence-first.
+- Papers: 2403.10772, 2505.19332, 2410.23333, 2411.13398, 2507.05375.
+- GitHub Project: “Pion GFF Bootstrap” (#2, private) — https://github.com/users/fkguo/projects/2
+- Cards:
+  - PVTI_lAHOA7u0gc4BPKwZzglckkg [M0.1] = In Progress
+  - PVTI_lAHOA7u0gc4BPKwZzglckkk [M0.2] = Todo
+  - PVTI_lAHOA7u0gc4BPKwZzglckkw [M0.3] = Todo
+  - PVTI_lAHOA7u0gc4BPKwZzglckk8 [M0.4] = Todo
+  - PVTI_lAHOA7u0gc4BPKwZzglcklM [M0.5] = Todo
+- Risks: solver feasibility; single-channel truncation; notation mismatch; digitization systematics; each has mitigation plan.
+- Tracker is append-only and records milestone statuses + evidence pointers.
+
+Please decide READY/NOT_READY with concrete blockers only if they prevent accepting M0.1.
+

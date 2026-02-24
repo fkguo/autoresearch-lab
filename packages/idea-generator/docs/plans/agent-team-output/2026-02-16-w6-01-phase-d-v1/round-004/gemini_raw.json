@@ -1,0 +1,78 @@
+{
+  "session_id": "7f165244-b29e-47ad-921d-8c6e7a248c25",
+  "response": "VERDICT: READY\n\n## Blockers\n- None.\n\n## Non-blocking\n- None.\n\n## Evidence & Gate Check\n- Numerical consistency verified: The tightening factors $\\sqrt{(1+0.8)/2} \\approx 0.9487$ and $\\sqrt{(1+0.6)/2} \\approx 0.8944$ reported in `docs/reviews/bundles/2026-02-16-w6-01-phase-d-d0-eta-envelope-summary-v1.txt` match the values used to scale the base $|F|$ upper bound at $s=212.0$.\n- Execution success: `docs/reviews/bundles/2026-02-16-w6-01-phase-d-d0-eta-envelope-run-v1.txt` confirms successful writing of run outputs to the project directory.\n- Validation gates: Both `idea-runs make validate` and `make validate-project` passed, as evidenced by `docs/reviews/bundles/2026-02-16-w6-01-phase-d-idea-runs-validate-v2.txt` and `...-validate-project-v2.txt`.\n- Failure library: Hook verification is confirmed by `docs/reviews/bundles/2026-02-16-w6-01-phase-d-failure-library-index-build-v2.txt` and `...-query-run-v2.txt`.\n- Mathematical soundness: The bound $|\\mathcal{F}(s)|^2 \\le \\rho(s)\\,\\frac{1+\\eta(s)}{2}$ is a standard conservative consequence of the positivity of the 3x3 determinant in this channel, and its implementation as a post-processing knob is appropriate for robustness testing.",
+  "stats": {
+    "models": {
+      "gemini-3-pro-preview": {
+        "api": {
+          "totalRequests": 11,
+          "totalErrors": 0,
+          "totalLatencyMs": 67368
+        },
+        "tokens": {
+          "input": 238178,
+          "prompt": 238178,
+          "candidates": 749,
+          "total": 242682,
+          "cached": 0,
+          "thoughts": 3755,
+          "tool": 0
+        }
+      }
+    },
+    "tools": {
+      "totalCalls": 10,
+      "totalSuccess": 9,
+      "totalFail": 1,
+      "totalDurationMs": 109,
+      "totalDecisions": {
+        "accept": 9,
+        "reject": 0,
+        "modify": 0,
+        "auto_accept": 0
+      },
+      "byName": {
+        "list_directory": {
+          "count": 1,
+          "success": 0,
+          "fail": 1,
+          "durationMs": 0,
+          "decisions": {
+            "accept": 0,
+            "reject": 0,
+            "modify": 0,
+            "auto_accept": 0
+          }
+        },
+        "glob": {
+          "count": 4,
+          "success": 4,
+          "fail": 0,
+          "durationMs": 93,
+          "decisions": {
+            "accept": 4,
+            "reject": 0,
+            "modify": 0,
+            "auto_accept": 0
+          }
+        },
+        "read_file": {
+          "count": 5,
+          "success": 5,
+          "fail": 0,
+          "durationMs": 16,
+          "decisions": {
+            "accept": 5,
+            "reject": 0,
+            "modify": 0,
+            "auto_accept": 0
+          }
+        }
+      }
+    },
+    "files": {
+      "totalLinesAdded": 0,
+      "totalLinesRemoved": 0
+    }
+  }
+}

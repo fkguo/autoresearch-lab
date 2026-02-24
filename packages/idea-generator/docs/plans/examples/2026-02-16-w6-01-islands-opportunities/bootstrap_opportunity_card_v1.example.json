@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "opportunity_id": "223e4567-e89b-42d3-a456-426614174000",
+  "title": "Tighten pion GFF dispersive bounds with explicit positivity kernels",
+  "summary": "Recast pion GFF constraints into an optimization problem with explicit positivity kernels and scan subtraction/normalization assumptions. Goal: produce a numerically reproducible bound stronger/different than seed literature without coupled channels.",
+  "scope": "IN_SCOPE",
+  "bootstrap_mechanism_tags": ["positivity", "analyticity", "dispersive"],
+  "related_island_ids": ["island-positivity-gff"],
+  "expected_artifacts": [
+    {
+      "kind": "derivation_md",
+      "description": "Step-by-step derivation of the bound and assumptions (NOT_FOR_CITATION).",
+      "path_hint": "reports/draft.md"
+    },
+    {
+      "kind": "numerics_output",
+      "description": "Parameter scan outputs + plots + logs (reproducible).",
+      "path_hint": "runs/..."
+    }
+  ],
+  "verification_plan": "Implement a deterministic script that (i) reproduces a baseline bound from seed paper under identical assumptions and (ii) demonstrates a tightened bound when adding the new positivity constraint. Save all inputs/outputs/plots with hashes.",
+  "risks": [
+    "Constraint set may be too weak without additional external inputs; mitigate by proving a clean analytic inequality first.",
+    "Numerical optimization instability; mitigate with toy problems + regression tests."
+  ],
+  "evidence_uris": [
+    "https://arxiv.org/abs/2403.10772",
+    "https://arxiv.org/abs/2410.23333"
+  ],
+  "tags": ["method:bootstrap", "topic:gff", "domain:pion", "opportunity_id:223e4567-e89b-42d3-a456-426614174000"],
+  "created_at_utc": "2026-02-16T00:00:00Z"
+}

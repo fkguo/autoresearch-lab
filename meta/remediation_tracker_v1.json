@@ -1,0 +1,160 @@
+{
+  "schema_version": 2,
+  "plan_version": "1.7.0-draft",
+  "updated_at": "2026-02-23T00:00:00Z",
+  "note": "depends_on 为显式项级依赖；Phase 级隐式依赖 (P1 blocked by P0 全部完成等) 由 phase 编号推导。NEW-R 项来自 docs/2026-02-20-deep-refactoring-analysis.md (Gemini R4 + Codex R23 双模型审核通过)。UX-01~07 来自 docs/user-stories-ux-gaps.md (2026-02-22)。Track B (EVO-20/19/12a/21) 设计通过 9 轮双模型审查收敛, 状态 design_complete. Track A (EVO-06/07/17/18) 详设 + 9 JSON Schemas + 跨集成设计, 状态 design_complete. RT-01~04 来自 docs/design-proposal-research-team-v2.md (R4 dual-model READY). NEW-VIZ-01 来自 docs/graph-visualization-layer.md (9 轮双模型审查 CONVERGED), Phase 2 infra. 全量 18 schemas 已登记.",
+  "phases": {
+    "0": {
+      "name": "止血",
+      "items": {
+        "NEW-05": { "title": "Monorepo 迁移", "status": "pending", "complexity": "high", "assignee": null, "depends_on": [] },
+        "NEW-05a": { "title": "编排层与 idea 引擎全面迁移至 TypeScript", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["NEW-05"] },
+        "C-01": { "title": "审批 watchdog 执行闭环", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
+        "C-02": { "title": "Shell 执行隔离", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
+        "C-03": { "title": "工具清单自动生成", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "C-04": { "title": "合约快照同步 CI 门禁", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "H-08": { "title": "输入净化层", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "H-14a": { "title": "McpStdioClient 保留 error_code", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "H-20": { "title": "配置加载一致性", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "NEW-R02a": { "title": "CODE-01 CI gate 脚本实现", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis" },
+        "NEW-R03a": { "title": "Python 静默异常 P0 审计 (35 sites)", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis" },
+        "NEW-R13": { "title": "包重命名 hep-research-mcp → hep-mcp", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["NEW-05"], "source": "deep-refactoring-analysis", "note": "已定决策 (2026-02-21): 与 NEW-05 monorepo 迁移同步执行" },
+        "NEW-R15-spec": { "title": "编排器 MCP 工具架构规格", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis" }
+      }
+    },
+    "1": {
+      "name": "统一抽象",
+      "note": "内序门禁: NEW-01 codegen 工具链必须先行就绪，方可合并消费生成类型的 PR",
+      "items": {
+        "NEW-01": { "title": "跨语言类型代码生成基础设施", "status": "pending", "complexity": "high", "assignee": null, "depends_on": [] },
+        "H-01": { "title": "AutoresearchError 信封", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-14a", "NEW-01"] },
+        "H-02": { "title": "最小可观测性 (trace_id)", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["H-01"] },
+        "H-03": { "title": "RunState v1 统一枚举", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["NEW-01"] },
+        "H-04": { "title": "Gate Registry", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["NEW-01"] },
+        "H-13": { "title": "上下文截断", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "H-15a": { "title": "EcosystemID 规范", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["NEW-01"] },
+        "H-16a": { "title": "工具名常量化 (含 hep_run_* 写作工具命名明确化)", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["C-03"] },
+        "H-17": { "title": "运行时兼容性握手", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["C-03"] },
+        "H-18": { "title": "ArtifactRef V1", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-15a", "NEW-01"], "schemas": ["schemas/artifact_ref_v1.schema.json"] },
+        "H-19": { "title": "失败分类 + 重试策略", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-01"] },
+        "M-01": { "title": "Artifact 命名规范", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "M-18": { "title": "配置管理统一", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["H-20"] },
+        "M-19": { "title": "跨组件 CI 集成测试", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-17", "H-16a"] },
+        "M-22": { "title": "GateSpec 通用抽象", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-04"] },
+        "H-11a": { "title": "MCP 工具风险分级", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["C-02"] },
+        "M-14a": { "title": "日志脱敏层", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "NEW-R02": { "title": "TS as any CI 门禁 (diff-scoped)", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["NEW-R02a"], "source": "deep-refactoring-analysis" },
+        "NEW-R03b": { "title": "Python 异常 AutoresearchError 迁移", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-01"], "source": "deep-refactoring-analysis" },
+        "NEW-R04": { "title": "Zotero 工具整合 (~2300 LOC 去重)", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis" },
+        "NEW-R09": { "title": "orchestrator_cli.py 拆分 (条件性)", "status": "pending", "complexity": "high", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis", "decision_gate": "Phase 1 kickoff: cancel if NEW-05a is rewrite-from-scratch" },
+        "UX-01": { "title": "研究笔记与机器 Contract 分离", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [], "source": "user-stories-ux-gaps" },
+        "UX-05": { "title": "延迟脚手架 + 统一初始化入口", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["UX-01"], "source": "user-stories-ux-gaps" },
+        "UX-06": { "title": "研究会话入口协议", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [], "source": "user-stories-ux-gaps" }
+      }
+    },
+    "2": {
+      "name": "深度集成",
+      "items": {
+        "H-05": { "title": "跨平台文件锁", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-01", "H-03"] },
+        "H-07": { "title": "原子文件写入", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
+        "H-09": { "title": "幂等性 CAS", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-01"] },
+        "H-10": { "title": "Ledger 事件枚举", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["H-03"] },
+        "H-11b": { "title": "MCP 权限组合策略", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["H-11a", "H-04"] },
+        "H-12": { "title": "不可信内容沙箱", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["C-02"] },
+        "H-15b": { "title": "Artifact 版本化统一", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["H-18", "M-01"] },
+        "H-16b": { "title": "跨组件契约测试 CI", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-16a", "H-17"] },
+        "H-21": { "title": "数据存储位置统一", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["H-20"] },
+        "M-02": { "title": "遗留工具名迁移", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["H-16a"] },
+        "M-05": { "title": "Token 计数标准化", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "M-06": { "title": "SQLite WAL + 连接池", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [], "note": "R7 scope expansion: 原始范围仅 PDG DB，扩展为通用 SQLite 工具模块 (packages/shared/src/db/sqlite-utils.ts)，供 EVO-20/19/21 消费" },
+        "M-20": { "title": "迁移注册表", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-15b", "H-21"] },
+        "M-21": { "title": "载荷大小/背压契约", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-13"] },
+        "M-23": { "title": "发布产物对齐", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["H-16a"] },
+        "trace-jsonl": { "title": "全链路 trace_id + JSONL 日志", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-02", "H-01", "M-14a"], "note": "R7 scope: 需定义 file_edit/fix_applied/tool_call/skill_invoked event types 结构化 schema (EVO-12a 消费) + SQLite-backed trace index (Gap 5: 生产规模下 O(N) 扫描瓶颈)" },
+        "NEW-02": { "title": "审批产物三件套", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-04", "M-22", "NEW-01"] },
+        "NEW-03": { "title": "审批 CLI 查看命令", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["NEW-02"] },
+        "NEW-04": { "title": "自包含人类报告生成", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["NEW-02", "H-18"] },
+        "NEW-R05": { "title": "证据抽象层", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["NEW-01", "H-18"], "source": "deep-refactoring-analysis" },
+        "NEW-R05a": { "title": "Pydantic v2 代码生成目标评估", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["NEW-01"], "source": "deep-refactoring-analysis" },
+        "NEW-R06": { "title": "分析类型 Schema 整合", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["NEW-01"], "source": "deep-refactoring-analysis" },
+        "NEW-R07": { "title": "hep-autoresearch 测试覆盖门禁", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis" },
+        "NEW-R08": { "title": "Skills LOC 预算", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["NEW-R02a"], "source": "deep-refactoring-analysis" },
+        "NEW-R10": { "title": "service.py 拆分 (条件性)", "status": "pending", "complexity": "high", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis", "decision_gate": "Phase 3 kickoff: cancel if idea-engine TS migration started" },
+        "NEW-R14": { "title": "hep-mcp 内部包拆分", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["NEW-05"], "source": "deep-refactoring-analysis", "note": "P2 late: execute after H-16a + NEW-06 stabilize" },
+        "NEW-R15-impl": { "title": "编排器 MCP 工具实现 (orch_run_* + orch_policy_query)", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["H-03", "H-02", "H-01", "H-05", "H-07", "H-11a", "H-16a", "H-20", "H-21", "NEW-02", "NEW-R15-spec"], "source": "deep-refactoring-analysis", "note": "scope 扩展 (2026-02-22): 增加 orch_policy_query (GAP-06)" },
+        "UX-02": { "title": "结构化计算代码目录 (computation/ + manifest.json)", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["UX-01"], "source": "user-stories-ux-gaps", "note": "Phase 2 交付 manifest MVP (手动/Agent 编写); EVO-01 package_selector 自动生成为 Phase 5 渐进增强" },
+        "UX-07": { "title": "审批上下文丰富化 (per-gate context assemblers)", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["NEW-02", "NEW-03", "UX-01"], "source": "user-stories-ux-gaps", "note": "Phase 2: A0-A4 context assemblers + A5 基础摘要; Phase 5 渐进增强: A5 integrity_report (EVO-06) + A2 blast_radius (EVO-19)" },
+        "RT-02": { "title": "工具访问增强 + 溯源 Clean-Room", "status": "pending", "complexity": "high", "assignee": null, "depends_on": [], "source": "design-proposal-research-team-v2", "note": "两层工具模型 (restricted/full) + 工作区隔离 + provenance 交叉验证 + hard-fail 门禁; 实现语言取决于 NEW-05a 进度" },
+        "RT-03": { "title": "统一 Runner 抽象 + API 可配置性", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [], "source": "design-proposal-research-team-v2", "note": "runner 接口约定 + OpenAI-compatible runner + --api-key-env 脱敏" },
+        "NEW-VIZ-01": { "title": "Graph Visualization Layer — 通用 schema + 5 domain adapters", "status": "design_complete", "complexity": "medium", "assignee": null, "depends_on": [], "design_doc": "docs/graph-visualization-layer.md", "note": "跨域图可视化基础设施: UniversalNode/Edge schema + Claim DAG, Memory Graph, Literature, Idea Map, Progress Graph adapters. 9 轮双模型审查收敛." }
+      }
+    },
+    "3": {
+      "name": "扩展性与治理",
+      "items": {
+        "M-03": { "title": "隐式 A0 审批分支", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "M-04": { "title": "Zod→MCP schema 信息损失", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
+        "M-07": { "title": "Schema 模式过严", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "M-08": { "title": "幂等性密钥冲突消息", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "M-09": { "title": "skills-market/manifest 冗余", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "M-10": { "title": "版本兼容矩阵", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
+        "M-12": { "title": "凭据管理", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["M-14a"] },
+        "M-13": { "title": "MCP 逻辑模块化 (含 NEW-R11 registry.ts 拆分)", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
+        "M-15": { "title": "技能依赖隔离", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
+        "M-16": { "title": "环境可复现", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "M-17": { "title": "网络出口治理", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
+        "L-08": { "title": "MCP 进度/取消 UX", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
+        "NEW-06": { "title": "MCP 写作流水线工具整合", "status": "pending", "complexity": "high", "assignee": null, "depends_on": [] },
+        "NEW-R11": { "title": "registry.ts 领域拆分 (M-13 scope expansion)", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["M-13"], "source": "deep-refactoring-analysis" },
+        "NEW-R12": { "title": "idea-runs 集成契约", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis" },
+        "UX-03": { "title": "论文版本追踪 + 输出路径统一", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["NEW-06"], "source": "user-stories-ux-gaps" },
+        "UX-04": { "title": "结构化工具编排 Recipe + inspire 工具合并", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["NEW-06", "H-16a"], "source": "user-stories-ux-gaps" },
+        "RT-01": { "title": "可配置工作流模式 (peer/leader/asymmetric)", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["UX-06", "NEW-06", "RT-02"], "source": "design-proposal-research-team-v2", "note": "三模式工作流 + 增量验证 + convergence gate; 实现语言取决于 NEW-05a 进度" },
+        "RT-04": { "title": "Innovation ↔ idea-generator 桥接", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["NEW-R12"], "source": "design-proposal-research-team-v2", "note": "--idea-source 注入 + INNOVATION_LOG 反向种子 + idea_card_ref schema 对齐" }
+      }
+    },
+    "4": {
+      "name": "长期演进",
+      "items": {
+        "L-01": { "title": "URI scheme 集中文档", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "L-02": { "title": "孤儿技能打包", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "L-03": { "title": "SKILL.md frontmatter 统一", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "L-04": { "title": "Checkpoint 过期竞争条件", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-05"] },
+        "L-05": { "title": "Gate vs Approval 语义重命名", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "L-06": { "title": "适配器注册表扩展", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
+        "L-07": { "title": "性能基准 SLO", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
+        "NEW-07": { "title": "多 Agent 编排抽象 + A2A 适配层", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["L-06"] }
+      }
+    },
+    "5": {
+      "name": "社区化与端到端闭环",
+      "items": {
+        "EVO-01": { "title": "idea→理论计算自动执行闭环", "status": "pending", "complexity": "high", "assignee": null, "depends_on": [] },
+        "EVO-02": { "title": "计算结果→idea 反馈循环", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["EVO-01"] },
+        "EVO-03": { "title": "结果→writing evidence 自动映射 + 审稿修订循环", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["EVO-01"], "note": "scope 扩展 (2026-02-22): 增加 review→revise 自动循环 (GAP-05), 依赖 UX-03/UX-04" },
+        "EVO-04": { "title": "Agent 注册表 + A2A Agent Card", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["EVO-17"] },
+        "EVO-05": { "title": "Domain Pack 打包/分发标准", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
+        "EVO-06": { "title": "理论物理研究诚信强制框架", "status": "design_complete", "complexity": "high", "assignee": null, "depends_on": [], "design_doc": "docs/track-a-evo06-integrity-framework-design.md", "schemas": ["schemas/integrity_report_v1.schema.json", "schemas/integrity_check_v1.schema.json", "schemas/domain_pack_manifest_v1.schema.json"] },
+        "EVO-07": { "title": "可复现性验证管线", "status": "design_complete", "complexity": "medium", "assignee": null, "depends_on": ["EVO-01"], "design_doc": "docs/track-a-evo07-reproducibility-design.md", "schemas": ["schemas/reproducibility_report_v1.schema.json"] },
+        "EVO-08": { "title": "跨实例 idea 同步协议", "status": "pending", "complexity": "high", "assignee": null, "depends_on": [] },
+        "EVO-09": { "title": "失败库生成时查询集成", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["EVO-01"] },
+        "EVO-10": { "title": "进化提案自动闭环", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["trace-jsonl"] },
+        "EVO-11": { "title": "Bandit 分发策略运行时接入", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["EVO-01", "EVO-09"] },
+        "EVO-12": { "title": "技能生命周期自动化", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["M-15"] },
+        "EVO-13": { "title": "统一编排引擎 (HEPAR + Orchestrator 合并)", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["NEW-05a", "NEW-07"] },
+        "EVO-14": { "title": "跨 Run 并行调度 + Agent 生命周期", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["EVO-13"] },
+        "EVO-15": { "title": "Agent-arXiv 多 Agent 自主研究社区基础设施", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["EVO-04", "EVO-06", "EVO-13", "EVO-14"] },
+        "EVO-16": { "title": "Agent 研究社区自主运行实验", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["EVO-15"] },
+        "EVO-17": { "title": "REP SDK — 独立发布的研究进化协议 (Track A)", "status": "design_complete", "complexity": "high", "assignee": null, "depends_on": ["H-18", "NEW-07"], "design_doc": "docs/track-a-evo17-rep-sdk-design.md", "schemas": ["schemas/research_strategy_v1.schema.json", "schemas/research_outcome_v1.schema.json", "schemas/research_event_v1.schema.json", "schemas/rep_envelope_v1.schema.json"] },
+        "EVO-18": { "title": "REP 信号引擎 (Track A)", "status": "design_complete", "complexity": "medium", "assignee": null, "depends_on": ["EVO-17", "EVO-06"], "design_doc": "docs/track-a-evo18-signal-engine-design.md", "schemas": ["schemas/research_signal_v1.schema.json"] },
+        "EVO-19": { "title": "GEP/Evolver Track B 集成 (Gene Library + blast_radius)", "status": "design_complete", "complexity": "medium", "assignee": null, "depends_on": ["NEW-05", "EVO-04"], "design_doc": "docs/track-b-evo-19-gene-library.md", "schemas": ["schemas/gene_v1.schema.json", "schemas/capsule_v1.schema.json"] },
+        "EVO-12a": { "title": "技能自生成 (Skill Genesis from Agent Traces)", "status": "design_complete", "complexity": "high", "assignee": null, "depends_on": ["EVO-12", "trace-jsonl", "EVO-19"], "note": "GEP 扩展 (2026-02-21): pattern detection → skill proposal → scope extension", "design_doc": "docs/track-b-evo-12a-skill-genesis.md", "schemas": ["schemas/skill_proposal_v2.schema.json"] },
+        "EVO-20": { "title": "跨周期记忆图谱 (Cross-Cycle Memory Graph)", "status": "design_complete", "complexity": "high", "assignee": null, "depends_on": ["H-18", "H-02", "M-06"], "note": "GEP 扩展 (2026-02-21): 移植 memoryGraph.js, Track A+B 共享基础设施. R7: 依赖从 EVO-17 修正为 H-18", "design_doc": "docs/track-b-evo-20-memory-graph.md", "schemas": ["schemas/memory_graph_node_v1.schema.json", "schemas/memory_graph_edge_v1.schema.json", "schemas/memory_graph_event_v1.schema.json"] },
+        "EVO-21": { "title": "主动进化 — 机会检测 + 创新突变 + 策略进化", "status": "design_complete", "complexity": "high", "assignee": null, "depends_on": ["EVO-19", "EVO-20", "EVO-11"], "note": "GEP 扩展 (2026-02-21): optimize/innovate mutations + personality.js 策略进化", "design_doc": "docs/track-b-evo-21-proactive-evolution.md", "schemas": ["schemas/mutation_proposal_v1.schema.json", "schemas/strategy_state_v1.schema.json"] }
+      }
+    }
+  },
+  "umbrella_items": {
+    "NEW-R01": { "title": "God-file 拆分 (跟踪伞)", "status": "pending", "complexity": "high", "assignee": null, "depends_on": [], "sub_items": ["NEW-R09", "NEW-R10", "NEW-R11"], "source": "deep-refactoring-analysis", "note": "9 files >2000 raw LOC + 7 in 1200-2000 band; end-state ≤200 eLOC; sub-items span Phase 1-3" }
+  }
+}

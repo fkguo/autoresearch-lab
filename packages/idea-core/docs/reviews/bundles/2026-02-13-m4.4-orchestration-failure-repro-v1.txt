@@ -1,0 +1,31 @@
+# M4.4 team orchestration failure repro (RED -> GREEN)
+
+## RED (before orchestration module implementation)
+
+Command:
+`pytest -q tests/hepar/test_team_orchestrator_m44.py`
+
+Observed failure:
+- `ModuleNotFoundError: No module named 'idea_core.hepar.orchestrator'`
+- collection failed because M4.4 orchestrator implementation/export did not exist.
+
+Trace excerpt:
+```
+E   ModuleNotFoundError: No module named 'idea_core.hepar.orchestrator'
+```
+
+## GREEN (after implementation + export)
+
+Command:
+`pytest -q tests/hepar/test_team_orchestrator_m44.py`
+
+Observed result:
+```
+...                                                                      [100%]
+```
+
+Fix summary:
+- Added `src/idea_core/hepar/orchestrator.py` with `TeamRoleOrchestrator`.
+- Added orchestration paths for `parallel`, `sequential`, and `stage_gated`.
+- Implemented parallel Referee+Checker merge artifact write-back into `EngineStore` (`team_reviews/*`).
+- Exported `TeamRoleOrchestrator` in `src/idea_core/hepar/__init__.py`.

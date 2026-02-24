@@ -1,0 +1,22 @@
+{
+  "approach_id": "123e4567-e89b-42d3-a456-426614174000",
+  "approach_summary": "Unconstrained scan drifted from claimed bootstrap method family.",
+  "failure_mode": "method_drift",
+  "failure_modes": ["method_drift", "toy_model_shortcut"],
+  "failure_evidence_uris": [
+    "arxiv:2403.10772",
+    "file:artifacts/method/method_fidelity_contract_v1.json"
+  ],
+  "lessons": [
+    "Enforce method_fidelity_contract: reject implementations that violate claimed constraints.",
+    "Record shortcuts explicitly so future campaigns can avoid repeating the same drift."
+  ],
+  "reuse_potential": "high",
+  "tags": [
+    "method:bootstrap",
+    "topic:gff",
+    "failure:method_drift",
+    "scope:ecosystem_validation"
+  ],
+  "created_at": "2026-02-15T00:00:00Z"
+}

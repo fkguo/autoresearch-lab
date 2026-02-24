@@ -1,0 +1,1 @@
+cmd: gemini -m gemini-3-pro-preview --approval-mode default -p "" < docs/reviews/bundles/2026-02-16-w6-04-review-gemini-prompt-round-001.txt

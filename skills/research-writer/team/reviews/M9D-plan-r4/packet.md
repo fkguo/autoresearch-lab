@@ -1,0 +1,77 @@
+# research-writer — M9D-plan-r4 Decision Packet (draft_sections UX + quality)
+
+## Goal
+Give a final recommendation for how `draft_sections` should work for **human users**:
+- High writing quality
+- Easy to use
+- Minimal confusion
+- Hallucination risk controlled (evidence gate)
+- Auditable outputs
+
+We need to choose the default behavior and the optional modes.
+
+## Constraints (non-negotiable)
+- Evidence gate: do not invent provenance/uncertainty/error-model details; missing anchors → TODO.
+- Auditable: keep raw outputs + trace logs.
+- Safe defaults: no destructive in-place edits to `paper/main.tex` by default.
+- Opt-in: no surprise model calls.
+
+## Candidate designs
+
+### A) Two drafts only (Claude + Gemini)
+- Outputs: `draft_claude_<section>.tex`, `draft_gemini_<section>.tex`
+- No merged final
+
+Pros: minimal extra generation step.
+Cons: humans must merge; high cognitive load; “two competing drafts” is often unusable.
+
+### B) Two drafts + synthesizer merge
+- Outputs: both drafts + `draft_merged_<section>.tex`.
+
+Pros: one final draft for humans.
+Cons: extra generation pass can introduce hallucinations unless tightly constrained.
+
+### C) Writer + Auditor (recommended candidate)
+- Writer produces a single coherent draft.
+- Auditor (different model) revises conservatively for evidence compliance + clarity.
+
+Pros: humans get one coherent draft by default; cross-model review reduces hallucinations.
+Cons: more prompt plumbing; needs careful “auditor must not be creative”.
+
+## Proposed recommendation to evaluate
+Adopt **C as the default**, with a clear output bundle that is human-friendly:
+
+### Default output bundle (per section)
+Under `paper/drafts/<run_id>/`:
+- `draft_<section>_writer.tex` (raw writer)
+- `draft_<section>_final.tex` (auditor-revised; this is the file humans read)
+- `draft_<section>.diff` (unified diff writer→final)
+- `evidence_gate_report.md` (only if failed)
+- `trace.jsonl` (inputs, prompts, model args, file hashes, linter results)
+- `README.md` (1-page summary: roles, pass/fail, next steps)
+
+### Hard gates
+- Always run `scripts/bin/check_latex_evidence_gate.py --fail` on `draft_<section>_final.tex`.
+- If gate fails:
+  - rename final to `draft_<section>_unsafe.tex`
+  - write `evidence_gate_report.md`
+  - exit non-zero
+
+### Optional modes (explicit flags)
+- `--dual-draft`: also write `draft_<section>_claude.tex` and `draft_<section>_gemini.tex` (for comparison), but keep **one** `draft_<section>_final.tex` as the primary output.
+- `--synthesize`: enable B (synthesizer merge) only when explicitly requested, and still run evidence gate on the merged output.
+
+### Roles / UX defaults
+- Default roles should be fixed and printed:
+  - Writer: Claude (opus)
+  - Auditor: Gemini (gemini-3-pro-preview)
+- Auditor prompt must be conservative:
+  - preserve LaTeX commands and citation keys
+  - do not add new factual claims without anchors
+  - only tighten claims / add TODOs when evidence missing
+  - low temperature
+
+## Reviewer request
+Decide whether the above recommendation (C default, with optional B) is the best choice to maximize automation while keeping quality high and UX non-confusing.
+
+Return `VERDICT: READY` if you agree we should proceed with this design.

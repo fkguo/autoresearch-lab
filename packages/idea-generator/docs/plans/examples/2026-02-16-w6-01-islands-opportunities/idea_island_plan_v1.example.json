@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "island_id": "island-positivity-gff",
+  "title": "Positivity/analyticity bootstrap for pion GFFs",
+  "research_question": "What is the strongest model-independent bound on pion gravitational form factors (GFFs) from positivity/analyticity/dispersive constraints without coupled channels?",
+  "strategy_notes": "Start from a single-channel dispersive representation for pion GFFs and implement positivity constraints on spectral densities / moments. Avoid coupled-channel inputs by construction; treat subtraction constants/normalizations as parameters with explicit priors/constraints.",
+  "bootstrap_mechanism_tags": ["positivity", "analyticity", "dispersive"],
+  "evaluation_metrics": [
+    {
+      "metric_id": "bound_strength",
+      "description": "Quantify tightening vs. baseline literature bounds at fixed kinematic points (e.g., t=0 or small |t|).",
+      "target": "At least one numerically reproducible bound stronger or qualitatively different than the seed papers."
+    }
+  ],
+  "current_status": "PLANNED",
+  "next_actions": [
+    "Extract normalizations/definitions and the exact positivity inequality assumptions from seed papers (LaTeX-first).",
+    "Specify an explicit optimization variable set and constraint set (laptop-feasible).",
+    "Add a numerics validation plan (toy checks + regression outputs)."
+  ],
+  "key_artifacts": [
+    {
+      "path": "artifacts/islands/plans/island-positivity-gff/idea_island_plan_v1.json",
+      "description": "Per-island plan (this artifact) used by validate-project to enforce required structure.",
+      "kind": "plan"
+    }
+  ],
+  "evidence_uris": [
+    "https://arxiv.org/abs/2403.10772",
+    "https://arxiv.org/abs/2411.13398"
+  ],
+  "tags": ["method:bootstrap", "topic:gff", "domain:pion", "island_id:island-positivity-gff"],
+  "created_at_utc": "2026-02-16T00:00:00Z",
+  "updated_at_utc": "2026-02-16T00:00:00Z"
+}

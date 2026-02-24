@@ -1,0 +1,4 @@
+python3 -m idea_core.contracts.validate
+[validate] OK: JSON parse, schema legality, OpenRPC minimal shape, $ref closure, drift-guard, bundle-consistency
+.................................................................        [100%]
+65 passed in 4.09s

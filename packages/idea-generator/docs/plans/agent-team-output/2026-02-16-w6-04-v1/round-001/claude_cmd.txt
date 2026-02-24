@@ -1,0 +1,1 @@
+cmd: claude --model opus --print < docs/reviews/bundles/2026-02-16-w6-04-review-claude-prompt-round-001.txt

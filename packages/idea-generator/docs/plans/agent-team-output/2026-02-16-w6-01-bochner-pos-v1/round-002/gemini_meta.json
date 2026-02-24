@@ -1,0 +1,13 @@
+{
+  "timestamp_utc": "2026-02-16T09:02:47Z",
+  "reviewer": "gemini",
+  "model": "gemini-3-pro-preview",
+  "output_format": "text",
+  "prompt_path": "docs/reviews/bundles/2026-02-16-w6-01-bochner-pos-review-gemini-prompt-round-002.txt",
+  "packet_path": "docs/reviews/bundles/2026-02-16-w6-01-bochner-pos-review-packet-round-002.md",
+  "output_path": "docs/plans/agent-team-output/2026-02-16-w6-01-bochner-pos-v1/round-002/gemini_output.md",
+  "fallback": {
+    "enabled": false,
+    "mode": "ask"
+  }
+}

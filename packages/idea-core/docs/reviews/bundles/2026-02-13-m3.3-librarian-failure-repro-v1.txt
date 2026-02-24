@@ -1,0 +1,55 @@
+# M3.3 Failure Repro (RED -> GREEN): Librarian retrieval recipes
+
+Date: 2026-02-13
+
+## RED (before fix)
+
+Command:
+  pytest -q tests/engine/test_retrieval_recipes_m33.py
+
+Observed failure (excerpt):
+
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_m3_3_librarian_recipes_emit_evidence_packets_and_claim_uris _______
+
+...
+>           evidence_packet_ref = event["evidence_packet_ref"]
+E           KeyError: 'evidence_packet_ref'
+
+tests/engine/test_retrieval_recipes_m33.py:66: KeyError
+=========================== short test summary info ============================
+FAILED tests/engine/test_retrieval_recipes_m33.py::test_m3_3_librarian_recipes_emit_evidence_packets_and_claim_uris
+
+## GREEN (after fix)
+
+Command:
+  pytest -q tests/engine/test_retrieval_recipes_m33.py
+
+.                                                                        [100%]
+
+## RED v2 (provenance/schema enrichment before fix)
+
+Command:
+  pytest -q tests/engine/test_retrieval_recipes_m33.py
+
+Observed failure (excerpt):
+
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_m3_3_librarian_recipes_emit_evidence_packets_and_claim_uris _______
+
+...
+>           assert packet["packet_schema_version"] == 1
+E           KeyError: 'packet_schema_version'
+
+tests/engine/test_retrieval_recipes_m33.py:69: KeyError
+=========================== short test summary info ============================
+FAILED tests/engine/test_retrieval_recipes_m33.py::test_m3_3_librarian_recipes_emit_evidence_packets_and_claim_uris
+
+## GREEN v2 (after provenance/schema fix)
+
+Command:
+  pytest -q tests/engine/test_retrieval_recipes_m33.py
+
+.                                                                        [100%]

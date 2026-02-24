@@ -1,0 +1,295 @@
+# Review Packet: Idea-Generator Architecture Spec v0.2
+
+## What to review
+
+We are designing an `idea-generator` agent for an evidence-first HEP research ecosystem. The goal is to build a **standalone `idea-core` engine** with a **thin hepar/skill adapter**, and a plugin system that starts with HEP but scales to other theoretical physics domains.
+
+Please review the architecture spec below for:
+- Extensibility (DomainPack/Operator/SearchPolicy/Distributor)
+- Artifact contracts (SSOT, provenance fields, auditability)
+- Evidence-first + novelty/folklore risk handling
+- Cost control + search lifecycle correctness (multi-island, repopulate, bandit scheduling)
+- Practical integration with C1/C2/W_compute and A0 gating
+
+You may assume:
+- Tools are available via MCP (INSPIRE/PDG/Zotero/KB/LaTeX), but `idea-core` must not import orchestrator internals.
+- Multi-agent evaluation uses clean-room reviewers by default (Claude + Gemini).
+
+## Architecture Spec (SSOT candidate)
+
+--- BEGIN SPEC ---
+
+# Idea-Generator 架构规格（v0.2 / Design Spec）
+
+> 日期：2026-02-12  
+> 目标：在 **HEP-first** 的前提下，建立一个可扩展到理论物理其它分支的 `idea-generator` 架构规格（可实现、可测试、可演进）。  
+> 原则：研究质量优先 —— 所有机制尽量对应到可审计产物（artifacts）与可执行接口（operators / policies / plugins）。
+
+---
+
+## 1. 设计目标与非目标
+
+### 1.1 目标（必须达成）
+
+1. **可扩展**：HEP（hep-ph/hep-th/nucl-th）先做深；未来扩展到凝聚态/天体/数学物理时不改 core，只加 pack/plugin。
+2. **证据优先（evidence-first）**：每个 idea 的关键 claim 必须能追溯到：
+   - 文献证据（INSPIRE/arXiv/综述/讲义/会议报告），或
+   - 数据证据（PDG/HEPData/实验结果），或
+   - 明确标注的推断（LLM inference）并带不确定度与验证计划。
+3. **可下游执行**：通过 A0.2 的 idea 必须能编译成 `C2 Method Design` 的结构化输入（不是一句话想法）。
+4. **可审计**：全流程事件追加到账本（append-only）；核心产物遵循稳定 schema，可回放、可比较。
+5. **可控成本**：预算（token/$/时间/节点数）是一级参数；系统必须能早停/剪枝/降级。
+
+### 1.2 非目标（v0.x 不做）
+
+- 不追求“一键自动发表论文”；我们只负责把 idea **推进到可执行方法规格**（C2-ready）。
+- 不在 v0.x 追求完整图数据库/向量库基础设施；先用 JSONL + 可替换接口。
+
+---
+
+## 2. 总体架构：Standalone `idea-core` + 薄适配层（Hybrid）
+
+### 2.1 边界原则（强约束）
+
+- `idea-core` **不得导入** hepar / orchestrator 内部代码：只通过 artifact 契约与 stdio/JSON-RPC 交互。
+- hepar 负责：审批门禁、run lifecycle、ledger、权限与“何时启动/停止”。
+- `idea-core` 负责：搜索/生成/评估/排名/溯源对象模型与算法。
+
+### 2.2 组件图（逻辑）
+
+```
+┌───────────────────────────────────────────────────────────┐
+│                    hepar / human operator                  │
+│   A0.1 campaign charter  A0.2 idea promotion   A1..A5       │
+└───────────────┬───────────────────────────────┬───────────┘
+                │                               │
+                ▼                               ▼
+┌──────────────────────────┐          ┌──────────────────────┐
+│ idea-generator skill      │          │ MCP tool layer        │
+│ (thin adapter)            │          │ INSPIRE / PDG / Zotero │
+│ - translate commands      │◀────────▶│ KB / LaTeX / etc.      │
+│ - map artifacts           │          └──────────────────────┘
+└───────────────┬──────────┘
+                │ JSON (artifacts) / stdio
+                ▼
+┌───────────────────────────────────────────────────────────┐
+│                    idea-core (standalone)                  │
+│                                                           │
+│  Campaign → Seed → Search → Ground → Evaluate → Rank → Select │
+│                                                           │
+│  + IdeaStore (append-only) + ProvenanceDAG + Metrics        │
+│  + Plugin system: DomainPacks / Operators / SearchPolicies  │
+└───────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 3. 核心抽象：Operator + SearchPolicy + Distributor（可替换）
+
+> 把“科学发现路径”落到可执行机制：Operator 是“如何变异/扩展 idea”；SearchPolicy 是“如何在树/种群中调度探索”；Distributor 是“预算如何分配到不同 LLM 与不同 operator/island”。
+
+### 3.1 `Operator`（发现算子）
+
+**职责**：输入一个 seed/idea-node，输出若干候选（带 rationale 草稿），并附带操作痕迹（trace）。
+
+建议最小接口（概念）：
+- `operator_id` / `operator_family`
+- `apply(input, context) -> [RationaleDraft]`
+- `operator_trace`：包含策略参数、随机种子、引用的证据 URI（用于审计/复现/回放）
+
+**Operator families（v0.2 建议）**  
+（把科学史/科学哲学转成可执行算子族；HEP pack 可先实现其中 4–6 个）
+
+- `AnomalyAbduction`：反常 → 解释（Kuhn/Peirce abduction）
+- `AssumptionInversion`：假设反转（Popper；增强可证伪性）
+- `SymmetryOperator`：对称性操作（破缺/恢复/推广/对偶）
+- `LimitExplorer`：极限外推（强/弱耦合、能标极限、维数极限）
+- `CrossDomainAnalogy`：结构/方法/现象映射（强制输出 mapping table）
+- `CombinatorialSynthesis`：方法×理论模块组合（IdeaSearch 风格再组合）
+- `ProtectiveBeltPatch`：Lakatos（保持 hard core，改 protective belt）
+- `RepresentationShift`：改变表述（变量替换、对偶变换、规范选择）
+
+### 3.2 `SearchPolicy`（搜索策略）
+
+**职责**：在预算约束下，决定“扩展哪个节点/哪个岛、使用哪个 operator、保留哪些候选”。
+
+v0.x 推荐先支持：
+
+1. **Divergent–Convergent 外环**（管线纪律）
+2. **Multi-Island Evolution 内核**（IdeaSearch 风格：不同策略群体并行 + repopulate）
+3. 可选：**BFTS / BeamSearch**（对树结构分支的局部 best-first）
+
+> 设计要点：SearchPolicy 只依赖 `IdeaNode` 与 `Evaluator` 的输出，不依赖领域细节。
+
+### 3.3 `Distributor`（预算分配/调度器）
+
+**职责**：把生成请求分配给：
+
+- 不同 LLM backends（异构模型表型互补：explorer vs converger vs critic）
+- 不同 islands / operator families
+
+推荐 v0.2 就引入 **softmax-bandit**（IdeaSearchFitter 给出可复用机制）：
+
+- 为每个 backend/operator 维护近期 reward 的 EMA
+- 用 `softmax(score/T)` 分配生成配额（避免单点收敛）
+
+reward 信号分两类：
+- **短期 proxy**：grounding ratio、novelty proxy、结构化可编译率（是否能形成 Canonical IdeaCard）
+- **长期 outcome**：A0.2 通过率、C2 成功率、W_compute 成功率（延迟奖励）
+
+---
+
+## 4. 强制两阶段：RationaleDraft → Canonical IdeaCard（Explain-Then-Formalize）
+
+### 4.1 为什么必须强制
+
+Explain-Then-Formalize 的价值在于：
+
+- 允许 **发散**（类比、隐喻、反转假设）  
+- 但必须在进入门禁/下游前完成 **形式化**（可验证字段齐全）
+
+### 4.2 两阶段产物（建议）
+
+1. `RationaleDraft`（允许高温）：
+   - WHY：动机/反常/类比映射表/机制猜想
+   - 风险：潜在已知/folklore、物理一致性风险、验证优先级
+   - 下一步最小验证：1–3 个 kill criteria
+
+2. `IdeaCard`（低温约束 + schema 校验）：
+   - `thesis_statement`
+   - `testable_hypotheses[]`
+   - `required_observables[]`
+   - `candidate_formalisms[]`
+   - `minimal_compute_plan[]`
+   - `claims[]`（claim-level 溯源；每条 claim 标注 support_type + evidence_uris）
+
+> 硬规则：任何 idea 进入 Ranking / A0.2 前，必须完成 `IdeaCard` 生成与 schema 验证。
+
+---
+
+## 5. 核心数据与产物契约（artifacts）
+
+沿用 2026-02-11 的“9 类产物”思想，但补齐关键字段：`origin`、`operator_trace`、`eval_info`（可再投喂诊断）。
+
+### 5.1 SSOT artifacts（建议保持稳定命名/版本）
+
+- `idea_campaign_v1.json`
+- `idea_seed_pack_v1.json`
+- `idea_candidates_v1.jsonl`
+- `idea_evidence_graph_v1.json`
+- `idea_novelty_report_v1.json`
+- `idea_scorecards_v1.json`
+- `idea_tournament_v1.json`
+- `idea_selection_v1.json`
+- `idea_handoff_c2_v1.json`
+
+### 5.2 `idea_candidates_v1.jsonl`（每行一个 IdeaNode，最关键字段）
+
+必须包含：
+
+- `idea_id`, `node_id`, `parent_node_ids[]`, `island_id`, `operator_id`
+- `rationale_draft`（或其 artifact 引用）
+- `idea_card`（或其 artifact 引用；未形式化则为 null）
+- `origin`：
+  - `model`, `temperature`, `prompt_hash`, `timestamp`
+- `operator_trace`：
+  - `inputs`, `params`, `random_seed`, `evidence_uris_used[]`
+- `eval_info`（来自 evaluator 的可操作诊断）：
+  - `fix_suggestions[]`（用于下一轮 prompt）
+  - `failure_modes[]`（如“缺证据/太相似/物理不一致/不可计算”）
+
+---
+
+## 6. 评估与排名：Evaluator 必须产出“可迭代的信息”
+
+### 6.1 Evaluator（多维 + 多 agent）
+
+维度建议延续：
+- novelty / feasibility / impact / tractability / grounding
+
+关键工程约束：
+- evaluator 返回不只是分数，还要返回 **可再投喂的诊断**（参考 IdeaSearch-framework 的 score+info）
+- 多 agent 评审默认 **clean-room**（互不共享对话记忆），直到触发“结构化辩论”才允许受控信息流
+
+### 6.2 Novelty：四层栈 + folklore 风险
+
+沿用 2026-02-11 的四层 novelty pipeline，但把 folklore 风险变成显式字段：
+- `folklore_risk`（高则必须走 `A0-folklore` 人类裁定）
+
+### 6.3 Ranking：Pareto + Tournament（Elo）
+
+- Pareto：多目标前沿保证不被单一分数绑架
+- Tournament/Elo：降低评分尺度漂移影响，促进相对比较的稳定性
+
+---
+
+## 7. DomainPack（领域插件）最小化设计（避免过度抽象）
+
+v0.2 建议把扩展点收敛为 6 类（HEP 先硬编码实现，再抽取接口）：
+
+1. `seed_sources`
+2. `operators`（或 operator 参数化/模板）
+3. `constraints_and_validators`
+4. `retrieval_recipes`（INSPIRE 查询模板、关键词扩展、分类映射）
+5. `feasibility_estimators`
+6. `method_compilers`（IdeaCard → C2 handoff）
+
+> DomainPack 的“知识载体”主要是：ontology + prompt templates + validators，而不是把物理写成大量 Python 规则（可维护性更好）。
+
+---
+
+## 8. 与现有生态圈集成（HEP-Autoresearch）
+
+### 8.1 输入（seed sources）
+
+- C1 gaps（系统性缺口）
+- KB priors（已有笔记/失败记录/方法痕迹）
+- PDG/HEPData tensions（反常/张力）
+- user seeds（`seeds.yaml` / `ideas.md`）
+
+### 8.2 输出（handoff）
+
+`idea_handoff_c2_v1.json` 是唯一允许进入 C2 的入口：
+- 缺字段 → 直接拒绝（不可“口头交接”）
+
+### 8.3 门禁（A0）
+
+沿用双层：
+- `A0.1` Campaign charter（方向/预算/风险）
+- `A0.2` Idea promotion（选具体 idea 投入资源）
+
+---
+
+## 9. 里程碑（v0.2 → v0.3）
+
+v0.2（本 spec）交付“架构与契约”优先：
+
+1. 固化 artifacts 与 IdeaNode 字段（含 origin/operator_trace/eval_info）
+2. Multi-Island + Explain-Then-Formalize 作为硬约束
+3. 最小 HEP DomainPack（实现 2–3 个 operator + novelty/grounding MVP）
+
+v0.3（下一步）：
+
+- 加入 bandit distributor（模型+operator 双分配）
+- 引入 phenotype profiling（explorer/converger/critic 分工）
+- 第二领域 pack 试点（验证抽象是否过拟合 HEP）
+
+---
+
+## 10. 关联文档
+
+- 设计总报告：`docs/plans/2026-02-11-idea-generator-design.md`
+- 补充文献综述：`docs/plans/2026-02-12-literature-supplement.md`
+- 深度调研（IdeaSearch + OpenClaw）：`docs/plans/2026-02-12-ideasearch-openclaw-deep-dive.md`
+
+--- END SPEC ---
+
+## Deep research highlights (for context only; do not re-summarize unless needed)
+
+- IdeaSearchFitter (arXiv:2510.08317) provides implementable patterns: multi-island loop, explain-then-formalize, softmax-bandit distributor, repository schema with `origin`/trace, and “score + info” iterative diagnostics.
+- IdeaSearch-framework (GitHub) shows an engineering decomposition: sampler/evaluator/island/searcher, prompt prologue/epilogue modularization, evaluator `(score, info)`, and model selection via softmax.
+- OpenClaw (GitHub) contributes engineering patterns: control-plane vs capability-plane separation, skills as indexed+on-demand-loaded modules, multi-agent routing/broadcast group notion.
+
+## Output requirements
+
+Follow the STRICT OUTPUT CONTRACT in your system prompt.

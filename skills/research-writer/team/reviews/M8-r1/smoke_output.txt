@@ -1,0 +1,28 @@
+[smoke] help: scaffold CLI
+[smoke] help: bibtex fixer
+[smoke] help: double-backslash fixer
+[smoke] help: PRL style corpus fetcher
+[smoke] help: discussion-logic pack generator
+[smoke] help: discussion-logic distiller
+[smoke] PRL style corpus fetcher: offline dry-run (no network)
+[smoke] PRL style corpus fetcher: offline extract (fixture)
+[smoke] PRL style corpus fetcher: offline extract (gzip single-file fixture)
+[smoke] discussion-logic packs: offline (fixture corpus)
+[smoke] discussion-logic packs: resume selects next paper
+[smoke] PASS: resume created next pack
+[smoke] discussion-logic packs: repair mode (stub models, offline)
+[smoke] PASS: repair regenerated missing model output
+[smoke] discussion-logic distill: offline (2-paper stub corpus)
+[smoke] scaffold: fixture project -> paper/
+[ok] patched 1 @article entry(ies) by adding journal="" (e.g. Bezanson2017)
+[ok] research-writer scaffold complete
+- project root: /private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.VAUalRi3T7/project
+- tag: M2-smoke
+- out: /private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.VAUalRi3T7/paper
+[smoke] markdown double-backslash check: generated paper + skill assets
+[smoke] latexmk: compile paper
+[smoke] PASS: main.pdf generated
+[smoke] latexmk: warnings=1 overfull_hbox=0
+[smoke] bibtex fixer: adds journal field
+[smoke] double-backslash checker+fixer: markdown math only
+[smoke] ok

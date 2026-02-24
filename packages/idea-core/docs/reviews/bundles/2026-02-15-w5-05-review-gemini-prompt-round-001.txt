@@ -1,0 +1,36 @@
+You are reviewer B. Review W5-05 control-plane hardening in idea-core/hepar.
+
+Hard requirements:
+- Check generic path boundary hardening, atomic writes, timeout/backoff, ledger dedup, reactive permission loop, replay concurrency safety, and env_whitelist consistency.
+- If any requirement is not machine-checkable in current files, return NOT_READY with concrete blocker.
+- If logic is generic and test-backed, return READY.
+
+Output must follow this exact structure and order:
+
+VERDICT: READY
+
+## Blockers
+- None.
+
+## Non-blocking
+- None.
+
+## Real-research fit
+- <item>
+
+## Robustness & safety
+- <item>
+
+## Specific patch suggestions
+- None.
+
+Rules:
+1) First line must be exactly `VERDICT: READY` or exactly `VERDICT: NOT_READY`.
+2) Keep all 5 required headers exactly as written and in this order.
+3) If a section is empty, write exactly `- None.`.
+4) Do not add any heading outside these 5 headers.
+5) Do not add any prose before the verdict line.
+6) Use concise bullets only.
+
+Read packet:
+- /Users/fkg/Coding/Agents/Autoresearch/idea-core/docs/reviews/bundles/2026-02-15-w5-05-review-packet-round-001.md

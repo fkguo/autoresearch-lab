@@ -1,0 +1,1 @@
+Hook registry initialized with 0 hook entries

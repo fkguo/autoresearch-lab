@@ -1,0 +1,77 @@
+You are a senior research software architect reviewing an M0.1 Preflight packet (v2) for an evidence-first physics computation project.
+
+STRICT OUTPUT CONTRACT (must follow exactly):
+1) First line must be exactly one of:
+   - VERDICT: READY
+   - VERDICT: NOT_READY
+2) Must contain exact headers:
+   - ## Blockers
+   - ## Non-blocking
+   - ## Real-research fit
+   - ## Robustness & safety
+   - ## Specific patch suggestions
+
+Decision policy (critical):
+- Judge ONLY the M0.1 acceptance criteria below.
+- Mark NOT_READY only if one or more acceptance criteria are not satisfied, or evidence is missing in THIS packet.
+- Do not require external filesystem access; treat the packet below as authoritative evidence.
+
+Scope constraints:
+- Only M0.1 (preflight + tracker + GitHub Project wiring).
+- Out of scope: M0.2+ technical method choices, any prototype code, solver installation, or numerical results.
+
+Acceptance criteria for M0.1 (must evaluate exactly these):
+1) Problem restatement + success/failure criteria captured.
+2) Hard constraints captured (no coupled-channel, pion-only, laptop-only, evidence-first).
+3) Risks identified with concrete mitigations / fail-fast checks.
+4) 3-day executable breakdown into M0.1–M0.5 with expected outputs.
+5) Required sync wiring exists:
+   - Dedicated GitHub Project exists (private) and has M0.1–M0.5 cards with statuses.
+   - Tracker exists and records card IDs/statuses (append-only format).
+
+Authoritative packet (summary; treat as SSOT for this review):
+
+- Target outputs (chosen A):
+  - numeric bounds for pion D-term D^π ≡ D^π(t=0) (a.k.a. Θ1(0) in some conventions)
+  - numeric bounds for pion gravitational/mass FF slope at t=0 (radius from Θ2'(0) with Θ2(0)=1)
+- Hard constraints:
+  1) no coupled-channel (elastic-only; kaon threshold treated as truncation)
+  2) pion only
+  3) laptop-only; ≤3 days
+  4) evidence-first: every key claim traceable to code outputs + paper evidence
+- Core papers:
+  - bootstrap: 2403.10772, 2505.19332, 2410.23333
+  - GFF/dispersive: 2411.13398, 2507.05375
+- Local paper-source evidence (downloaded arXiv sources; paths recorded):
+  - 2507.05375: .../sn-article.tex
+  - 2411.13398: .../main_arxiv.tex
+  - 2403.10772: .../arxiv_submission_3_v10.tex
+  - 2410.23333: .../FitPionsv2.tex
+- Notation risk acknowledged:
+  - freeze a single pion EMT decomposition and map {A,D,Θ} ↔ {Θ1,Θ2} in M0.2
+  - add a unit-test to check identities at t=0
+- Risks:
+  - R1 solver risk: full GTB SDP stack requires Matlab/CVX/MOSEK (unavailable); mitigate with Python-first approach; keep small convex fallback only if wheels install
+  - R2 single-channel limitation: D-term may weaken; mitigate via explicit truncation dependence study
+  - R3 notation mismatch: mitigate via frozen conventions + mapping tests
+  - R4 digitization/systematics risk: prefer explicit formulas/tables; if digitize, store calibration + traced arrays + error model in-repo
+- 3-day breakdown:
+  - M0.1 preflight + wiring
+  - M0.2 minimal technical route (formula → numerics pipeline; I/O contracts)
+  - M0.3 minimal runnable prototype producing first bounds
+  - M0.4 robustness checks
+  - M0.5 final conclusion + evidence index
+- GitHub Project wiring:
+  - Project: “Pion GFF Bootstrap” (User project #2, private), URL: https://github.com/users/fkguo/projects/2
+  - Cards (PVTI ids):
+    - PVTI_lAHOA7u0gc4BPKwZzglckkg [M0.1] Status=In Progress
+    - PVTI_lAHOA7u0gc4BPKwZzglckkk [M0.2] Status=Todo
+    - PVTI_lAHOA7u0gc4BPKwZzglckkw [M0.3] Status=Todo
+    - PVTI_lAHOA7u0gc4BPKwZzglckk8 [M0.4] Status=Todo
+    - PVTI_lAHOA7u0gc4BPKwZzglcklM [M0.5] Status=Todo
+- Tracker:
+  - append-only milestone status log exists and records the PVTI ids above
+  - update log + evidence index sections exist
+
+Please decide READY/NOT_READY strictly against the M0.1 criteria above, and provide minimal, concrete patch suggestions (file path + what to change).
+

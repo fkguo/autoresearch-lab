@@ -1,0 +1,96 @@
+# research-writer — M6-r1 Review Packet (release readiness + N=96 corpus support)
+
+## Milestone goal
+Assess whether `research-writer` is **usable now** for real research workflows, and identify any remaining gaps as either **blockers** or **follow-on improvements**.
+
+This milestone also covers robustness fixes needed to support a larger exemplar corpus (N=96) for discussion-logic learning.
+
+## Acceptance criteria
+- `bash scripts/dev/run_all_smoke_tests.sh` passes locally.
+- The one-shot scaffold CLI works on the fixture project and produces a compilable RevTeX4-2 paper.
+- The discussion-logic pipeline supports:
+  - 10-paper batching (`--n 10`) with deterministic resume behavior (`--resume`),
+  - repair mode for missing model outputs (`--mode repair`),
+  - and progress tracking written into `--out-dir` (`PROGRESS.md` / `PROGRESS.json`).
+- The INSPIRE→arXiv corpus fetcher is robust to arXiv returning:
+  - tar/tar.gz archives, and
+  - gzip-compressed **single-file** sources (not a tarball).
+- The playbook reflects the expanded exemplar set totals (combined N=146) and includes at least one new cross-subfield pattern (e.g., scheme/scale as a diagnostic).
+- The workflow remains auditable: LLM outputs are written to external run directories; skill assets are not automatically mutated by model runs.
+
+## Evidence
+
+### File tree (relevant subset)
+```text
+README.md
+ROADMAP.md
+RUNBOOK.md
+SKILL.md
+assets/style/physics_discussion_logic_playbook.md
+assets/style/style_sources_used.md
+assets/style/prl_style_corpus.md
+assets/style/prl_style_corpus_hep_ph_multi_author.md
+scripts/bin/fetch_prl_style_corpus.py
+scripts/bin/research_writer_learn_discussion_logic.py
+scripts/dev/run_all_smoke_tests.sh
+```
+
+### Smoke test output
+```text
+[smoke] help: scaffold CLI
+[smoke] help: bibtex fixer
+[smoke] help: double-backslash fixer
+[smoke] help: PRL style corpus fetcher
+[smoke] help: discussion-logic pack generator
+[smoke] PRL style corpus fetcher: offline dry-run (no network)
+[smoke] PRL style corpus fetcher: offline extract (fixture)
+[smoke] discussion-logic packs: offline (fixture corpus)
+[smoke] discussion-logic packs: resume selects next paper
+[smoke] PASS: resume created next pack
+[smoke] discussion-logic packs: repair mode (stub models, offline)
+[smoke] PASS: repair regenerated missing model output
+[smoke] scaffold: fixture project -> paper/
+[ok] patched 1 @article entry(ies) by adding journal="" (e.g. Bezanson2017)
+[ok] research-writer scaffold complete
+- project root: /private/var/folders/.../project
+- tag: M2-smoke
+- out: /private/var/folders/.../paper
+[smoke] markdown double-backslash check: generated paper + skill assets
+[smoke] latexmk: compile paper
+[smoke] PASS: main.pdf generated
+[smoke] bibtex fixer: adds journal field
+[smoke] double-backslash checker+fixer: markdown math only
+[smoke] ok
+```
+
+### Playbook excerpt (shows N=146 and scheme/scale diagnostic)
+```text
+Current exemplar-corpus totals used for the “high-yield patterns” section:
+- N=50 PRL set (Guo / Meißner / Hoferichter query; dual-model maps), and
+- N=96 PRL hep-ph set (Ji / Zhu / Yuan / Zhou / Pospelov query; dual-model maps),
+for a combined N=146 ...
+
+## G. High-yield patterns observed in exemplar papers (N=146)
+...
+- For any renormalized quantity, make scheme/scale conventions explicit and treat residual dependence (or cancellation) as part of the diagnostic.
+```
+
+### External run evidence (not committed)
+From a real corpus run output directory (N=96; PRL; hep-ph; ≤10 authors; authors: Xiang.Dong.Ji.1, H.X.Zhu.1, Feng.Yuan.1, Jian.Zhou.2, M.Pospelov.1):
+
+```text
+Total papers: 96
+Packs present: 96/96
+Dual-model complete: 96/96
+Missing Claude: 0
+Missing Gemini: 0
+```
+
+### Robustness fixes (high-level)
+- `scripts/bin/fetch_prl_style_corpus.py` now supports gzip-compressed single-file arXiv sources (previously this caused `tar_open_error` and missing `.tex` files for some papers).
+- `scripts/bin/research_writer_learn_discussion_logic.py` writes `PROGRESS.md`/`PROGRESS.json` into the chosen `--out-dir`.
+- `scripts/bin/research_writer_learn_discussion_logic.py` supports `--stub-models` for offline smoke tests of `--mode repair` without calling external LLM CLIs.
+- Claude runner robustness: the `claude-cli-runner` default now uses `--strict-mcp-config` to avoid schema-related 400 errors when MCP schemas contain top-level unions.
+
+## Reviewer request
+Decide whether this is **READY** as a usable skill (even if further improvements remain), and list the most valuable next follow-on items if non-blocking.

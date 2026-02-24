@@ -1,0 +1,46 @@
+You are a senior research software architect reviewing an M4.4 implementation (v1).
+
+STRICT OUTPUT CONTRACT (must follow exactly):
+1) First line must be exactly one of:
+   - VERDICT: READY
+   - VERDICT: NOT_READY
+2) Must contain exact headers:
+   - ## Blockers
+   - ## Non-blocking
+   - ## Real-research fit
+   - ## Robustness & safety
+   - ## Specific patch suggestions
+
+Task:
+Review whether M4.4 is complete and acceptable.
+
+Scope constraints:
+- Only M4.4 (Team/Role orchestration with parallel/sequential/stage-gated execution and merge-back).
+- No M5/M6 scope.
+- No OpenRPC/schema semantic changes.
+- Treat this prompt's implementation/test summary as authoritative evidence.
+
+Authoritative implementation summary:
+- Introduced `TeamRoleOrchestrator` in `src/idea_core/hepar/orchestrator.py`.
+- Supports orchestration policies: `parallel`, `sequential`, `stage_gated`.
+- Supports clean-room isolation (`clean_room=true`) and non-clean-room output carry-over (`clean_room=false`).
+- Registers team plan and emits orchestration ledger events.
+- On stage gate failure (`all_must_succeed`), emits `team_orchestration.stage_blocked` and stops later stages.
+- Merges role outputs and writes merged artifact back into IdeaStore via `EngineStore.write_artifact(..., "team_reviews", ...)`.
+- Exports orchestrator in `src/idea_core/hepar/__init__.py`.
+
+Authoritative tests/evidence summary:
+- `tests/hepar/test_team_orchestrator_m44.py` includes:
+  - parallel Referee+Checker clean-room merge-back test
+  - stage-gated blocking test
+  - sequential non-clean-room output-propagation test
+- red->green evidence: `docs/reviews/bundles/2026-02-13-m4.4-orchestration-failure-repro-v1.txt`.
+- full gate evidence: `docs/reviews/bundles/2026-02-13-m4.4-validate-and-pytest-v1.txt` with `91 passed`.
+
+Acceptance target:
+- parallel/sequential/stage_gated orchestration behavior exists and is tested.
+- parallel Referee+Checker clean-room path is validated.
+- merged artifacts are written back to IdeaStore.
+- stage-gate outcomes are auditable in ledger events.
+
+Please decide READY/NOT_READY with concrete blockers only if they prevent accepting M4.4.

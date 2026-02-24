@@ -1,0 +1,14 @@
+{
+  "timestamp_utc": "2026-02-16T10:07:50Z",
+  "reviewer": "gemini",
+  "model": "gemini-3-pro-preview",
+  "output_format": "text",
+  "prompt_path": "docs/reviews/bundles/2026-02-16-w6-01-elastic-impos-review-gemini-prompt-round-002.txt",
+  "packet_path": "docs/reviews/bundles/2026-02-16-w6-01-elastic-impos-review-packet-round-001.md",
+  "output_path": "docs/plans/agent-team-output/2026-02-16-w6-01-elastic-impos-v1/round-002/gemini_output.md",
+  "fallback": {
+    "enabled": false,
+    "mode": "ask"
+  },
+  "tooling_notes": "gemini --approval-mode plan is unavailable unless experimental.plan is enabled; ran without plan mode."
+}

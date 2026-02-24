@@ -1,0 +1,5 @@
+{"cmd": ["bash", "/Users/fkg/.codex/skills/claude-cli-runner/scripts/run_claude.sh", "--model", "opus", "--system-prompt-file", "team/reviewer_system_prompt_claude_opus.md", "--prompt-file", "team/reviews/M9D-r1/packet.md", "--out", "/Users/fkg/.codex/skills/research-writer/team/reviews/M9D-r1/reviewer_a_claude_opus.md"], "event": "claude_start", "ts": "2026-01-29T14:50:25.938235+00:00"}
+{"event": "claude_end", "exit_code": 0, "ts": "2026-01-29T14:51:04.950113+00:00"}
+{"cmd": ["bash", "/Users/fkg/.codex/skills/gemini-cli-runner/scripts/run_gemini.sh", "--model", "gemini-3-pro-preview", "--prompt-file", "team/reviews/M9D-r1/gemini_prompt.txt", "--out", "/Users/fkg/.codex/skills/research-writer/team/reviews/M9D-r1/reviewer_b_gemini.md"], "event": "gemini_start", "ts": "2026-01-29T14:51:24.269385+00:00"}
+{"event": "gemini_end", "exit_code": 0, "ts": "2026-01-29T14:51:50.826414+00:00"}
+{"event": "gemini_sanitized", "raw": "team/reviews/M9D-r1/reviewer_b_gemini.raw.md", "sanitized": "team/reviews/M9D-r1/reviewer_b_gemini.md", "ts": "2026-01-29T14:54:09.772529+00:00"}

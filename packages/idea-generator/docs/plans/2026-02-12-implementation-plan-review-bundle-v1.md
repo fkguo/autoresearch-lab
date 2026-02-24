@@ -1,0 +1,291 @@
+# Review Bundle: Implementation Plan + Progress Tracking Rules (v1)
+
+Please review the bundle below. Focus on:
+- Is progress tracking encoded as a *rule* (so future multi-agent/community work stays consistent)?
+- Are milestones decomposed into small, testable, auditable steps with clear acceptance?
+- Does the plan preserve research quality (evidence-first gates) and extensibility (HEP-first → broader theory)?
+- Is the plan compatible with a future multi-agent physicist community (Team/Role) without coupling core↔orchestrator?
+
+Files included verbatim:
+- `AGENTS.md`
+- `docs/plans/2026-02-12-implementation-plan-tracker.md`
+
+--- BEGIN: AGENTS.md ---
+# idea-generator (design repo) — Agent Notes
+
+This repository is a **design / architecture workspace** for an `idea-generator` agent (HEP-first, extensible to broader theoretical physics). It is **not** a research-run project directory.
+
+## Repo hygiene (important)
+
+- **Do not leave `research-team` scaffolds** (projects/runs/artifacts trees) in this repo. If you must use `research-team`, create it in a temporary location (e.g. `/tmp/...`) and only copy back **summaries/design docs**.
+- Prefer **evidence-first**: capture claims as actionable design rules + link to primary sources (arXiv/ACL/etc.) in `docs/`.
+- Keep outputs **architecture-first** (interfaces/contracts/plugins) rather than model-specific prompt hacks.
+
+## Where to write things
+
+- Design iterations: `docs/plans/` (date-stamped Markdown)
+- Multi-agent consultation outputs: `docs/plans/agent-team-output/`
+
+## Progress tracking (rules)
+
+- **Single Source of Truth (SSOT)**: track implementation progress only in `docs/plans/2026-02-12-implementation-plan-tracker.md`.
+- **No new trackers**: do not create parallel TODO lists in other docs; instead, link to the SSOT tracker and update it.
+- **Update discipline**: any non-trivial design change that affects scope, interfaces, or gates must include:
+  - a status update in the tracker (checkboxes / task table), and
+  - an append-only entry in the tracker’s **Update Log** (date-stamped).
+- **Research-quality bar**: mark tasks DONE only with auditable evidence (schemas/tests/sample artifacts/review outputs), not “it seems to work”.
+
+## Skills index (available in this Codex session)
+
+| Skill | What it’s for | Path |
+|---|---|---|
+| `review-swarm` | Dual-agent loop (Claude + Gemini), strict output contract + convergence gate | `/Users/fkg/.codex/skills/review-swarm/SKILL.md` |
+| `claude-cli-runner` | Run local `claude` CLI one-shot; write output to file | `/Users/fkg/.codex/skills/claude-cli-runner/SKILL.md` |
+| `gemini-cli-runner` | Run local `gemini` CLI one-shot; write output to file | `/Users/fkg/.codex/skills/gemini-cli-runner/SKILL.md` |
+| `research-team` | Milestone-based parallel research workflow (Claude+Gemini), reproducible artifacts | `/Users/fkg/.codex/skills/research-team/SKILL.md` |
+| `research-writer` | RevTeX4-2 paper scaffold/validation; provenance wiring + BibTeX hygiene | `/Users/fkg/.codex/skills/research-writer/SKILL.md` |
+| `hepar` | Control plane for evidence-first research runs (init/status/run/export/…) | `/Users/fkg/.codex/skills/hepar/SKILL.md` |
+| `hep-calc` | HEP calculation audit runner (Mathematica/Julia; diagrams/amplitudes) | `/Users/fkg/.codex/skills/hep-calc/SKILL.md` |
+| `pdg-lookup` | PDG local DB lookups (properties/decays/measurements/refs) | `/Users/fkg/.codex/skills/pdg-lookup/SKILL.md` |
+| `referee-review` | Offline referee-style review report (Markdown + strict JSON) | `/Users/fkg/.codex/skills/referee-review/SKILL.md` |
+| `zotero-import` | Two-step Zotero import pipeline (`zotero_add` → `zotero_confirm`) | `/Users/fkg/.codex/skills/zotero-import/SKILL.md` |
+| `sci-hub` | Download papers not on arXiv (DOI/URL/PMID/query); Zotero integration | `/Users/fkg/.codex/skills/sci-hub/SKILL.md` |
+| `md-toc-latex-unescape` | Fix LaTeX escaping inside Markdown TOC blocks | `/Users/fkg/.codex/skills/md-toc-latex-unescape/SKILL.md` |
+| `deep-learning-lab` | Reproducible DL research scaffold (configs, provenance, artifacts/runs) | `/Users/fkg/.codex/skills/deep-learning-lab/SKILL.md` |
+| `paper-reviser` | Content-first LaTeX paper revision (diff + tracked changes) | `/Users/fkg/.codex/skills/paper-reviser/SKILL.md` |
+| `skill-installer` | Install additional Codex skills from curated list or GitHub repo | `/Users/fkg/.codex/skills/.system/skill-installer/SKILL.md` |
+| `skill-creator` | Create/update a Codex skill (specialized workflows/tool integrations) | `/Users/fkg/.codex/skills/.system/skill-creator/SKILL.md` |
+
+## Practical notes (for this repo)
+
+- For arXiv PDFs/LaTeX sources, prefer the **`hep-research` MCP** tools (e.g. `inspire_paper_source`) so downloads land in the HEP data area, not inside this repo.
+- When adding “discovery theory” (philosophy/history) content, translate it into **executable operators** (seed generators, mutation operators, validators, scoring/ranking rules) and place into the architecture docs.
+
+--- END: AGENTS.md ---
+
+--- BEGIN: docs/plans/2026-02-12-implementation-plan-tracker.md ---
+# Idea-Generator 实施路线图 + 进度追踪（SSOT）
+
+> 日期：2026-02-12  
+> 目标：把 `idea-generator` 从“设计就绪”推进到 **可实现、可测试、可集成** 的工程状态，并提供可跟踪的进度表。  
+> 原则：研究质量优先（evidence-first / audit-first），HEP-first → 可扩展到理论物理其他领域；核心与控制平面解耦。  
+> SSOT：本文件是“实施进度追踪真源”；每次推进请更新 **状态字段** 与 **Update Log**（不要另起多个 tracker）。
+
+---
+
+## 0. 范围与边界（写死，避免跑偏）
+
+### 0.1 我们要交付什么（v0.2→v0.3）
+
+- `idea-core`：独立引擎（搜索/评估/排名/晋升门禁/产物契约），通过 JSON-RPC/OpenRPC 与 hepar 交互。
+- `HEP DomainPack (MVP)`：最小可用的 HEP 领域 pack（operators + formalism registry + validators + retrieval recipes）。
+- `hepar` 集成点（设计→实现的清单）：A0 门禁、ledger 事件、artifact 管理、Team/Role 多会话编排（通过 runtime adapter）。
+
+### 0.2 明确不做（避免污染与过度承诺）
+
+- 不在本 repo 写 hepar 代码（这里只放设计与改造清单）。  
+- 不做“一键自动发表论文”。目标是 **C2-ready 的方法规格**。  
+- 不把 `research-team` 的脚手架树留在本 repo（如需使用请放 `/tmp/...`，只回拷总结文档）。
+
+---
+
+## 1. 当前状态快照（手动更新）
+
+- **Last updated**：2026-02-12
+- **Design spec**：READY（Opus + Gemini v4 收敛）
+- **Contracts**：OpenRPC + schemas 已具备机器可校验性（见 `schemas/`）
+- **Top next**：开始“实现最小闭环”的工程拆解（M1→M2）
+
+### 1.1 状态约定（写死）
+
+- 本文里所有任务状态只用以下枚举（两处同步：里程碑 checkbox + 任务板 Status）：
+  - `TODO`：未开始
+  - `IN_PROGRESS`：进行中（必须写 next action）
+  - `BLOCKED`：阻塞（必须写阻塞原因 + 解除条件）
+  - `DONE`：完成（必须补“验收证据”链接/路径）
+- **Definition of Done（DoD）**：任何 `DONE` 必须满足：
+  1) 产出可审计 artifact / schema / 测试 / 回放脚本之一（至少一项）  
+  2) 满足本任务验收条款（Acceptance）  
+  3) 在 **Update Log** 追加一条记录（日期 + 变更摘要）
+
+---
+
+## 2. 里程碑（Milestones）与验收（可测、可审计）
+
+> 说明：每个里程碑必须给出“验收证据”（产物、测试、日志、样例 run），否则不算 DONE。
+
+### M0 — 设计冻结与契约冻结（Design Freeze）
+
+- [x] **M0.1** 架构规格 SSOT（含 Team/Role、Multi-Island、Explain-Then-Formalize、Grounding Gate）
+- [x] **M0.2** 核心 schema + OpenRPC（可校验、可演进）
+- [x] **M0.3** 双评审收敛到 READY（Opus + Gemini）
+
+**验收证据**
+- `docs/plans/2026-02-12-idea-generator-architecture-spec.md`
+- `schemas/idea_core_rpc_v1.openrpc.json` + `schemas/*.schema.json`
+- `docs/plans/agent-team-output/2026-02-12-architecture-spec-review-v4/*`
+
+---
+
+### M1 — 契约工具链与 CI/验证（Contract Tooling）
+
+> 目标：让“契约”不仅存在于文件里，而是能在实现侧被持续验证（不漂移）。
+
+- [ ] **M1.0** 明确“契约 SSOT”与目标工程落点（idea-core repo / hepar repo / CI）  
+  - Acceptance：写明每个校验脚本/CI 位于哪个仓库；本 repo 只保留文档与 schema。
+- [ ] **M1.1** Schema 校验器选型与锁定（推荐：AJV 2020-12 或 python-jsonschema 2020-12）  
+  - Acceptance：可在 CI（或本地命令）验证 `schemas/*.schema.json` 的基本合法性（draft 2020-12）。
+- [ ] **M1.2** OpenRPC 结构校验（至少：JSON parse + 必要字段 + methods 形状）  
+  - Acceptance：OpenRPC 文件能被自动化读取并进行最小结构校验；错误时 fail-fast。
+- [ ] **M1.3** `$ref` 解析验证（OpenRPC → sibling schemas）  
+  - Acceptance：自动化工具能解析 OpenRPC 中所有 `$ref`（包含 schema 内部的相对 `$ref`）。
+- [ ] **M1.4** Sample payloads（最小有效/最小无效）  
+  - Acceptance：为每个关键 schema（IdeaNode/IdeaCard/SearchStepResult/PromotionResult…）提供至少 1 个 valid + 1 个 invalid 示例，用于回归测试。
+- [ ] **M1.5** 可选 bundled 产物（仅用于 tooling 兼容，不作为 SSOT）  
+  - Acceptance：生成 `idea_core_rpc_v1.bundled.json`（全解引用）或等价产物；明确写入“不可手改”的规则。
+- [ ] **M1.6** Drift guard（硬护栏）  
+  - Acceptance：CI 检测到 OpenRPC 复制粘贴 schema 或 schema 漂移时直接失败（或最小脚本可检测并报错）。
+
+**产物**
+- idea-core/hepar 侧的 `validate / bundle / drift-check`（实现位置在 M1.0 指定）
+- 本 repo 只维护 schema 与文档（不写实现）
+
+---
+
+### M2 — idea-core 最小闭环（Engine Skeleton, End-to-End）
+
+> 目标：不用任何“真实 HEP 复杂知识”，也能跑通一个可审计的 ideation 搜索闭环（seed → node → eval → rank → promote）。
+
+- [ ] **M2.0** idea-core 工程仓库落地（external）  
+  - Acceptance：创建独立 repo（或独立目录）用于 idea-core 实现；本 repo 仅追踪设计与契约。
+- [ ] **M2.1** `IdeaStore`（append-only JSONL）+ campaign/node 索引 + cursor 分页  
+  - Acceptance：能写入/读取 `IdeaNode`；`node.list` 可分页遍历全部节点（cursor/total_count）。
+- [ ] **M2.2** Schema-aware I/O：所有入参/出参都做 schema validate（fail-fast）  
+  - Acceptance：任意 RPC 方法的 request/response 都能通过相应 schema 校验；失败返回 `schema_validation_failed`。
+- [ ] **M2.3** JSON-RPC 2.0 server（stdio）+ OpenRPC 方法实现骨架  
+  - Coverage：`campaign.init/status`, `search.step`, `node.get/list/promote`, `eval.run`, `rank.compute`
+  - Acceptance：每个方法都有可执行的最小实现（哪怕 stub），并返回 schema-valid 响应。
+- [ ] **M2.4** Budget Circuit Breaker（steps/tokens/$/wallclock）+ step counters  
+  - Acceptance：所有会消耗预算的路径都会更新 `BudgetSnapshot.steps_used`；耗尽时返回 `budget_exhausted`。
+- [ ] **M2.5** Multi-Island 最小状态机（可观测 + 可复现）  
+  - Acceptance：`campaign.status` 与 `search.step` 返回 `island_states[]`；能观察到 `STAGNANT/REPOPULATED` 迁移。
+- [ ] **M2.6** Operator 接口（MVP）+ 至少 2 个 dummy operator（用于闭环测试）  
+  - Acceptance：`search.step` 能通过 operator 产生新节点（RationaleDraft stage-1），写入 IdeaStore。
+- [ ] **M2.7** Explain-Then-Formalize 强制（RationaleDraft → IdeaCard）  
+  - Acceptance：系统可把 stage-1 产物形式化为 `IdeaCard`；无 `IdeaCard` 的 `node.promote` 必须失败（schema gate）。
+- [ ] **M2.8** GroundingAudit Gate（active resolution 的接口桩 + 结果写入 IdeaNode）  
+  - Acceptance：audit 可被 `eval.run` 触发（含 grounding 维度）或 Checker role 触发；失败则 `node.promote` 返回 `grounding_audit_failed`。
+- [ ] **M2.9** Eval pipeline（MVP）：写入 `eval_info`（fix_suggestions/failure_modes/novelty_delta_table）  
+  - Acceptance：`eval.run` 能对 node_ids 生成 scorecards artifact，并把诊断写回 IdeaNode。
+- [ ] **M2.10** Ranking（Pareto/Elo）+ `insufficient_eval_data` 错误路径  
+  - Acceptance：无 eval 数据时 `rank.compute` 返回 `insufficient_eval_data`；有数据时生成 ranking artifact。
+- [ ] **M2.11** Promote（C2 handoff artifact）最小编译器桩  
+  - Acceptance：`node.promote` 产出 `handoff_artifact_ref`，并在 formalism 缺失时触发 `formalism_not_in_registry`。
+- [ ] **M2.12** 可回放 demo campaign（黄金样例）  
+  - Acceptance：给出一套固定 seeds 的 demo run（seed_pack → nodes → eval → rank → promote）与产物目录；可重复执行生成同构 artifacts（hash 允许浮动但结构必须稳定）。
+
+**验收证据**
+- demo campaign artifacts（seed_pack、nodes JSONL、scorecards、ranking、handoff）
+- 回放脚本 + schema validate 报告
+
+---
+
+### M3 — HEP DomainPack MVP（HEP-first 可用）
+
+> 目标：在 HEP 范围内，至少具备“像研究者一样”的最小能力：证据检索、可行性/一致性启发式、基础 novelty 约束。
+
+- [ ] **M3.0** DomainPack 包装与按需加载（index + enable/disable）  
+  - Acceptance：DomainPack 以“索引+按需加载”的方式被发现与启用（对标 OpenClaw skills），不把全文 prompt/知识常驻到 core。
+- [ ] **M3.1** formalism registry（HEP 最小集合）+ `formalism_not_in_registry` 晋升门禁  
+  - 验收：`candidate_formalisms[]` 不在 registry 时 `node.promote` 失败。
+- [ ] **M3.2** Operators（至少 3 个 family）  
+  - 建议起步：`AnomalyAbduction`、`SymmetryOperator`、`LimitExplorer`
+  - 验收：不同 island 能产出不同风格节点；repopulate 后仍保持多样性。
+- [ ] **M3.3** retrieval recipes（INSPIRE/PDG 查询模板）作为 Librarian role 的可复用组件  
+  - 验收：能产出 evidence packet（URI + 摘要 + 相关性）并进入 claims.evidence_uris。
+- [ ] **M3.4** novelty 的“创新增量”纪律落地（novelty_delta_table）  
+  - 验收：当评估 novelty 时，输出包含 delta table；显式 non-novelty flags（防“细枝末节当创新”）。
+- [ ] **M3.5** HEP constraints/validators（最小集合）  
+  - Acceptance：至少包含 2 类一致性/可行性启发式（例如量纲/极限/已知约束）并能输出结构化 failure_modes。
+- [ ] **M3.6** `minimal_compute_plan` 的资源估算校准（HEP 现实约束）  
+  - Acceptance：对 compute plan 的 `estimated_compute_hours_log10` / `required_infrastructure` 给出 HEP 场景的默认 rubric（避免“看似可算”但实际不可算）。
+
+---
+
+### M4 — hepar 集成（控制平面）与 Runtime Adapter（多会话 Team/Role）
+
+> 目标：把“物理学家社区/组团探索”变成可运行的拓扑（并行/串行），同时保持 hepar gate/ledger 的一致性。
+
+- [ ] **M4.1（外部）** hepar 新增 WorkOrder/WorkResult/TeamPlan artifacts + ledger 事件  
+  - 参考：`/Users/fkg/Nutstore Files/Coding/Agents/2026-02-12-hepar-runtime-adapter-opencode-openclaw.md`
+- [ ] **M4.2（外部）** hepar runtime adapter：对接 OpenCode server（OpenAPI）执行 role sessions  
+  - 权限/预算/审计对齐是硬门槛（必须 gate）。
+- [ ] **M4.3（外部）** hepar skill：把 hepar 命令映射为 idea-core RPC；只做翻译与 artifact 落盘  
+  - 验收：无业务逻辑回流；所有结果可回放。
+- [ ] **M4.4（外部）** Team/Role 编排落地（并行/串行/阶段门禁）  
+  - Acceptance：至少跑通一个 “并行 Referee + Checker” 的 clean-room 评审编排，并把结果以 artifacts 合并回 IdeaStore。
+
+---
+
+### M5 — 研究质量门禁与“真实任务”试跑（Quality Gates）
+
+> 目标：用一个真实但可控的 HEP 题目跑通，从 seed 到 C2-ready handoff，并产生可审计 evidence。
+
+- [ ] **M5.1** A0.1 campaign charter + A0.2 promotion gate 接入（人类审批点明确）
+- [ ] **M5.2** clean-room 多评审 + 结构化辩论触发机制（分歧阈值）
+- [ ] **M5.3** 端到端试跑：产出至少 1 个可进入 C2 的 handoff（并记录失败样本）
+- [ ] **M5.4** 失败库（negative results）与复用（避免重复踩坑）  
+  - Acceptance：把被拒绝/失败的 idea 以结构化方式入库（含 failure_modes + evidence），并在后续搜索中可检索/可避坑。
+
+---
+
+### M6 — 多 Agents 社区（Research Teams / Physicist Community）演进（v0.3+）
+
+> 目标：为后续“研究团队 agents / 多 agents 社区自动研究”预留可扩展接口与可审计运行形态，而不污染 core。
+
+- [ ] **M6.1（设计→实现接口）** Team/Role 的最小配置面（RoleSpec/TeamPolicy）  
+  - Acceptance：在 hepar（控制平面）或 runtime adapter 中能声明：角色、权限、模型、并行/串行策略；并在 ledger 中可审计。
+- [ ] **M6.2（研究质量）** clean-room 协议与 debate artifact（point/counterpoint + evidence_uris）固化  
+  - Acceptance：分歧触发辩论时产出结构化 debate artifact，并写回 eval_info 或独立 artifact。
+- [ ] **M6.3（扩展性）** DomainPack 可插拔与按需加载机制验证（第二领域 pack 试点）  
+  - Acceptance：新增第二个领域 pack（哪怕是 toy）无需改动 idea-core，只通过 registry/operators/validators 接入。
+
+---
+
+## 3. 工作流拆分（Workstreams）与任务板（建议每周更新）
+
+状态枚举：`TODO | IN_PROGRESS | BLOCKED | DONE`
+
+| ID | Workstream | Task | Deliverable | Status | Depends | Notes |
+|---|---|---|---|---|---|---|
+| W1-01 | Contracts | Schema/OpenRPC 校验命令 | validate script/CI hook | TODO | M1 |  |
+| W1-02 | Contracts | OpenRPC 打包/解引用产物 | bundled OpenRPC | TODO | W1-01 |  |
+| W2-01 | Core | IdeaStore + 索引/分页 | store + tests | TODO | M2.1 |  |
+| W2-02 | Core | RPC server（stdio） | rpc server + tests | TODO | M2.3 |  |
+| W2-03 | Core | Budget circuit breaker | budget module + tests | TODO | M2.4 |  |
+| W2-04 | Core | Multi-Island loop | island loop + tests | TODO | M2.5 |  |
+| W2-05 | Core | Eval pipeline（MVP） | scorecards + writeback | TODO | M2.9 |  |
+| W2-06 | Core | Ranking（Pareto/Elo） | ranking artifact | TODO | M2.10 |  |
+| W2-07 | Core | Promote（handoff） | handoff artifact | TODO | M2.11 |  |
+| W3-01 | HEP Pack | formalism registry MVP | registry artifact | TODO | M3 |  |
+| W3-02 | HEP Pack | Operators x3 | operator implementations | TODO | W3-01 |  |
+| W3-03 | HEP Pack | retrieval recipes | query templates | TODO | W3-02 |  |
+| W3-04 | HEP Pack | constraints/validators | validator outputs | TODO | W3-03 |  |
+| W3-05 | HEP Pack | compute plan rubric | resource rubric | TODO | W3-04 |  |
+| W4-01 | hepar (external) | WorkOrder/Result/TeamPlan | artifacts + ledger | TODO | M4 | 在 hepar repo 落地 |
+| W4-02 | runtime (external) | OpenCode adapter | api client + policy | TODO | W4-01 | 在 hepar repo 落地 |
+| W5-01 | Quality | A0 gates + real pilot | run report + artifacts | TODO | M5 |  |
+| W5-02 | Quality | failure library | negative-results store | TODO | W5-01 |  |
+
+---
+
+## 4. Update Log（每次推进必填）
+
+> 模板：按日期追加（append-only）
+
+### 2026-02-12
+
+- 设计冻结：READY；新增 Team/Role、OpenCode/OpenClaw 兼容性文档；契约收敛（OpenRPC + schemas）。
+
+--- END: docs/plans/2026-02-12-implementation-plan-tracker.md ---
+

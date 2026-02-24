@@ -1,0 +1,5 @@
+[smoke] help: scaffold CLI
+[smoke] help: bibtex fixer
+[smoke] help: double-backslash fixer
+[smoke] NOTE: end-to-end fixture + latexmk build is implemented in milestone M2
+[smoke] ok

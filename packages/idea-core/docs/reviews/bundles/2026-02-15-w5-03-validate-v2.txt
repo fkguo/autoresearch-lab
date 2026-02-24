@@ -1,0 +1,16 @@
+# W5-03 Validate Evidence (idea-core)
+Date: 2026-02-15T12:37:36Z
+
+## Command: python3 scripts/check_no_test_instance_pollution.py
+OK: no test-instance pollution paths detected.
+
+## Command: python3 scripts/check_m5_legacy_migration_absent.py
+OK: legacy M5 migrated paths remain absent.
+
+## Command: PYTHONPATH=src make validate
+python3 scripts/check_no_test_instance_pollution.py
+OK: no test-instance pollution paths detected.
+python3 scripts/check_m5_legacy_migration_absent.py
+OK: legacy M5 migrated paths remain absent.
+python3 -m idea_core.contracts.validate
+[validate] OK: JSON parse, schema legality, OpenRPC minimal shape, $ref closure, drift-guard, bundle-consistency

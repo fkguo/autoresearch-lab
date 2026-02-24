@@ -1,0 +1,51 @@
+Research-team skill change review packet (Round 2)
+
+Tag: skilldev-latex-macros-reim-r2
+Date: 2026-01-21
+Scope: extend default LaTeX macro hygiene to include \re/\im
+
+Context
+- Round 1 feedback raised false-positive concerns: \re/\im are prefixes of commands like \ref / \implies / \renewcommand.
+- This round provides the exact regex boundary logic and an explicit smoke regression covering those prefixes.
+
+Key implementation detail (critical)
+- Matching uses a macro-boundary regex:
+  - pattern: \\(re|im|...)(?![A-Za-z])
+  - This rejects \ref, \implies, \renewcommand because the next character is a letter.
+
+Changes since r1 packet
+- Added explicit smoke assertions that \ref{...}, \implies, \renewcommand do NOT trip the gate.
+
+Request
+- Member A (Opus): verify boundary logic eliminates the false-positive risk; confirm defaults are safe.
+- Member B (Gemini): independent verification.
+- Member C (Sonnet): non-blocking robustness audit.
+
+Output format
+- Verdict: APPROVE / REQUEST_CHANGES
+- Blocking issues (if any)
+- Non-blocking suggestions
+
+---
+
+Regex boundary (gate): scripts/gates/check_markdown_latex_macro_hygiene.py
+
+107:def _compile_macro_re(macros: list[str]) -> re.Pattern[str]:
+112:    return re.compile(r"\\(" + alts + r")(?![A-Za-z])")
+
+---
+
+Regex boundary (fixer): scripts/bin/fix_markdown_latex_macros.py
+
+109:def _compile_macro_re(macros: list[str]) -> re.Pattern[str]:
+113:    return re.compile(r"\\(" + alts + r")(?![A-Za-z])")
+
+---
+
+Smoke regression for prefix collisions: scripts/dev/smoke/smoke_test_markdown_latex_macro_hygiene_gate.sh
+
+70-cat >> "${tmp_root}/PREWORK.md" <<'EOF'
+71-
+72:## Smoke: prefix collisions must NOT trigger
+73-
+74-These LaTeX commands/prefixes must not be mis-detected as `\re` or `\im`:

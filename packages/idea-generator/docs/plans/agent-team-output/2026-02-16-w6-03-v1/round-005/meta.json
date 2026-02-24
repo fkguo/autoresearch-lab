@@ -1,0 +1,9 @@
+{
+  "timestamp_utc": "2026-02-16T05:06:12Z",
+  "reviewer": "claude",
+  "model": "opus",
+  "tools": "disabled",
+  "input_prompt_bundle": "docs/reviews/bundles/2026-02-16-w6-03-review-claude-prompt-round-005.txt",
+  "output_path": "docs/plans/agent-team-output/2026-02-16-w6-03-v1/round-005/claude_output.md",
+  "fallback": {"enabled": false}
+}

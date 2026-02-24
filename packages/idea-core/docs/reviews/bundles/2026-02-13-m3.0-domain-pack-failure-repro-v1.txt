@@ -1,0 +1,21 @@
+
+==================================== ERRORS ====================================
+____________ ERROR collecting tests/engine/test_domain_pack_m30.py _____________
+ImportError while importing test module '/Users/fkg/Nutstore Files/Coding/Agents/idea-core/tests/engine/test_domain_pack_m30.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/miniconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/engine/test_domain_pack_m30.py:6: in <module>
+    from idea_core.engine.domain_pack import DomainPackAssets, DomainPackDescriptor, DomainPackIndex
+E   ModuleNotFoundError: No module named 'idea_core.engine.domain_pack'
+=========================== short test summary info ============================
+ERROR tests/engine/test_domain_pack_m30.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+
+---
+
+# Fix verification (after implementing src/idea_core/engine/domain_pack.py + service integration)
+$ pytest tests/engine/test_domain_pack_m30.py -q
+...                                                                      [100%]
+3 passed in 0.09s

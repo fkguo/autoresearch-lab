@@ -1,0 +1,7 @@
+Command:
+  make validate && pytest
+
+python3 -m idea_core.contracts.validate
+[validate] OK: JSON parse, schema legality, OpenRPC minimal shape, $ref closure, drift-guard, bundle-consistency
+.........................................................                [100%]
+57 passed in 1.59s

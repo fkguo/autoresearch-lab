@@ -1,0 +1,36 @@
+You are a senior research software architect reviewing an M3.6 implementation (v1).
+
+STRICT OUTPUT CONTRACT (must follow exactly):
+1) First line must be exactly one of:
+   - VERDICT: READY
+   - VERDICT: NOT_READY
+2) Must contain exact headers:
+   - ## Blockers
+   - ## Non-blocking
+   - ## Real-research fit
+   - ## Robustness & safety
+   - ## Specific patch suggestions
+
+Task:
+Review whether M3.6 is complete and acceptable.
+
+Scope constraints:
+- Only M3.6 (`minimal_compute_plan` resource estimation calibration).
+- No M4+/other milestones.
+- No OpenRPC/schema semantic changes.
+
+Implemented artifacts:
+- src/idea_core/engine/service.py
+- tests/engine/test_compute_plan_rubric_m36.py
+- Review bundle: docs/reviews/bundles/2026-02-13-m3.6-implementation-review-v1.md
+
+Acceptance target:
+- Provide default HEP rubric for `minimal_compute_plan.estimated_compute_hours_log10` and `required_infrastructure`.
+- Prevent pseudo-computable plans where heavy methods are materially underestimated.
+- Keep `eval.run -> node.promote` regression path auditable and reproducible.
+
+Verification evidence:
+- red->green failure/fix log: docs/reviews/bundles/2026-02-13-m3.6-compute-rubric-failure-repro-v1.txt
+- gate: docs/reviews/bundles/2026-02-13-m3.6-validate-and-pytest-v1.txt
+
+Please decide READY/NOT_READY with concrete blockers only if they prevent accepting M3.6.

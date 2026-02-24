@@ -1,0 +1,40 @@
+You are a senior research software architect reviewing an M3.2 implementation (v2, staged patch-complete).
+
+STRICT OUTPUT CONTRACT (must follow exactly):
+1) First line must be exactly one of:
+   - VERDICT: READY
+   - VERDICT: NOT_READY
+2) Must contain exact headers:
+   - ## Blockers
+   - ## Non-blocking
+   - ## Real-research fit
+   - ## Robustness & safety
+   - ## Specific patch suggestions
+
+Task:
+Review whether M3.2 is complete and acceptable.
+
+Scope constraints:
+- Only M3.2 (Operators >=3 family: AnomalyAbduction / SymmetryOperator / LimitExplorer).
+- No M3.3+/M4+ expansion.
+- No OpenRPC/schema semantic changes.
+
+Implemented artifacts:
+- src/idea_core/engine/operators.py
+- src/idea_core/engine/domain_pack.py
+- src/idea_core/engine/service.py
+- tests/engine/test_search_step_operator_families_m32.py
+- tests/engine/test_operator_protocols_m32.py
+- Review bundle: docs/reviews/bundles/2026-02-13-m3.2-implementation-review-v2.md
+
+Acceptance target:
+- >=3 operator families are available via a HEP DomainPack and are auditable (operator_id/operator_family/backend_id + operator_trace artifacts).
+- Different islands produce different “styles” (families) deterministically for diversity.
+- Repopulation does not collapse diversity (family assignment remains stable across STAGNANT->REPOPULATED transitions).
+- Campaign init supports initializing multiple islands deterministically via charter extensions.
+
+Verification evidence:
+- red->green failure/fix log: docs/reviews/bundles/2026-02-13-m3.2-operators-failure-repro-v1.txt
+- gate: docs/reviews/bundles/2026-02-13-m3.2-validate-and-pytest-v2.txt
+
+Please decide READY/NOT_READY with concrete blockers only if they prevent accepting M3.2.

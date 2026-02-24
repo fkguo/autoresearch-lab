@@ -1,0 +1,168 @@
+FF.                                                                      [100%]
+=================================== FAILURES ===================================
+_______ test_default_hep_domain_pack_has_minimal_formalism_registry_set ________
+
+tmp_path = PosixPath('/private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/pytest-of-fkg/pytest-50/test_default_hep_domain_pack_h0')
+
+    def test_default_hep_domain_pack_has_minimal_formalism_registry_set(tmp_path: Path) -> None:
+        service = _make_service(tmp_path)
+        campaign_id = _campaign_init(service, idempotency_key="m3.1-default-registry")
+    
+        campaign = service.store.load_campaign(campaign_id)
+        assert campaign is not None
+    
+        formalism_ids = [
+            entry["formalism_id"]
+            for entry in campaign.get("formalism_registry", {}).get("entries", [])
+        ]
+>       assert {"hep/toy", "hep/eft", "hep/lattice"}.issubset(set(formalism_ids))
+E       AssertionError: assert False
+E        +  where False = <built-in method issubset of set object at 0x10477e0a0>({'hep/toy'})
+E        +    where <built-in method issubset of set object at 0x10477e0a0> = {'hep/eft', 'hep/lattice', 'hep/toy'}.issubset
+E        +    and   {'hep/toy'} = set(['hep/toy'])
+
+tests/engine/test_formalism_registry_m31.py:82: AssertionError
+_____ test_campaign_init_fails_when_effective_formalism_registry_is_empty ______
+
+tmp_path = PosixPath('/private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/pytest-of-fkg/pytest-50/test_campaign_init_fails_when_0')
+
+    def test_campaign_init_fails_when_effective_formalism_registry_is_empty(tmp_path: Path) -> None:
+        descriptor = DomainPackDescriptor(
+            pack_id="hep.empty-formalisms",
+            domain_prefixes=("hep-",),
+            description="M3.1 empty formalism registry test pack",
+            loader=lambda: DomainPackAssets(
+                pack_id="hep.empty-formalisms",
+                domain_prefixes=("hep-",),
+                formalism_registry={"entries": []},
+                abstract_problem_registry={
+                    "entries": [
+                        {
+                            "abstract_problem_type": "optimization",
+                            "description": "default optimization",
+                            "known_solution_families": ["baseline"],
+                            "prerequisite_checklist": ["objective is defined"],
+                            "reference_uris": ["https://example.org/optimization"],
+                        }
+                    ]
+                },
+                search_operators=(_NoopOperator(),),
+            ),
+        )
+        service = _make_service(tmp_path, domain_pack_index=DomainPackIndex((descriptor,)))
+    
+        try:
+>           _campaign_init(
+                service,
+                idempotency_key="m3.1-empty-registry",
+                extensions={"enable_domain_packs": ["hep.empty-formalisms"]},
+            )
+
+tests/engine/test_formalism_registry_m31.py:111: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/engine/test_formalism_registry_m31.py:54: in _campaign_init
+    result = service.handle(
+src/idea_core/engine/service.py:92: in handle
+    result = handlers[method](params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <idea_core.engine.service.IdeaCoreService object at 0x103d44da0>
+params = {'budget': {'max_cost_usd': 100.0, 'max_steps': 50, 'max_tokens': 100000, 'max_wall_clock_s': 100000}, 'charter': {'ap......}, 'idempotency_key': 'm3.1-empty-registry', 'seed_pack': {'seeds': [{'content': 'seed-m31', 'seed_type': 'text'}]}}
+
+    def campaign_init(self, params: dict[str, Any]) -> dict[str, Any]:
+        idempotency_key = params["idempotency_key"]
+        p_hash = self._hash_without_idempotency("campaign.init", params)
+        with self.store.mutation_lock(None):
+            replay = self._record_or_replay(
+                method="campaign.init",
+                idempotency_key=idempotency_key,
+                payload_hash_value=p_hash,
+                campaign_id=None,
+            )
+            if replay is not None:
+                kind, payload = replay
+                if kind == "error":
+                    raise RpcError(**payload)
+                return payload
+    
+            now = utc_now_iso()
+            campaign_id = str(uuid4())
+            domain_pack, enabled_pack_ids = self._resolve_domain_pack_for_charter(params["charter"])
+            default_formalisms = copy.deepcopy(domain_pack.formalism_registry)
+            default_abstract_problems = copy.deepcopy(domain_pack.abstract_problem_registry)
+    
+            user_abstract = params.get("abstract_problem_registry")
+            if isinstance(user_abstract, dict):
+                entries = user_abstract.get("entries", [])
+                types = [entry["abstract_problem_type"] for entry in entries]
+                if len(types) != len(set(types)):
+                    data = {
+                        "reason": "schema_invalid",
+                        "details": {"message": "duplicate abstract_problem_type in abstract_problem_registry"},
+                    }
+                    self.catalog.validate_error_data(data)
+                    error = RpcError(code=-32002, message="schema_validation_failed", data=data)
+                    self._store_idempotency(
+                        method="campaign.init",
+                        idempotency_key=idempotency_key,
+                        payload_hash_value=p_hash,
+                        campaign_id=None,
+                        response=error.__dict__,
+                        kind="error",
+                    )
+                    raise error
+    
+            formalism_registry = self._merge_registry_entries(
+                defaults=default_formalisms,
+                overrides=params.get("formalism_registry"),
+                key_name="formalism_id",
+            )
+            abstract_problem_registry = self._merge_registry_entries(
+                defaults=default_abstract_problems,
+                overrides=user_abstract,
+                key_name="abstract_problem_type",
+            )
+    
+            campaign = {
+                "campaign_id": campaign_id,
+                "charter": params["charter"],
+                "seed_pack": params["seed_pack"],
+                "budget": params["budget"],
+                "status": "running",
+                "created_at": now,
+                "usage": {
+                    "tokens_used": 0,
+                    "cost_usd_used": 0.0,
+                    "wall_clock_s_elapsed": 0.0,
+                    "steps_used": 0,
+                    "nodes_used": 0,
+                },
+                "island_states": [
+                    {
+                        "island_id": "island-0",
+                        "state": "SEEDING",
+                        "population_size": 0,
+                        "stagnation_counter": 0,
+                        "repopulation_count": 0,
+                        "best_score": None,
+                    }
+                ],
+                "formalism_registry": formalism_registry,
+                "abstract_problem_registry": abstract_problem_registry,
+                "domain_pack": {
+                    "pack_id": domain_pack.pack_id,
+                    "enabled_pack_ids": enabled_pack_ids,
+                },
+            }
+    
+            nodes: dict[str, dict[str, Any]] = {}
+>           first_formalism = formalism_registry["entries"][0]["formalism_id"]
+E           IndexError: list index out of range
+
+src/idea_core/engine/service.py:764: IndexError
+=========================== short test summary info ============================
+FAILED tests/engine/test_formalism_registry_m31.py::test_default_hep_domain_pack_has_minimal_formalism_registry_set
+FAILED tests/engine/test_formalism_registry_m31.py::test_campaign_init_fails_when_effective_formalism_registry_is_empty
+2 failed, 1 passed in 0.12s
+...                                                                      [100%]
+3 passed in 0.08s

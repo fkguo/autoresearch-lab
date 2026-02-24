@@ -1,0 +1,18 @@
+# M1.5 bundle drift repro (failure -> fix)
+repro_dir=/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.5HEzUWDeSu
+
+$ python3 -m idea_core.contracts.bundle --contract-dir '/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.5HEzUWDeSu/schemas' --write
+[bundle] OK: wrote /private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.5HEzUWDeSu/schemas/idea_core_rpc_v1.bundled.json
+
+$ tamper bundled info.title
+tampered: /var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.5HEzUWDeSu/schemas/idea_core_rpc_v1.bundled.json
+
+$ python3 -m idea_core.contracts.validate --contract-dir '/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.5HEzUWDeSu/schemas'
+[validate] FAIL: bundle artifact drift detected: /private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.5HEzUWDeSu/schemas/idea_core_rpc_v1.bundled.json is out-of-date (run `make bundle-contracts`)
+expected failure observed
+
+$ python3 -m idea_core.contracts.bundle --contract-dir '/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.5HEzUWDeSu/schemas' --write
+[bundle] OK: wrote /private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.5HEzUWDeSu/schemas/idea_core_rpc_v1.bundled.json
+
+$ python3 -m idea_core.contracts.validate --contract-dir '/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/tmp.5HEzUWDeSu/schemas'
+[validate] OK: JSON parse, schema legality, OpenRPC minimal shape, $ref closure, drift-guard, bundle-consistency

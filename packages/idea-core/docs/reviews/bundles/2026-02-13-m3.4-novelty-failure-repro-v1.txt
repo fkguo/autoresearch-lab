@@ -1,0 +1,72 @@
+FF.                                                                      [100%]
+=================================== FAILURES ===================================
+_________ test_eval_run_emits_novelty_delta_table_with_explicit_flags __________
+
+tmp_path = PosixPath('/private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/pytest-of-fkg/pytest-68/test_eval_run_emits_novelty_de0')
+
+    def test_eval_run_emits_novelty_delta_table_with_explicit_flags(tmp_path: Path) -> None:
+        service = make_service(tmp_path)
+        campaign_id = init_campaign(service)
+        node_ids = sorted(service.store.load_nodes(campaign_id).keys())
+    
+        eval_result = service.handle(
+            "eval.run",
+            {
+                "campaign_id": campaign_id,
+                "node_ids": node_ids,
+                "evaluator_config": {"dimensions": ["novelty", "impact"], "n_reviewers": 2},
+                "idempotency_key": "m3.4-eval-novelty",
+            },
+        )
+        scorecards_payload = service.store.load_artifact_from_ref(eval_result["scorecards_artifact_ref"])
+    
+        assert len(scorecards_payload["scorecards"]) == len(node_ids)
+        for scorecard in scorecards_payload["scorecards"]:
+            novelty_delta_table = scorecard.get("novelty_delta_table")
+>           assert isinstance(novelty_delta_table, list) and novelty_delta_table
+E           assert (False)
+E            +  where False = isinstance(None, list)
+
+tests/engine/test_novelty_delta_m34.py:82: AssertionError
+_____________ test_eval_run_flags_non_novel_duplicate_seed_claims ______________
+
+tmp_path = PosixPath('/private/var/folders/8q/y82gg9g93mxff1x7gx7w4pl40000gn/T/pytest-of-fkg/pytest-68/test_eval_run_flags_non_novel_0')
+
+    def test_eval_run_flags_non_novel_duplicate_seed_claims(tmp_path: Path) -> None:
+        service = make_service(tmp_path)
+        campaign_id = init_campaign(service, duplicate_seeds=True)
+        node_ids = sorted(service.store.load_nodes(campaign_id).keys())
+    
+        eval_result = service.handle(
+            "eval.run",
+            {
+                "campaign_id": campaign_id,
+                "node_ids": node_ids,
+                "evaluator_config": {"dimensions": ["novelty"], "n_reviewers": 2},
+                "idempotency_key": "m3.4-eval-duplicates",
+            },
+        )
+        scorecards_payload = service.store.load_artifact_from_ref(eval_result["scorecards_artifact_ref"])
+    
+        observed_flags: set[str] = set()
+        for scorecard in scorecards_payload["scorecards"]:
+>           for entry in scorecard["novelty_delta_table"]:
+E           KeyError: 'novelty_delta_table'
+
+tests/engine/test_novelty_delta_m34.py:116: KeyError
+=========================== short test summary info ============================
+FAILED tests/engine/test_novelty_delta_m34.py::test_eval_run_emits_novelty_delta_table_with_explicit_flags
+FAILED tests/engine/test_novelty_delta_m34.py::test_eval_run_flags_non_novel_duplicate_seed_claims
+
+
+===== GREEN RUN (after fix) =====
+...                                                                      [100%]
+
+
+===== GREEN RUN (count) =====
+...                                                                      [100%]
+3 passed in 0.13s
+
+
+===== POST-REVIEW HARDENING RUN =====
+.....                                                                    [100%]
