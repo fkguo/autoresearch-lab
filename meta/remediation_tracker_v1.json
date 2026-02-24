@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.7.0-draft",
-  "updated_at": "2026-02-25T01:15:00Z",
+  "updated_at": "2026-02-25T01:35:00Z",
   "note": "depends_on 为显式项级依赖；Phase 级隐式依赖 (P1 blocked by P0 全部完成等) 由 phase 编号推导。NEW-R 项来自 docs/2026-02-20-deep-refactoring-analysis.md (Gemini R4 + Codex R23 双模型审核通过)。UX-01~07 来自 docs/user-stories-ux-gaps.md (2026-02-22)。Track B (EVO-20/19/12a/21) 设计通过 9 轮双模型审查收敛, 状态 design_complete. Track A (EVO-06/07/17/18) 详设 + 9 JSON Schemas + 跨集成设计, 状态 design_complete. RT-01~04 来自 docs/design-proposal-research-team-v2.md (R4 dual-model READY). NEW-VIZ-01 来自 docs/graph-visualization-layer.md (9 轮双模型审查 CONVERGED), Phase 2 infra. 全量 18 schemas 已登记. Phase 0 全部 14 项 done (2026-02-25), Phase 1 解锁. Phase 1 kickoff: NEW-01 design_complete, H-16a done, H-11a design_complete.",
   "phases": {
     "0": {
@@ -27,7 +27,7 @@
       "name": "统一抽象",
       "note": "内序门禁: NEW-01 codegen 工具链必须先行就绪，方可合并消费生成类型的 PR",
       "items": {
-        "NEW-01": { "title": "跨语言类型代码生成基础设施", "status": "design_complete", "complexity": "high", "assignee": null, "depends_on": [], "design_doc": "docs/design-new01-codegen.md", "note": "Design: dual-tool pipeline (json-schema-to-typescript + datamodel-code-generator). 18 schemas. CI gate: make codegen-check. Implementation in next session." },
+        "NEW-01": { "title": "跨语言类型代码生成基础设施", "status": "design_complete", "complexity": "high", "assignee": null, "depends_on": [], "design_doc": "docs/design-new01-codegen.md", "note": "Design R3 CONVERGED (Codex PASS + Gemini PASS). Dual-tool pipeline (json-schema-to-typescript + datamodel-code-generator). 18 schemas. Shared $ref pre-resolution, bidirectional type conformance, CI codegen-check with untracked file detection. Phase 1A spike gates 1B rollout. 5 non-blocking recommendations tracked for implementation." },
         "H-01": { "title": "AutoresearchError 信封", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["H-14a", "NEW-01"] },
         "H-02": { "title": "最小可观测性 (trace_id)", "status": "pending", "complexity": "low", "assignee": null, "depends_on": ["H-01"] },
         "H-03": { "title": "RunState v1 统一枚举", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": ["NEW-01"] },
