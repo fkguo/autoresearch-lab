@@ -1,14 +1,14 @@
 {
   "schema_version": 2,
   "plan_version": "1.7.0-draft",
-  "updated_at": "2026-02-24T11:10:00Z",
+  "updated_at": "2026-02-24T15:30:00Z",
   "note": "depends_on 为显式项级依赖；Phase 级隐式依赖 (P1 blocked by P0 全部完成等) 由 phase 编号推导。NEW-R 项来自 docs/2026-02-20-deep-refactoring-analysis.md (Gemini R4 + Codex R23 双模型审核通过)。UX-01~07 来自 docs/user-stories-ux-gaps.md (2026-02-22)。Track B (EVO-20/19/12a/21) 设计通过 9 轮双模型审查收敛, 状态 design_complete. Track A (EVO-06/07/17/18) 详设 + 9 JSON Schemas + 跨集成设计, 状态 design_complete. RT-01~04 来自 docs/design-proposal-research-team-v2.md (R4 dual-model READY). NEW-VIZ-01 来自 docs/graph-visualization-layer.md (9 轮双模型审查 CONVERGED), Phase 2 infra. 全量 18 schemas 已登记.",
   "phases": {
     "0": {
       "name": "止血",
       "items": {
         "NEW-05": { "title": "Monorepo 迁移", "status": "done", "complexity": "high", "assignee": null, "depends_on": [], "completed_at": "2026-02-24", "note": "Fresh-start monorepo at autoresearch-lab/. 7 repos consolidated, 696 tests pass. Original repos tagged archive/pre-monorepo." },
-        "NEW-05a": { "title": "编排层与 idea 引擎全面迁移至 TypeScript", "status": "in_progress", "complexity": "high", "assignee": null, "depends_on": ["NEW-05"], "note": "Stage 2 complete: StateManager write ops (saveState, transitionStatus, createRun, approveRun, rejectRun, pauseRun, resumeRun), atomic writes (.tmp→rename), saveStateWithLedger (staged .next→ledger→commit), VALID_TRANSITIONS map, nextApprovalId. 36 tests pass (17 Stage 1 + 17 Stage 2 + 2 B6/B7 guards). R3 dual-model (Codex+Gemini) CONVERGED: 0 blocking, B1-B3+B6-B7 all 5 fixes verified. Deferrals: B4 (state lock→H-07), B5 (JSON separators), ledger detail parity, checkpoint heartbeat.", "stage": "stage_2_complete" },
+        "NEW-05a": { "title": "编排层与 idea 引擎全面迁移至 TypeScript", "status": "in_progress", "complexity": "high", "assignee": null, "depends_on": ["NEW-05"], "note": "Stage 3a complete: checkpoint management (updateCheckpoint, isCheckpointDue), checkpoint heartbeat in approveRun/resumeRun, requestApproval with APPROVAL_CATEGORY_TO_POLICY_KEY mapping, ledger detail parity (category+note in approve/reject/request events). 51 tests pass (36 existing + 15 new). R2 dual-model (Codex+Gemini) CONVERGED. Prior: Stage 2 R3 converged (B1-B3+B6-B7 fixes). Remaining deferrals: B4 (state lock→H-07), B5 (JSON separators), .pause/.stop sentinel files (Stage 3b).", "stage": "stage_3a_complete" },
         "C-01": { "title": "审批 watchdog 执行闭环", "status": "done", "complexity": "medium", "assignee": null, "depends_on": [], "completed_at": "2026-02-24", "note": "check_approval_timeout + check_approval_budget in orchestrator_state.py; wired into cmd_approve/cmd_checkpoint/cmd_run. 11 tests." },
         "C-02": { "title": "Shell 执行隔离", "status": "done", "complexity": "medium", "assignee": null, "depends_on": [], "completed_at": "2026-02-24", "note": "_validate_command + _validate_output_paths + UnsafeCommandError + ResourceLimiter in shell.py. 12 tests." },
         "C-03": { "title": "工具清单自动生成", "status": "done", "complexity": "low", "assignee": null, "depends_on": [], "completed_at": "2026-02-24", "note": "scripts/generate_tool_catalog.ts generates standard (71) and full (83) tool catalogs." },
