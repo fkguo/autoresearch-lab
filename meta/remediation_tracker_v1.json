@@ -1,25 +1,26 @@
 {
   "schema_version": 2,
   "plan_version": "1.7.0-draft",
-  "updated_at": "2026-02-24T00:00:00Z",
+  "updated_at": "2026-02-24T11:10:00Z",
   "note": "depends_on 为显式项级依赖；Phase 级隐式依赖 (P1 blocked by P0 全部完成等) 由 phase 编号推导。NEW-R 项来自 docs/2026-02-20-deep-refactoring-analysis.md (Gemini R4 + Codex R23 双模型审核通过)。UX-01~07 来自 docs/user-stories-ux-gaps.md (2026-02-22)。Track B (EVO-20/19/12a/21) 设计通过 9 轮双模型审查收敛, 状态 design_complete. Track A (EVO-06/07/17/18) 详设 + 9 JSON Schemas + 跨集成设计, 状态 design_complete. RT-01~04 来自 docs/design-proposal-research-team-v2.md (R4 dual-model READY). NEW-VIZ-01 来自 docs/graph-visualization-layer.md (9 轮双模型审查 CONVERGED), Phase 2 infra. 全量 18 schemas 已登记.",
   "phases": {
     "0": {
       "name": "止血",
       "items": {
         "NEW-05": { "title": "Monorepo 迁移", "status": "done", "complexity": "high", "assignee": null, "depends_on": [], "completed_at": "2026-02-24", "note": "Fresh-start monorepo at autoresearch-lab/. 7 repos consolidated, 696 tests pass. Original repos tagged archive/pre-monorepo." },
-        "NEW-05a": { "title": "编排层与 idea 引擎全面迁移至 TypeScript", "status": "pending", "complexity": "high", "assignee": null, "depends_on": ["NEW-05"] },
-        "C-01": { "title": "审批 watchdog 执行闭环", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
-        "C-02": { "title": "Shell 执行隔离", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [] },
-        "C-03": { "title": "工具清单自动生成", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
-        "C-04": { "title": "合约快照同步 CI 门禁", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
-        "H-08": { "title": "输入净化层", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
-        "H-14a": { "title": "McpStdioClient 保留 error_code", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
-        "H-20": { "title": "配置加载一致性", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [] },
-        "NEW-R02a": { "title": "CODE-01 CI gate 脚本实现", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis" },
-        "NEW-R03a": { "title": "Python 静默异常 P0 审计 (35 sites)", "status": "pending", "complexity": "medium", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis" },
+        "NEW-05a": { "title": "编排层与 idea 引擎全面迁移至 TypeScript", "status": "in_progress", "complexity": "high", "assignee": null, "depends_on": ["NEW-05"], "note": "Stage 1 complete: StateManager, LedgerWriter, McpClient (MCP handshake), ApprovalGate skeleton in packages/orchestrator/. 17 tests pass. R3 dual-model (Codex+Gemini) cross-language alignment CONVERGED.", "stage": "stage_1_complete" },
+        "C-01": { "title": "审批 watchdog 执行闭环", "status": "done", "complexity": "medium", "assignee": null, "depends_on": [], "completed_at": "2026-02-24", "note": "check_approval_timeout + check_approval_budget in orchestrator_state.py; wired into cmd_approve/cmd_checkpoint/cmd_run. 11 tests." },
+        "C-02": { "title": "Shell 执行隔离", "status": "done", "complexity": "medium", "assignee": null, "depends_on": [], "completed_at": "2026-02-24", "note": "_validate_command + _validate_output_paths + UnsafeCommandError + ResourceLimiter in shell.py. 12 tests." },
+        "C-03": { "title": "工具清单自动生成", "status": "done", "complexity": "low", "assignee": null, "depends_on": [], "completed_at": "2026-02-24", "note": "scripts/generate_tool_catalog.ts generates standard (71) and full (83) tool catalogs." },
+        "C-04": { "title": "合约快照同步 CI 门禁", "status": "done", "complexity": "low", "assignee": null, "depends_on": [], "completed_at": "2026-02-24", "note": "check_contract_drift.sh + make check-drift in idea-core." },
+        "H-08": { "title": "输入净化层", "status": "done", "complexity": "low", "assignee": null, "depends_on": [], "completed_at": "2026-02-24", "note": "sanitizePath/sanitizeFilename/sanitizeQueryString in shared/src/sanitize.ts; _sanitize_for_query in retrieval.py." },
+        "H-14a": { "title": "McpStdioClient 保留 error_code", "status": "done", "complexity": "low", "assignee": null, "depends_on": [], "completed_at": "2026-02-24", "note": "error_code field added to McpToolCallResult; extraction from JSON + text pattern. 4 tests." },
+        "H-20": { "title": "配置加载一致性", "status": "done", "complexity": "low", "assignee": null, "depends_on": [], "completed_at": "2026-02-24", "note": "dotenv/config in hep-mcp index.ts; HEP_TOOL_MODE/PDG_DB_PATH/PDG_ARTIFACT_TTL_HOURS added to env whitelist." },
+        "NEW-R02a": { "title": "CODE-01 CI gate 脚本实现", "status": "done", "complexity": "medium", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis", "completed_at": "2026-02-24", "note": "check_loc.py (CODE-01.1) + check_entry_files.py (CODE-01.2) in meta/scripts/. 8 golden tests." },
+        "NEW-R03a": { "title": "Python 静默异常 P0 审计 (150 sites)", "status": "done", "complexity": "medium", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis", "completed_at": "2026-02-24", "note": "150 CONTRACT-EXEMPT: CODE-01.5 annotations across 30 files. All sites classified as suppress with reasons. Zero unannotated silent sites remain." },
         "NEW-R13": { "title": "包重命名 hep-research-mcp → hep-mcp", "status": "done", "complexity": "medium", "assignee": null, "depends_on": ["NEW-05"], "source": "deep-refactoring-analysis", "note": "Executed concurrently with NEW-05. Scope: @hep-research/* → @autoresearch/*, directory hep-research-mcp → hep-mcp. 0 residual references.", "completed_at": "2026-02-24" },
-        "NEW-R15-spec": { "title": "编排器 MCP 工具架构规格", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis" }
+        "NEW-R15-spec": { "title": "编排器 MCP 工具架构规格", "status": "done", "complexity": "low", "assignee": null, "depends_on": [], "source": "deep-refactoring-analysis", "completed_at": "2026-02-24", "note": "meta/docs/orchestrator-mcp-tools-spec.md: orch_run_* tool surface, run-infra vs strategy boundary, threat model (5 vectors), H-11a approval gate design, orch:// URI scheme. R3 dual-model (Codex+Gemini) CONVERGED." },
+        "NEW-R16": { "title": "重命名 .autopilot → .autoresearch", "status": "pending", "complexity": "low", "assignee": null, "depends_on": [], "note": "Python AUTOPILOT_DIRNAME + TS AUTOPILOT_DIRNAME + HEP_AUTOPILOT_DIR env var + spec docs. 跨组件变更需双模型审核。" }
       }
     },
     "1": {
