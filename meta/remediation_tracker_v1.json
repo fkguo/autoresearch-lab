@@ -204,10 +204,12 @@
         },
         "H-13": {
           "title": "上下文截断",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
-          "depends_on": []
+          "depends_on": [],
+          "completed_at": "2026-02-25",
+          "note": "Batch 4A: 5-layer Result Handling Reform (L0 compact serialization, L1 CompactPaperSummary, L2 evidence-first alignment, L3 dispatcher size guard, L4 resource_link output)."
         },
         "H-15a": {
           "title": "EcosystemID 规范",
@@ -297,20 +299,24 @@
         },
         "M-14a": {
           "title": "日志脱敏层",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
-          "depends_on": []
+          "depends_on": [],
+          "completed_at": "2026-02-25",
+          "note": "Batch 4B: TS redaction.ts + Python redaction.py stopgap. Regex-based redact() for API keys, Bearer tokens, user paths."
         },
         "NEW-R02": {
           "title": "TS as any CI 门禁 (diff-scoped)",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
           "depends_on": [
             "NEW-R02a"
           ],
-          "source": "deep-refactoring-analysis"
+          "source": "deep-refactoring-analysis",
+          "completed_at": "2026-02-25",
+          "note": "Batch 4B: meta/scripts/check_as_any.sh + Makefile code-health-check target. Diff-scoped: new as any / .catch(()=>{}) blocked, 254 existing exempt."
         },
         "NEW-R03b": {
           "title": "Python 异常处理规范化",
@@ -361,11 +367,13 @@
         },
         "UX-06": {
           "title": "研究会话入口协议",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
           "depends_on": [],
-          "source": "user-stories-ux-gaps"
+          "source": "user-stories-ux-gaps",
+          "completed_at": "2026-02-25",
+          "note": "Batch 4B: meta/protocols/session_protocol_v1.md + skills/hepar/SKILL.md reference. 5-stage pipeline: idea→literature→derivation→writing→revision."
         },
         "NEW-CONN-01": {
           "title": "Discovery next_actions hints",
@@ -722,24 +730,26 @@
           "note": "~250 LOC. lane queue + approval gate."
         },
         "NEW-RT-02": {
-          "status": "pending",
+          "status": "done",
           "assignee": null,
           "title": "MCP StdioClient reconnect",
           "complexity": "low",
           "depends_on": [
             "H-19"
           ],
-          "note": "~100 LOC."
+          "completed_at": "2026-02-25",
+          "note": "Batch 4B: McpClient auto-reconnect on subprocess exit/crash. maxReconnects + exponential backoff via RetryPolicy. ~100 LOC added to mcp-client.ts."
         },
         "NEW-RT-03": {
-          "status": "pending",
+          "status": "done",
           "assignee": null,
           "title": "OTel-aligned Span tracing",
           "complexity": "low",
           "depends_on": [
             "H-02"
           ],
-          "note": "~150 LOC. JSONL writer."
+          "completed_at": "2026-02-25",
+          "note": "Batch 4B: Span interface in shared/span.ts + SpanCollector + ActiveSpan JSONL writer in orchestrator/tracing.ts. ~150 LOC total."
         },
         "NEW-RT-04": {
           "status": "pending",

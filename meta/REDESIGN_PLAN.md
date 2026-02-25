@@ -528,7 +528,9 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 **实现位置**: `packages/shared/src/gate-registry.ts`
 
-### H-13: 上下文风暴截断机制
+### H-13: 上下文风暴截断机制 ✅ Batch 4A
+
+**状态**: DONE (2026-02-25, expanded to 5-layer Result Handling Reform)
 
 **依赖**: 无
 
@@ -703,7 +705,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] 所有工具在 registry 中标注 `risk_level`
 - [ ] **SEC-03 sunset (R4)**: Phase 2 完成后，存量未标注工具从 fail-open 升级为 fail-closed；H-11a 完成即为 sunset 触发条件
 
-### M-14a: 日志脱敏层 (redaction prerequisite)
+### M-14a: 日志脱敏层 (redaction prerequisite) ✅ Batch 4B
 
 **依赖**: 无
 **关联**: Phase 2 JSONL 日志扩展（M-14a 为前置条件）
@@ -742,7 +744,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 > **NEW-R05 修正 (深度重构分析)**: Python 代码生成目标从 `dataclasses` 修正为 `Pydantic v2 BaseModel` (同一工具 `datamodel-code-generator`，flag `--output-model-type pydantic_v2.BaseModel`)。Pydantic v2 提供运行时验证对等性（与 TS 侧的 Zod runtime validation 对称）。此修正作为 NEW-R05a 独立子项管理，可在不影响 Phase 1 主路径的情况下时间框定评估 `pydantic-core` Rust wheel 构建风险。
 
-### NEW-R02: TS `as any` CI 门禁 (diff-scoped) ★深度重构
+### NEW-R02: TS `as any` CI 门禁 (diff-scoped) ✅ Batch 4B ★深度重构
 
 > **来源**: `docs/2026-02-20-deep-refactoring-analysis.md` §2
 
@@ -859,7 +861,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] 首次 KB 操作自动补充 knowledge_base/ 结构
 - [ ] `--full` 选项保留完整脚手架能力
 
-### UX-06: 研究会话入口协议 ★UX
+### UX-06: 研究会话入口协议 ✅ Batch 4B ★UX
 
 > **新增 (2026-02-22)**: 人类用户通过 Agent 交互时缺少标准入口——不知道从哪里开始，不知道当前所处阶段。
 
@@ -1413,7 +1415,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] per-run 工具调用串行化 (lane queue)
 - [ ] approval gate 注入: 遇到 gate 时暂停等待批准
 
-### NEW-RT-02: MCP StdioClient Reconnect (Phase 2 early)
+### NEW-RT-02: MCP StdioClient Reconnect ✅ Batch 4B (Phase 2 early)
 
 > **来源**: Scope Audit 三模型收敛 — 欠工程化 Gap #1 (Retry + Reconnect)
 
@@ -1426,7 +1428,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] MCP server 进程崩溃后自动重启
 - [ ] 重启后 session 恢复，pending 请求重试
 
-### NEW-RT-03: OTel-aligned Span Tracing (Phase 2 mid)
+### NEW-RT-03: OTel-aligned Span Tracing ✅ Batch 4B (Phase 2 mid)
 
 > **来源**: Scope Audit 三模型收敛 — 欠工程化 Gap #3 (Structured Tracing)
 
