@@ -1,10 +1,20 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.7.0-draft (R9: Track A/B 合并对齐 — Track B design_complete 升级 + Graph Viz 层 + schema 全量登记 + 前置依赖审计)
-> **日期**: 2026-02-23
-> **基线**: .review/ARCHITECTURE_AUDIT.md v1.2 Final (§7.1 + §7.8 + §7.9) + `docs/2026-02-20-deep-refactoring-analysis.md` (dual-model reviewed: Gemini R4 READY, Codex R23 READY) + `docs/user-stories-ux-gaps.md` + `docs/design-proposal-research-team-v2.md` (R4 READY: Codex 0 BLOCKER, Gemini 0 BLOCKER) + Track A 设计文档 (EVO-06/07/17/18, 各含 22 轮审查) + Track B 设计文档 (EVO-19/12a/20/21, 各含 9 轮双模型审查) + `docs/graph-visualization-layer.md` (9 轮双模型审查) + `docs/track-a-cross-integration-design.md`
-> **重构项总数**: 119 项 (118 前序 + 1 新增 NEW-VIZ-01)
+> **版本**: 1.8.0-draft (R10: Scope Audit 三模型收敛 + Pipeline 连通性双模型 R4 收敛 + CLI-First Dual-Mode 架构确立)
+> **日期**: 2026-02-25
+> **基线**: v1.7.0-draft + `meta/docs/scope-audit-converged.md` (三模型收敛) + `meta/docs/scope-audit-dual-mode-converged.md` (CLI-First 收敛) + `meta/docs/pipeline-connectivity-audit.md` (双模型 R4 收敛)
+> **重构项总数**: 135 项 (119 前序 + 15 新增 + 1 cut)
 > **编排**: Claude Opus 4.6
+>
+> **v1.8.0 Changelog**:
+> - Scope audit 三模型收敛结论落地: H-01 简化, H-04/H-15a 冻结, H-17/M-22 deferred, NEW-R09 cut
+> - Pipeline 连通性审计 (双模型 R4 收敛): 新增 NEW-CONN-01~05 (5 孤岛修复)
+> - CLI-First Dual-Mode 架构确立 (Layer 0-3)
+> - 新增 15 项: NEW-CONN-01~05, NEW-IDEA-01, NEW-COMP-01/02, NEW-WF-01, NEW-SKILL-01, NEW-RT-01~05
+> - 修改 13 项: H-01, H-04, H-15a, H-17, M-22, NEW-R09, NEW-05a, UX-02, UX-04, EVO-01/02/03, NEW-COMP-01
+> - 质量优先成本哲学写入全局约束 (不设硬性 max_cost_usd / max_llm_tokens)
+> - ComputationEvidenceCatalogItemV1 并行 schema 确立 (不修改 EvidenceCatalogItemV1)
+> - Pipeline A/B 统一时间线: Phase 2 MCP → Phase 2B hint → Phase 3 实现 → Phase 4 退役
 
 ## 路径约定
 
@@ -27,120 +37,93 @@
 > - 旧 API / 工具名保留或 deprecation shim
 > - 数据格式迁移脚本（直接采用新 schema，旧数据可丢弃重建）
 > - 运行时版本协商或兼容性矩阵维护
+> - 字段设为 optional "以兼容旧数据"——如果语义上应该 required，就直接 required
 >
 > 各项设计应追求最终形态的简洁性，而非增量兼容性。
+
+> **质量优先**: 科学研究以质量为最高标准。不设硬性成本限额 (`max_cost_usd` / `max_llm_tokens` 等)。Budget tracking 仅作为 observability（记录消耗），不作为 runtime constraint。质量门禁 (Approval Gates A1-A5) 是 pipeline 推进的控制机制。不需要 `RunBudget` 接口。
 
 ## 依赖拓扑总览
 
 ```
-Phase 0 (止血)          ← 无外部依赖，可立即并行执行
+Phase 0 (止血)          ← 无外部依赖，可立即并行执行 ✅ ALL DONE
   │
-  ├─ NEW-05 Monorepo 迁移 (所有跨组件 CI 的结构前置)
-  ├─ NEW-05a 编排层与 idea 引擎增量迁移至 TypeScript (depends: NEW-05)
-  ├─ C-01  审批 watchdog
-  ├─ C-02  Shell 路径白名单 + 命令黑名单
-  ├─ C-03  工具清单自动生成
-  ├─ C-04  合约同步 CI 门禁
-  ├─ H-08  输入净化
-  ├─ H-14a McpStdioClient 保留 error_code
-  ├─ H-20  配置加载一致性
-  ├─ NEW-R02a CODE-01 CI gate 脚本实现 ★深度重构
-  ├─ NEW-R03a Python 静默异常 P0 审计 ★深度重构
-  ├─ NEW-R13 包重命名 hep-research-mcp → hep-mcp (与 monorepo 迁移同步) ★深度重构
-  └─ NEW-R15-spec 编排器 MCP 工具架构规格 ★深度重构
-      │
+  ├─ NEW-05 Monorepo 迁移 ✅
+  ├─ NEW-05a Stage 1-2 编排层 TS ✅ (Stage 3 idea-engine → Phase 2-3)
+  ├─ C-01~C-04, H-08, H-14a, H-20 ✅
+  ├─ NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 ✅
+  │
 Phase 1 (统一抽象)      ← 依赖 Phase 0 基础设施
   │
-  ├─ H-01  AutoresearchError 信封
+  ├─ H-01  McpError += retryable + retry_after_ms (简化版)
   ├─ H-02  最小可观测性 (trace_id)
-  ├─ H-03  RunState v1 统一枚举
-  ├─ H-04  Gate Registry
+  ├─ H-03  RunState v1 统一枚举 ✅ (929f693)
+  ├─ H-04  Gate Registry ✅ (929f693, 冻结)
   ├─ H-13  上下文截断
-  ├─ H-15a EcosystemID 规范
-  ├─ H-16a 工具名常量化 (含 hep_run_* 写作工具命名明确化)
-  ├─ H-17  运行时兼容性握手
-  ├─ H-18  ArtifactRef V1
-  ├─ H-19  失败分类 + 重试策略
-  ├─ M-01  Artifact 命名规范
-  ├─ M-18  配置管理统一
-  ├─ M-19  跨组件 CI 集成测试
-  ├─ M-22  GateSpec 通用抽象
-  ├─ H-11a MCP 工具风险分级 (risk_level + _confirm)
-  ├─ M-14a 日志脱敏层 (redaction prerequisite)
-  ├─ NEW-01 跨语言类型代码生成基础设施 (R3 提前: SSOT 前置条件)
-  ├─ NEW-R02 TS `as any` CI 门禁 (diff-scoped) ★深度重构
-  ├─ NEW-R03b Python 异常 AutoresearchError 迁移 ★深度重构
-  ├─ NEW-R04 Zotero 工具整合 (~2300 LOC 去重) ★深度重构
-  ├─ NEW-R09 orchestrator_cli.py 拆分 (条件性) ★深度重构
-  ├─ UX-01 研究笔记与机器 contract 分离 ★UX
-  ├─ UX-05 延迟脚手架 + 统一初始化入口 ★UX
-  └─ UX-06 研究会话入口协议 ★UX
+  ├─ H-15a EcosystemID 规范 ✅ (929f693, 冻结不扩展)
+  ├─ H-16a 工具名常量化 ✅
+  ├─ H-18  ArtifactRef V1 ✅ (929f693)
+  ├─ H-19  失败分类 + 重试策略 ← P1 最优先 (Scope Audit 3/3)
+  ├─ H-11a MCP 工具风险分级 ✅ (P1/P2 done)
+  ├─ NEW-01 跨语言类型代码生成 ✅ (design_complete → done)
+  ├─ NEW-CONN-01 Discovery next_actions hints (~100 LOC)
+  ├─ M-01, M-14a, M-18, M-19
+  ├─ NEW-R02, NEW-R03b, NEW-R04
+  ├─ UX-01, UX-05, UX-06
+  ├─ H-17 (deferred → Phase 2)
+  ├─ M-22 (deferred → Phase 3)
+  └─ NEW-R09 (CUT)
       │
-Phase 2 (深度集成)      ← 依赖 Phase 1 抽象定义
+Phase 2A (运行时可靠性):
+  ├─ NEW-RT-01 TS AgentRunner (Anthropic SDK + lane queue + approval gate)
+  ├─ NEW-RT-02 MCP StdioClient reconnect
+  ├─ NEW-RT-03 OTel-aligned Span tracing
   │
-  ├─ H-05  跨平台文件锁
-  ├─ H-07  原子文件写入
-  ├─ H-09  幂等性 CAS
-  ├─ H-10  Ledger 事件枚举
-  ├─ H-11b MCP 权限组合策略
-  ├─ H-12  不可信内容沙箱
-  ├─ H-15b Artifact 版本化统一
-  ├─ H-16b 跨组件契约测试 CI
-  ├─ H-21  数据存储位置统一
-  ├─ M-02  遗留工具名迁移
-  ├─ M-05  Token 计数标准化
-  ├─ M-06  SQLite WAL + 连接池
-  ├─ M-20  迁移注册表 (路径相关条目 blocked by H-21)
-  ├─ M-21  载荷大小/背压契约
-  ├─ M-23  发布产物对齐
-  ├─ 全链路 trace_id + JSONL 日志
-  ├─ NEW-02 审批产物三件套 (packet_short/full/json)
-  ├─ NEW-03 审批 CLI 查看命令
-  ├─ NEW-04 自包含人类报告生成
-  ├─ NEW-R05 证据抽象层 ★深度重构
-  ├─ NEW-R05a Pydantic v2 代码生成目标评估 ★深度重构
-  ├─ NEW-R06 分析类型 Schema 整合 ★深度重构
-  ├─ NEW-R07 hep-autoresearch 测试覆盖门禁 ★深度重构
-  ├─ NEW-R08 Skills LOC 预算 ★深度重构
-  ├─ NEW-R10 service.py 拆分 (条件性) ★深度重构
-  ├─ NEW-R14 hep-mcp 内部包拆分 (P2 late) ★深度重构
-  ├─ NEW-R15-impl 编排器 MCP 工具实现 (含 orch_policy_query) ★深度重构
-  ├─ UX-02 结构化计算代码目录 ★UX
-  ├─ UX-07 审批上下文丰富化 ★UX
-  ├─ RT-02 工具访问增强 + 溯源 Clean-Room ★research-team
-  ├─ RT-03 统一 Runner 抽象 + API 可配置性 ★research-team
-  └─ NEW-VIZ-01 Graph Visualization Layer (通用 schema + 5 adapters) ★infra
-      │
-Phase 3 (扩展性与治理)  ← 依赖 Phase 2 集成完成
+Phase 2B (Pipeline 连通 + 深度集成):
+  ├─ H-05, H-07, H-09, H-10, H-11b, H-12, H-15b, H-16b, H-17, H-21
+  ├─ M-02, M-05, M-06, M-20, M-21, M-23, trace-jsonl
+  ├─ NEW-02, NEW-03, NEW-04
+  ├─ NEW-CONN-02 Review feedback next_actions (~60 LOC)
+  ├─ NEW-CONN-03 Computation evidence ingestion (~250 LOC)
+  ├─ NEW-CONN-04 Idea → Run creation (~150 LOC)
+  ├─ NEW-IDEA-01 idea-core MCP 桥接 (~400-800 LOC)
+  ├─ NEW-05a Stage 3 idea-engine TS 增量重写开始
+  ├─ NEW-WF-01 Workflow schema 设计 (~100 LOC)
+  ├─ NEW-COMP-01 W_compute MCP 安全设计 (~200 LOC)
+  ├─ NEW-RT-04 Durable execution (~200 LOC)
+  ├─ UX-02 Computation contract (升级)
+  ├─ UX-07, RT-02, RT-03, NEW-VIZ-01
+  ├─ NEW-R05~R08, NEW-R10, NEW-R14, NEW-R15-impl
   │
-  ├─ M-03/M-04/M-07/M-08/M-09/M-10
-  ├─ M-12/M-13/M-15/M-16/M-17
-  ├─ L-08
-  ├─ NEW-06 MCP 工具整合 (写作流水线简化, 审计§7.7.5)
-  ├─ NEW-R11 registry.ts 领域拆分 (M-13 范围扩展) ★深度重构
-  ├─ NEW-R12 idea-runs 集成契约 ★深度重构
-  ├─ UX-03 论文版本追踪 + 输出路径统一 ★UX
-  ├─ UX-04 结构化工具编排 recipe ★UX
-  ├─ RT-01 可配置工作流模式 (peer/leader/asymmetric) ★research-team
-  └─ RT-04 Innovation ↔ idea-generator 桥接 ★research-team
-      │
-Phase 4 (长期演进)      ← 依赖 Phase 3
+Phase 3 (扩展性 + 计算连通):
+  ├─ NEW-05a Stage 3 续: idea-engine TS 重写完成
+  ├─ NEW-COMP-02 W_compute MCP 实现 (~500 LOC)
+  ├─ NEW-CONN-05 Cross-validation → Pipeline feedback (~100 LOC)
+  ├─ NEW-SKILL-01 lean4-verify skill (~200 LOC)
+  ├─ NEW-RT-05 Eval framework (~500 LOC)
+  ├─ M-22 GateSpec 通用抽象 (deferred from P1)
+  ├─ M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17, L-08
+  ├─ NEW-06, NEW-R11, NEW-R12
+  ├─ UX-03, UX-04 (workflow schema)
+  ├─ RT-01, RT-04
   │
-  ├─ L-01~L-07 + 发布级冻结产物 + 测试策略
-  └─ NEW-07 多 Agent 编排抽象 + A2A 适配层
-      │
-Phase 5 (社区化与端到端闭环) ← 依赖 Phase 4 + idea-engine (TS, 原 idea-core) Phase 2
+Phase 4 (长期演进):
+  ├─ L-01~L-07, NEW-07 (A2A)
   │
-  ├─ EVO-01 idea→理论计算自动执行闭环
-  ├─ EVO-02 计算结果→idea 反馈循环
-  ├─ EVO-03 结果→writing evidence 自动映射
-  ├─ EVO-04 Agent 注册表 + A2A Agent Card
-  ├─ EVO-05 Domain Pack 打包/分发标准
-  ├─ EVO-06 科学诚信强制框架
-  ├─ EVO-07 可复现性验证管线
-  └─ EVO-08 跨实例 idea 同步协议
+Phase 5 (社区化与端到端闭环):
+  ├─ idea-core Python 退役 + hep-autoresearch 退役 (Pipeline A 退役)
+  ├─ EVO-01~03 idea→compute→writing 循环 (依赖: UX-02, UX-04, NEW-R15-impl, NEW-COMP-01, NEW-IDEA-01)
+  ├─ EVO-04~EVO-21
+  │
+Pipeline A/B 统一时间线:
+  Pipeline A = hep-autoresearch (Python CLI, hepar) — 现有编排器
+  Pipeline B = orchestrator (TS MCP) — 新编排器 (NEW-05a/NEW-R15)
+  Phase 2:   NEW-IDEA-01 + NEW-COMP-01 → Pipeline A 能力暴露为 MCP (供 Pipeline B 消费)
+  Phase 2B:  NEW-CONN-01~04 → 所有阶段通过 hint-only next_actions 连通
+  Phase 3:   NEW-COMP-02 (完整 W_compute MCP), NEW-CONN-05 (交叉检验)
+  Phase 4+:  Pipeline A (hepar CLI) 退役, Pipeline B 成为唯一编排器
 
-NEW-R01 God-file 拆分 (跟踪伞) — 跨 Phase 1-3, 子项: R09/R10/R11
+NEW-R01 God-file 拆分 (跟踪伞) — 跨 Phase 1-3, 子项: NEW-R10/R11 (NEW-R09 cut)
 ```
 
 ---
@@ -200,7 +183,17 @@ autoresearch/                    # private monorepo (personal GitHub)
 
 ### NEW-05a: 编排层与 idea 引擎增量迁移至 TypeScript
 
-**现状**: orchestrator (hep-autoresearch) 和 idea-core 均用 Python 编写，但实际无科学计算依赖。orchestrator 为纯状态管理 + JSON-RPC client (零外部依赖)。idea-core 仅依赖 jsonschema/jcs/filelock/referencing (JSON 验证/规范化/文件锁)。idea-generator 核心是 57 个 JSON Schema 文件 (语言无关) + 370 行验证脚本。原"Python 用于科学计算"的架构理由经审计不成立：HEP 计算工具以 Mathematica 为主 (8/12)，通过 wolframscript 子进程调用；idea-core 产生 idea 并评估，不执行科学计算。
+> **Re-scoped (v1.8.0)**: Stage 1-2 (orchestrator TS) 已完成 (929f693)。Stage 3 (idea-engine TS 重写) 独立追踪为 not_started，Phase 2-3 增量迁移。
+> **勘误**: 原文引用 `state-machine.ts` 不存在，实际文件为 `state-manager.ts`。
+
+**Stage 1-2**: done (929f693) — TS orchestrator 状态管理 parity (read/write/enforcement/sentinel/plan-validation), 145 tests, tsc clean.
+
+**Stage 3 (Phase 2-3, not_started)**: idea-core → idea-engine TS 增量重写。
+- **Phase 2 先行**: NEW-IDEA-01 (idea-core MCP 桥接) 立即连通 pipeline，不被 TS 重写阻塞
+- **增量迁移顺序**: (1) store/idempotency → (2) campaign/budget → (3) operator families 逐个迁移 → (4) domain pack → data-driven manifest → (5) HEPAR orchestration
+- **回退/对照**: MCP 桥接作为回退
+- **Golden trace**: `idea-core/demo/m2_12_replay.py` 确保行为一致性
+- **Phase 4+**: idea-core Python 退役（与 hep-autoresearch 同步）
 
 **迁移理由**:
 1. 所有主流 Agent 编排平台 (OpenCode, OpenClaw, Claude Code, Cursor) 均选择 TypeScript——Node.js 事件循环天然适合并发 Agent session 管理
@@ -391,7 +384,7 @@ autoresearch/                    # private monorepo (personal GitHub)
 **动机**: 静默吞噬异常导致难以调试的失败; CODE-01.5 规定这些必须修复。
 
 **修改文件**: 35 个站点逐一审计，按分类处理:
-- **surface**: 替换为 `logger.error()` + 重新抛出或返回 `AutoresearchError`
+- **surface**: 替换为 `logger.error()` + 重新抛出原始异常（Python 侧不引入 AutoresearchError，见 H-01 简化决策）
 - **suppress**: 确认为有意抑制 → 添加 `# CONTRACT-EXEMPT: CODE-01.5 {reason}` 注释
 
 **验收检查点**:
@@ -438,7 +431,7 @@ autoresearch/                    # private monorepo (personal GitHub)
 
 | 抽象 | SSOT 位置 | TS 消费 | Python 消费 |
 |---|---|---|---|
-| `AutoresearchErrorEnvelope` | `autoresearch-meta/schemas/autoresearch_error_v1.schema.json` | `json-schema-to-typescript` 生成接口 + 手写工厂函数 | `datamodel-code-generator` 生成 dataclass |
+| ~~`AutoresearchErrorEnvelope`~~ | ~~已取消~~ — H-01 简化: 直接扩展 `McpError` += `retryable` + `retry_after_ms`，不新建独立 schema | — | — |
 | `RunState v1` | `autoresearch-meta/schemas/run_state_v1.schema.json` | 生成 enum | 生成 enum |
 | `GateSpec v1` | `autoresearch-meta/schemas/gate_spec_v1.schema.json` | 生成接口 | 生成 dataclass |
 | `EcosystemID` | `autoresearch-meta/schemas/ecosystem_id_v1.schema.json` | 生成接口 | 生成 dataclass |
@@ -446,41 +439,41 @@ autoresearch/                    # private monorepo (personal GitHub)
 | `ApprovalPacket v1` | `autoresearch-meta/schemas/approval_packet_v1.schema.json` | (不消费) | 生成 dataclass |
 | Artifact 命名规范 | `autoresearch-meta/ECOSYSTEM_DEV_CONTRACT.md` §Artifact | lint 脚本检查 | lint 脚本检查 |
 
-### H-01: 统一错误契约 (AutoresearchError)
+### H-01: McpError 扩展 (retryable + retry_after_ms)
 
-**依赖**: H-14a (Phase 0)
+> **Scope Audit 收敛 (3/3)**: 不创建独立 `AutoresearchErrorEnvelope`。在现有 `McpError` (`packages/shared/src/errors.ts`) 中添加 `retryable` + `retry_after_ms` 两个字段即可。~20 LOC。
+
+**依赖**: H-14a (Phase 0, done)
 **关联**: H-02, H-19
-**追溯**: H-14 由 H-14a + H-01 共同关闭，无需独立 H-14b 工作项
 
 **修改文件**:
 | 文件 | 修改内容 |
 |---|---|
-| `hep-research-mcp/packages/shared/src/errors/autoresearch-error.ts` | (新建子目录，从现有 `errors.ts` 重构) 定义 `AutoresearchErrorEnvelope { domain: string, code: string, message: string, retryable: boolean, retry_after_ms?: number, run_id?: string, trace_id?: string, data?: unknown }` |
-| `hep-research-mcp/packages/shared/src/errors/index.ts` | (新文件，re-export) 现有 `McpError` 工厂函数增加 `retryable` 字段；`rateLimit()` 默认 `retryable: true`；合并原 `errors.ts` 导出 |
-| `hep-autoresearch/src/hep_autoresearch/toolkit/errors.py` | 从 codegen 生成的 `AutoresearchErrorEnvelope` dataclass 导入 + 手写 adapter 层：工厂函数、`McpToolCallResult.error_code` 映射 |
-| `idea-core/src/idea_core/engine/service.py` | `RpcError` 响应 `data` 中增加 `retryable: bool` 字段 |
+| `packages/shared/src/errors.ts` | `McpError` 类增加 `retryable: boolean` + `retryAfterMs?: number`；构造函数根据 `ErrorCode` 自动推断 (`RATE_LIMIT`/`UPSTREAM_ERROR` → `retryable=true`) |
 
-**映射表**:
+**retryable 映射**:
 ```
-MCP 'RATE_LIMIT'      → AutoresearchError(retryable=true, retry_after_ms=...)
-MCP 'INVALID_PARAMS'  → AutoresearchError(retryable=false)
-MCP 'UPSTREAM_ERROR'  → AutoresearchError(retryable=true)
-MCP 'NOT_FOUND'       → AutoresearchError(retryable=false)
-MCP 'INTERNAL_ERROR'  → AutoresearchError(retryable=false)
-MCP 'UNSAFE_FS'       → AutoresearchError(retryable=false)
-RPC -32001             → AutoresearchError(retryable=false, code='budget_exhausted')
-RPC -32002             → AutoresearchError(retryable=false, code='schema_validation_failed')
-RPC -32003..-32016     → AutoresearchError(retryable=false, code=<reason>)
+RATE_LIMIT      → retryable=true, retryAfterMs=data?.retryAfter
+UPSTREAM_ERROR  → retryable=true
+INVALID_PARAMS  → retryable=false
+NOT_FOUND       → retryable=false
+INTERNAL_ERROR  → retryable=false
+UNSAFE_FS       → retryable=false
 ```
+
+**不做**:
+- 不创建 `AutoresearchErrorEnvelope` 独立类型
+- 不新建 `errors/` 子目录
+- 不在 Python 侧创建 adapter 层（Python 退役路径）
 
 **验收检查点**:
-- [ ] 所有 MCP 错误响应包含 `retryable` + `run_id` (非 null)
-- [ ] idea-core RPC 错误 `data` 含 `retryable` 字段
-- [ ] hep-autoresearch 可通过 `result.error_code` 区分 `RATE_LIMIT` vs `INVALID_PARAMS`
+- [ ] `McpError` 含 `retryable` + `retryAfterMs` 字段
+- [ ] `new McpError('RATE_LIMIT', ...)` → `retryable === true`
+- [ ] `new McpError('INVALID_PARAMS', ...)` → `retryable === false`
 
 ### H-02: 最小可观测性 (trace_id)
 
-**依赖**: H-01 (AutoresearchError 含 trace_id 字段)
+**依赖**: H-01 (McpError.retryable — trace_id 在 dispatcher 层注入)
 **关联**: H-19
 
 **修改文件**:
@@ -525,21 +518,11 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] 所有组件状态可通过映射表转换为 `RunState v1`
 - [ ] `hepar status` 输出使用统一枚举
 
-### H-04: Gate Registry + 静态校验
+### H-04: Gate Registry + 静态校验 ✅ (已实现)
 
-**依赖**: 无
-**关联**: M-22 (GateSpec), L-05 (语义重命名)
+> **状态**: done (929f693)。**Scope Audit (2/3 建议简化, Codex 保留意见)**: 当前实现 ~120 LOC，含 GateType/GateScope/FailBehavior 枚举、GateSpec 接口、GATE_REGISTRY 数组、GATE_BY_NAME Map、getGateSpec 查找函数。Codex 指出已有非 approval gates (quality/budget)，2/3 多数建议简化到 ~30 LOC。评估结论: 已实现版本工作正常且已测试，冻结优先于重写。不扩展。
 
-**修改文件**:
-| 文件 | 修改内容 |
-|---|---|
-| `hep-autoresearch/src/hep_autoresearch/toolkit/gates.py` | (新文件) `GATE_REGISTRY = {"A1": ..., "A2": ..., "A3": ..., "A4": ..., "A5": ...}` + `validate_gates(gates: list[str])` |
-| `hep-autoresearch/src/hep_autoresearch/toolkit/run_card_schema.py` | `validate()` 阶段调用 `validate_gates(phase.gates)` → 未知 gate 抛出 `InvalidRunCard` |
-| `hep-autoresearch/schemas/run_card_v2.schema.json` | `phases[].gates` 改为 `enum: ["A1","A2","A3","A4","A5"]` |
-
-**验收检查点**:
-- [ ] run_card 含 `gates: ["A6"]` → 编译期报错 `unknown gate: A6`
-- [ ] run_card 含 `gates: ["A1", "A3"]` → 通过验证
+**实现位置**: `packages/shared/src/gate-registry.ts`
 
 ### H-13: 上下文风暴截断机制
 
@@ -555,19 +538,12 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] 返回 200KB JSON 的工具 → 自动截断 + artifact URI
 - [ ] 截断响应含 `summary` 字段
 
-### H-15a: EcosystemID 规范
+### H-15a: EcosystemID 规范 ✅ (已实现，冻结不扩展)
 
-**依赖**: 无
+> **状态**: done (929f693)。**Scope Audit 收敛 (3/3)**: 已实现 branded type + prefix registry。冻结不扩展。不添加新前缀。不在其他模块强制 `EcosystemId` branded type。
 
-**修改文件**:
-| 文件 | 修改内容 |
-|---|---|
-| `autoresearch-meta/schemas/ecosystem_id_v1.schema.json` | 定义 Stripe 风格 prefixed ID: `{component}_{uuid}` (如 `proj_550e8400...`, `run_a1b2c3...`, `camp_...`) + 跨组件引用模型 `{component, kind, id}` |
-| `autoresearch-meta/scripts/validate_id_format.py` | lint 脚本：检查新代码中的 ID 字面量是否符合规范 |
-
-**验收检查点**:
-- [ ] 新组件 ID 格式统一为 `prefix_UUID`
-- [ ] 旧 ID 可通过映射表互操作（不要求立即迁移）
+**实现位置**: `packages/shared/src/ecosystem-id.ts`
+**冻结原因**: 对无外部用户系统，branded type 投入产出比低。已实现、已测试、沉没成本。保留但不扩展。
 
 ### H-16a: 工具名常量化 + 长度约束 + 运行时握手
 
@@ -591,7 +567,9 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] 工具名变更时 CI 自动检测并失败
 - [ ] 所有工具名拼接 MCP 前缀后 ≤64 字符，CI lint 强制
 
-### H-17: 运行时兼容性握手
+### H-17: 运行时兼容性握手 (deferred → Phase 2)
+
+> **Scope Audit 收敛 (3/3)**: CI 检查已覆盖。运行时握手在多版本并存时才有价值。Defer to Phase 2。
 
 **依赖**: C-03 (tool catalog hash)
 
@@ -623,18 +601,24 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 ### H-19: 失败分类 + 重试/退避策略
 
-**依赖**: H-01 (AutoresearchError.retryable)
+**依赖**: H-01 (McpError.retryable)
+
+> **Scope Audit 对齐 (v1.8.0)**: 运行时基础设施只建在 TS 侧。H-19 的 **主实现** 在 TS orchestrator (`packages/orchestrator/`)，供 NEW-RT-01/02 依赖。Python 侧为 **临时 stopgap**（Pipeline A 退役前维持基本重试能力），随 Phase 4+ Pipeline A 退役一并移除。
 
 **修改文件**:
 | 文件 | 修改内容 |
 |---|---|
-| `hep-autoresearch/src/hep_autoresearch/toolkit/retry.py` | (新文件) `RetryPolicy { max_retries, base_delay_ms, max_delay_ms, jitter }` + `retry_with_backoff(fn, policy)` 装饰器；根据 `AutoresearchError.retryable` 决定是否重试 |
-| `hep-autoresearch/src/hep_autoresearch/toolkit/mcp_stdio_client.py` | `call_tool_json()` 集成 `RetryPolicy`；`RATE_LIMIT` 使用 `retry_after_ms`，`UPSTREAM_ERROR` 使用指数退避 |
+| `packages/orchestrator/src/retry.ts` | (新文件, **主实现**) `RetryPolicy { maxRetries, baseDelayMs, maxDelayMs, jitter }` + `retryWithBackoff(fn, policy)` 工具函数；根据 `McpError.retryable` 决定是否重试。NEW-RT-01/02 的直接依赖。 |
+| `packages/shared/src/retry-policy.ts` | (新文件) `RetryPolicy` 类型定义 (共享，供 orchestrator + 未来 AgentRunner 使用) |
+| `hep-autoresearch/src/hep_autoresearch/toolkit/retry.py` | (临时 stopgap) Python 侧简化重试装饰器；随 Pipeline A 退役移除 |
+| `hep-autoresearch/src/hep_autoresearch/toolkit/mcp_stdio_client.py` | `call_tool_json()` 集成基本 `RetryPolicy`（临时 stopgap） |
 
 **验收检查点**:
+- [ ] TS `retryWithBackoff()` 通过单元测试 (主实现)
 - [ ] `RATE_LIMIT` 错误 → 按 `retry_after_ms` 等待后重试
 - [ ] `INVALID_PARAMS` 错误 → 不重试，立即返回
 - [ ] 重试次数超限 → 抛出最终错误含全部重试记录
+- [ ] NEW-RT-02 可直接 import TS retry 模块
 
 ### M-01: Artifact 命名规范
 
@@ -680,7 +664,9 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] CI 在 `standard` 和 `full` 模式下冒烟测试通过
 - [ ] 错误信封解析 golden test 通过
 
-### M-22: GateSpec 通用抽象 (原 §7.8 M-14)
+### M-22: GateSpec 通用抽象 (原 §7.8 M-14) — deferred → Phase 3
+
+> **Scope Audit 收敛 (3/3)**: Defer to Phase 3。Phase 1 H-04 已提供足够的 gate registry。通用 GateSpec 抽象在多类型 gate (approval/quality/convergence) 需要统一策略时才有价值。
 
 **依赖**: H-04 (Gate Registry)
 **关联**: C-01 (审批超时)
@@ -771,18 +757,19 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] 存量 `as any` 不触发 CI (diff-scoped)
 - [ ] `.catch(() => {})` 同等检测
 
-### NEW-R03b: Python 异常 AutoresearchError 迁移 ★深度重构
+### NEW-R03b: Python 异常处理规范化 ★深度重构
 
 > **来源**: `docs/2026-02-20-deep-refactoring-analysis.md` §3 Phase (b)
+> **H-01 简化影响**: 不创建 `AutoresearchError` 独立类型。Python 侧为退役路径，采用标准 Python 异常层次 + 域特定异常类（如 `CalcError`, `EvidenceError`）替代宽泛 catch。
 
-**依赖**: H-01 (AutoresearchError 定义)
+**依赖**: H-01 (McpError 扩展，提供错误码映射参考)
 
-**现状**: 281 个广泛异常处理器需要迁移到 `AutoresearchError` 子类型。Phase (a) P0 审计已完成后，此项为系统性迁移。
-**策略**: 按子模块逐步迁移 `except Exception:` 为具体的 `AutoresearchError` 子类型 catch。
+**现状**: 281 个广泛异常处理器需要规范化。Phase (a) P0 审计已完成后，此项为系统性迁移。
+**策略**: 按子模块逐步迁移 `except Exception:` 为具体的域特定异常 catch（Python 退役路径，不引入 McpError）。
 
 **验收检查点**:
-- [ ] 所有 `except Exception:` 替换为具体子类型或有 CONTRACT-EXEMPT 标记
-- [ ] 错误类型映射与 H-01 映射表一致
+- [ ] 所有 `except Exception:` 替换为具体域异常或有 CONTRACT-EXEMPT 标记
+- [ ] 错误码与 H-01 McpError 错误码映射表对齐（供 MCP 边界转换参考）
 
 ### NEW-R04: Zotero 工具整合 ★深度重构
 
@@ -804,20 +791,12 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] Zotero 工具功能无回归 (现有测试通过)
 - [ ] 去重 ≥2000 LOC
 
-### NEW-R09: `orchestrator_cli.py` 拆分 (条件性) ★深度重构
+### NEW-R09: `orchestrator_cli.py` 拆分 — CUT ★深度重构
 
-> **来源**: `docs/2026-02-20-deep-refactoring-analysis.md` §9, NEW-R01 子项
+> **Scope Audit 收敛 (3/3)**: CUT。hep-autoresearch 整体退役（TS orchestrator 替代），不单独拆分 Python 代码。
 
-**依赖**: 无硬依赖
-**决策门禁**: Phase 1 启动时评估 — 如果 NEW-05a 确认从零重写编排器 (而非重构现有 Python 代码)，此项自动降级为 P3 或取消。
-
-**现状**: `orchestrator_cli.py` 6041 LOC → 目标拆分为 ~13 个模块，每个 ≤200 eLOC。
-**目标模块**: `cli/parser.py`, `cli/commands/{run,status,approve,export}.py`, `orchestrator/engine.py`, `orchestrator/workflow.py`, 等。
-
-**验收检查点**:
-- [ ] 拆分后所有模块 ≤200 eLOC (或有时间框定的 CONTRACT-EXEMPT)
-- [ ] 功能等价: 现有测试通过
-- [ ] 若决策门禁判定取消，此项标记 `cancelled:decision-gate`
+**状态**: cut
+**原因**: hep-autoresearch → TS orchestrator 迁移路径下，拆分 Python god-file 无投入产出价值。
 
 ### UX-01: 研究笔记与机器 Contract 分离 ★UX
 
@@ -895,11 +874,37 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] session_protocol_v1.md 定义了完整的阶段枚举和 Agent 行为规则
 - [ ] 用户输入 "我想研究 X" 时 Agent 能识别阶段并给出明确指引
 
+### NEW-CONN-01: Discovery next_actions hints (Pipeline 连通性)
+
+> **来源**: `meta/docs/pipeline-connectivity-audit.md` — Island 3 (Literature Discovery 无 next_actions)
+> **Phase**: 1 (Pipeline 连通性子项，~100 LOC)
+
+**依赖**: H-16a (done)
+
+**修改文件**:
+| 文件 | 修改内容 |
+|---|---|
+| `packages/hep-mcp/src/vnext/tools/inspire-search.ts` | 返回 JSON 添加 hint-only `next_actions` (papers.length > 0 时建议 `inspire_deep_research`, cap 10 recids) |
+| `packages/hep-mcp/src/vnext/tools/inspire-research-navigator.ts` | 同上 |
+| `packages/hep-mcp/src/vnext/tools/inspire-deep-research.ts` | mode=analyze 时建议 synthesize/write |
+| `packages/hep-mcp/src/vnext/tools/zotero-import.ts` | import 后建议 `inspire_deep_research` |
+
+**约束**:
+- 遵循现有 `{ tool, args, reason }` 惯例 (221+ 次使用, 33 个文件)
+- 确定性规则，不依赖 LLM
+- Hint-only，不自动执行
+- 使用 `TOOL_NAMES.*` 常量
+
+**验收检查点**:
+- [ ] `inspire_search` 返回含论文时，`next_actions` 非空
+- [ ] `next_actions` 中 recids 上限 10
+- [ ] `inspire_deep_research(mode=analyze)` → next_actions 建议 synthesize
+
 ### Phase 1 验收总检查点
 
 - [ ] 全部共享抽象 schema 通过 JSON Schema Draft 2020-12 验证
 - [ ] `make codegen-check` CI 门禁通过（JSON Schema → TS/Python 代码生成一致性）
-- [ ] `AutoresearchError` 映射表覆盖所有已知错误码
+- [ ] `McpError` 错误码映射表覆盖所有已知错误码（含 `retryable` + `retry_after_ms` 语义）
 - [ ] `RunState v1` 映射表覆盖所有组件状态
 - [ ] `hepar doctor` + `hepar bridge` 冒烟测试通过
 - [ ] Zotero 工具整合完成 (NEW-R04)
@@ -919,7 +924,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 ### H-05: 跨平台文件锁 + 启动时 reconcile
 
-**依赖**: H-01 (AutoresearchError), H-03 (RunState)
+**依赖**: H-01 (McpError), H-03 (RunState)
 
 **修改文件**:
 | 文件 | 修改内容 |
@@ -954,7 +959,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 ### H-09: 幂等性 CAS
 
-**依赖**: H-01 (AutoresearchError)
+**依赖**: H-01 (McpError)
 
 **修改文件**:
 | 文件 | 修改内容 |
@@ -1135,7 +1140,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 ### 全链路 trace_id + 结构化 JSONL 日志
 
-**依赖**: H-02 (trace_id), H-01 (AutoresearchError), **M-14a (日志脱敏层，前置条件)**
+**依赖**: H-02 (trace_id), H-01 (McpError), **M-14a (日志脱敏层，前置条件)**
 
 > **R7 注记 (Track B 设计审查)**: EVO-12a (技能自生成) 需要以下 trace event types 具有结构化 `data` schema: `file_edit` (file_path, diff, edit_type), `fix_applied` (file_path, fix_type, signal_context), `tool_call` (tool_name, params, result_status), `skill_invoked` (skill_id, trigger, result)。这些 event types 应在 trace-jsonl 的 event schema 规范中定义。
 
@@ -1211,9 +1216,11 @@ artifacts/runs/<run_id>/approvals/<approval_id>/
 - [ ] 报告含审计指针：每个引用的 artifact 附 URI + SHA256
 - [ ] `--out tex` 生成可编译的 LaTeX 文件
 
-### UX-02: 结构化计算代码目录 ★UX
+### UX-02: 结构化计算代码目录 + Computation Contract ★UX
 
 > **新增 (2026-02-22)**: research-team 的计算规划 (Draft_Derivation §6 Mapping to Computation) 与 hep-calc 的执行输入 (job.yml) 之间缺少标准化衔接；计算产出的代码文件散落在 artifacts 各 run 目录中，缺少统一的可复现结构。
+> **Scope Audit 升级 (2/3)**: 从目录布局升级为**计算契约 (Computation Contract)**: 可编译为 run-cards / skill jobs，含 acceptance checks + expected outputs。
+> **Pipeline 连通性审计追加**: 计算产出写入 `computation_evidence_catalog_v1.jsonl`（`ComputationEvidenceCatalogItemV1`，并行 schema，见 NEW-CONN-03），**不**写入 `EvidenceCatalogItemV1`（后者要求 `paper_id` + `LatexLocatorV1`，与计算产出语义不兼容）。如需在 writing pipeline 中消费计算证据，由 NEW-CONN-03 提供显式的有损转换步骤。
 
 **变更**:
 
@@ -1381,6 +1388,156 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] 5 个 adapter 各自产出 universal graph 并可渲染为 DOT/SVG
 - [ ] 现有 `render_claim_graph.py` 功能被 claim adapter 覆盖
 
+### NEW-RT-01: TS AgentRunner (Phase 2 early)
+
+> **来源**: Scope Audit 三模型收敛 — 欠工程化 Gap #2 (Agent Loop)
+> **CLI-First 架构**: Phase 1-2 CLI agents 作为 agent loop; AgentRunner 为 Phase 3+ 自建 agent loop 准备
+
+**依赖**: NEW-R15-impl
+**估计**: ~250 LOC
+
+**内容**: Anthropic SDK `messages.create` + tool dispatch + lane queue (per-run 串行化，借鉴 OpenClaw) + max_turns + approval gate injection。
+
+**不做**: 不引入外部 agent framework (Mastra/LangGraph/Pi)。SDK 管 model interaction，自建管 domain state。
+
+**验收**:
+- [ ] AgentRunner 可驱动 MCP 工具调用循环
+- [ ] per-run 工具调用串行化 (lane queue)
+- [ ] approval gate 注入: 遇到 gate 时暂停等待批准
+
+### NEW-RT-02: MCP StdioClient Reconnect (Phase 2 early)
+
+> **来源**: Scope Audit 三模型收敛 — 欠工程化 Gap #1 (Retry + Reconnect)
+
+**依赖**: H-19
+**估计**: ~100 LOC
+
+**内容**: 检测 MCP stdio 子进程断连 (exit/crash/timeout) + 自动重启 + session 恢复。
+
+**验收**:
+- [ ] MCP server 进程崩溃后自动重启
+- [ ] 重启后 session 恢复，pending 请求重试
+
+### NEW-RT-03: OTel-aligned Span Tracing (Phase 2 mid)
+
+> **来源**: Scope Audit 三模型收敛 — 欠工程化 Gap #3 (Structured Tracing)
+
+**依赖**: H-02
+**估计**: ~150 LOC
+
+**内容**: 手写 Span interface (参考 OTel 语义约定，不安装 SDK) + JSONL writer + dispatcher 集成。
+
+**不做**: 不安装 `@opentelemetry/api` 或完整 OTel SDK/Collector。
+
+**验收**:
+- [ ] 每个 tool call 产出 Span (trace_id, span_id, parent_span_id, name, duration_ms, status)
+- [ ] Span 写入 JSONL 文件，可用 jq 查询
+
+### NEW-RT-04: Durable Execution (Phase 2 late)
+
+> **来源**: Scope Audit 三模型收敛 — 欠工程化 Gap #4 (Durable Execution)
+
+**依赖**: NEW-RT-01
+**估计**: ~200 LOC
+
+**内容**: RunManifest `last_completed_step` + `resume_from` + checkpoint at step boundaries。
+
+**验收**:
+- [ ] AgentRunner 崩溃后可从 `last_completed_step` 恢复
+- [ ] `resume_from` 跳过已完成步骤
+
+### NEW-CONN-02: Review Feedback next_actions (Phase 2)
+
+> **来源**: `meta/docs/pipeline-connectivity-audit.md` — 评审反馈孤岛
+
+**依赖**: 无
+**估计**: ~60 LOC
+
+**内容**: `submitReview` 在 `follow_up_evidence_queries.length > 0` 时添加 `next_actions` (建议 `inspire_search` + `hep_run_build_writing_evidence`, max 5 queries, max 200 chars each)；在 `recommended_resume_from` 存在时建议具体 writing 工具。Hint-only。
+
+**验收**:
+- [ ] 有 evidence queries 的 review → next_actions 非空
+- [ ] next_actions 遵循 `{ tool, args, reason }` 惯例
+
+### NEW-CONN-03: Computation Evidence Ingestion (Phase 2)
+
+> **来源**: `meta/docs/pipeline-connectivity-audit.md` — Island 2 (W_compute + hep-calc CLI-only)
+> **关键 schema 决策**: `EvidenceCatalogItemV1` 是 LaTeX 特有的 (required `paper_id` + `LatexLocatorV1`)。计算结果**不能**存入此格式。创建并行的 `ComputationEvidenceCatalogItemV1` schema。
+
+**依赖**: NEW-COMP-01, NEW-01
+**估计**: ~250 LOC
+
+**内容**:
+1. 定义 `ComputationEvidenceCatalogItemV1` JSON Schema (SSOT in `meta/schemas/`, codegen via NEW-01): `source_type: "computation"`, `ComputationLocatorV1` (artifact_uri + json_pointer + artifact_sha256), domain-specific 字段 (value, uncertainty, unit)
+2. 实现 `hep_run_ingest_skill_artifacts` MCP 工具 (per NEW-COMP-01 spec): 读取 skill SSOT artifacts via ArtifactRef URI, 写入 `computation_evidence_catalog_v1.jsonl`
+3. 扩展 `buildRunEvidenceIndexV1` 合并计算 evidence 到 BM25 index (~30 LOC)
+
+**不做**: 不修改 `EvidenceCatalogItemV1`。LaTeX-only 消费者按 `paper_id` 过滤，自然跳过计算 evidence。
+
+**验收**:
+- [ ] `ComputationEvidenceCatalogItemV1` JSON Schema 定义完成
+- [ ] `hep_run_ingest_skill_artifacts` 可读取 skill artifacts 并写入 evidence catalog
+- [ ] BM25 index 合并两类 evidence
+
+### NEW-CONN-04: Idea → Run Creation (Phase 2B)
+
+> **来源**: `meta/docs/pipeline-connectivity-audit.md` — Island 1 (idea-core Python 孤岛)
+
+**依赖**: NEW-IDEA-01
+**估计**: ~150 LOC
+
+**内容**: `hep_run_create_from_idea` 接收 IdeaHandoffC2 URI, 创建 project + run, stage thesis/claims 为 outline seed, 返回 hint-only `next_actions` (inspire_search + build_evidence + ingest_skill_artifacts)。纯 staging，无网络调用。
+
+**验收**:
+- [ ] 从 IdeaHandoffC2 URI 创建 run
+- [ ] outline seed 包含 thesis/claims
+- [ ] next_actions 建议后续 pipeline 步骤
+
+### NEW-IDEA-01: idea-core MCP 桥接 (`@autoresearch/idea-mcp`) (Phase 2)
+
+> **来源**: Dual-Mode 架构收敛 — idea-core 孤岛连通
+> **性质**: 过渡方案 (桥接)，终态是 idea-engine TS 重写 (NEW-05a Stage 3)
+
+**依赖**: H-01, H-02, H-03, H-16a
+**估计**: ~400-800 LOC
+
+**内容**: MCP 工具暴露 idea-core Python API: `campaign.*`, `search.step`, `eval.run`。通过 JSON-RPC 调用现有 idea-core Python 进程。
+
+**验收**:
+- [ ] MCP 工具可创建 campaign 并执行 search step
+- [ ] idea-core 评估结果可通过 MCP 返回
+- [ ] 错误通过 McpError (retryable) 传播
+
+### NEW-COMP-01: W_compute MCP 工具表面设计 (Phase 2 late)
+
+> **来源**: Dual-Mode 架构收敛 — 安全先行
+> **追加 (Pipeline 连通性审计)**: 包含 `hep_run_ingest_skill_artifacts` 工具规格作为交付物 (single SSOT)
+
+**依赖**: C-02, NEW-R15-impl
+**估计**: ~200 LOC (设计文档)
+
+**内容**: W_compute MCP 工具表面安全模型设计: C-02 containment (命令/输出验证) + A3 default gating (计算执行需人类批准) + allowlist。交付物包含 `hep_run_ingest_skill_artifacts` 工具规格。
+
+**验收**:
+- [ ] 安全模型设计文档通过双模型审核
+- [ ] `hep_run_ingest_skill_artifacts` 工具规格定义完成
+- [ ] 工具表面与 C-02 containment 对齐
+
+### NEW-WF-01: Research Workflow Schema (Phase 2)
+
+> **来源**: Dual-Mode 架构收敛 — Must-Design-Now #1
+> **扩展 (Pipeline 连通性审计)**: schema 定义 entry point variants
+
+**依赖**: UX-04
+**估计**: ~100 LOC (schema)
+
+**内容**: `research_workflow_v1.schema.json` — 声明式研究工作流图 + 统一状态模型 + hash-in-ledger + 模板系统。Entry point variants: `from_literature`, `from_idea`, `from_computation`, `from_existing_paper`。初始引用 NEW-CONN-01~03，NEW-CONN-04 就绪后追加。
+
+**验收**:
+- [ ] schema 定义完成，含 nodes/edges/gates/entry_points
+- [ ] 至少 3 个模板: review, original_research, reproduction
+- [ ] entry point variants 覆盖 4 种起点
+
 ### Phase 2 验收总检查点
 
 - [ ] 进程崩溃恢复测试通过（原子写入 + 锁恢复 + 幂等性）
@@ -1505,7 +1662,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 > **来源**: `docs/2026-02-20-deep-refactoring-analysis.md` §13 — NEW-R15 Phase 2 交付物
 
-**依赖**: H-03 (RunState), H-02 (trace_id), H-01 (AutoresearchError), H-05 (跨平台文件锁), H-07 (原子文件写入), H-11a (风险分级), H-16a (工具名常量化), H-20 (配置加载), H-21 (数据存储位置), NEW-02 (审批产物)
+**依赖**: H-03 (RunState), H-02 (trace_id), H-01 (McpError), H-05 (跨平台文件锁), H-07 (原子文件写入), H-11a (风险分级), H-16a (工具名常量化), H-20 (配置加载), H-21 (数据存储位置), NEW-02 (审批产物)
 
 **交付**: 实现 NEW-R15-spec 中定义的 `orch_run_*` MCP 工具:
 - `orch_run_create` (幂等, idempotency_key)
@@ -1614,9 +1771,12 @@ paper/
 - [ ] research-writer 通过 MCP 工具生成论文 (不再独立 LaTeX 生成)
 - [ ] paper_manifest_v2.schema.json 包含 version + parent_version
 
-### UX-04: 结构化工具编排 Recipe ★UX
+### UX-04: 结构化工具编排 Recipe + Workflow Schema ★UX
 
 > **新增 (2026-02-22)**: Agent 依赖自然语言 skill (SKILL.md) 理解工具调用顺序，不同 Agent 理解可能不一致。同期合并 inspire_search + hep_inspire_search_export。
+> **Scope Audit 扩展 (2/3)**: 从静态 recipe 扩展为**可执行 workflow schema**: 含计算节点、`orch_run_*` gate 操作。Recipe 是 workflow schema 的具体实例化。详见 NEW-WF-01。
+
+**依赖**: NEW-06 (工具整合完成后定义 recipe), H-16a (工具名常量化), NEW-R15-impl (recipes 需要 orch_run_* 存在)
 
 **变更**:
 
@@ -1697,6 +1857,59 @@ paper/
 - [ ] `--idea-source` 注入时 system prompt 包含已评估 idea 列表
 - [ ] breakthrough lead schema 与 `idea_card_v1` 可相互转换
 - [ ] `idea-core campaign seed --from-innovation-log` 可提取 active leads
+
+### NEW-CONN-05: Cross-validation → Pipeline Feedback (Phase 3, deferred)
+
+> **来源**: `meta/docs/pipeline-connectivity-audit.md` — Island 4 (Cross-validation LaTeX-only 输入)
+
+**依赖**: NEW-CONN-03
+**估计**: ~100 LOC
+
+**内容**: `hep_run_build_measurements` 和 `hep_project_compare_measurements` 在发现 tension 时返回 `next_actions` 到 review/revision。扩展 measurements 消费计算 evidence。
+
+**验收**:
+- [ ] tension 发现时 next_actions 非空
+- [ ] measurements 可消费计算 evidence (ComputationEvidenceCatalogItemV1)
+
+### NEW-COMP-02: W_compute MCP 实现 (Phase 3)
+
+> **来源**: Dual-Mode 架构收敛
+
+**依赖**: NEW-COMP-01, C-02
+**估计**: ~500 LOC
+
+**内容**: `compute_run_card_v2` / `compute_status` / `compute_resolve_gate` MCP 工具实现，含 C-02 containment + A3 gating 安全防护。
+
+**验收**:
+- [ ] 可通过 MCP 提交计算任务并查询状态
+- [ ] A3 gating: 计算执行需人类批准
+- [ ] C-02 containment: 命令/输出路径验证
+
+### NEW-SKILL-01: lean4-verify Skill (Phase 3)
+
+> **来源**: Dual-Mode 架构收敛 — Lean4 形式化验证
+
+**依赖**: 无
+**估计**: ~200 LOC
+
+**内容**: `SKILL.md` + `run_lean4.sh` + `status.json`。Lean4 作为无状态验证节点: `lake build` 作为 subprocess，输入 `.lean` 定理文件，输出 PASS/FAIL + proved theorems list。
+
+**验收**:
+- [ ] `run_lean4.sh --project <path>` 可执行 Lean4 验证
+- [ ] `status.json` 包含 PASS/FAIL + proved theorems
+
+### NEW-RT-05: Eval Framework (Phase 3)
+
+> **来源**: Scope Audit 三模型收敛 — 欠工程化 Gap #6 (Eval)
+
+**依赖**: NEW-RT-01, NEW-RT-03
+**估计**: ~500 LOC
+
+**内容**: Agent-level 端到端评估框架，扩展现有 `tests/eval/`。
+
+**验收**:
+- [ ] 可定义评估场景并自动运行
+- [ ] 评估结果可追踪到 Span
 
 ### Phase 3 验收总检查点
 
@@ -1816,7 +2029,7 @@ paper/
 | 产物 | 内容 | 生成方式 |
 |---|---|---|
 | `tool_catalog.{standard,full}.json` | 工具名 + 参数 schema + 版本 | `pnpm catalog` (C-03) |
-| `error_code_registry.json` | 全部错误码 + retryable + 映射 | 从 H-01 AutoresearchError 导出 |
+| `error_code_registry.json` | 全部错误码 + retryable + 映射 | 从 H-01 McpError 扩展导出 |
 | `run_state_v1.json` | 状态枚举 + 映射表 | 从 H-03 schema 导出 |
 | `gate_registry.json` | Gate 枚举 + GateSpec | 从 H-04/M-22 导出 |
 | `artifact_naming_rules.json` | 命名正则 + 示例 | 从 M-01 lint 脚本导出 |
@@ -1847,6 +2060,8 @@ paper/
 > **路径说明**: 本 Phase 中 `idea-core/src/idea_core/` 路径在执行时已迁移为 `packages/idea-engine/src/` (TypeScript)，Python 路径仅为逻辑对应参考。
 
 ### EVO-01: idea→理论计算自动执行闭环
+
+> **依赖追加 (v1.8.0)**: UX-02 (computation contract), UX-04 (workflow schema), NEW-R15-impl (orch_run_*), NEW-COMP-01 (compute MCP 安全设计)
 
 **现状**: idea-core 输出 IdeaCard (自然语言)，C2 method_design 生成方法规格，但无法自动翻译为可执行的计算任务。hep-calc 可驱动 FeynCalc/FeynArts/FormCalc，但需要人类编写调用代码。
 
@@ -1887,6 +2102,8 @@ paper/
 **验收**: 计算结果自动回流到 idea-core，触发评分更新和树搜索剪枝。
 
 ### EVO-03: 结果→writing evidence 自动映射 + 审稿修订循环
+
+> **依赖追加 (v1.8.0)**: NEW-IDEA-01 (idea→writing evidence 需要 idea MCP)
 
 **修改内容**:
 
@@ -2381,13 +2598,14 @@ paper/
 
 | Phase | 缺陷 ID | 数量 |
 |---|---|---|
-| **0 (止血)** | NEW-05, NEW-05a, C-01, C-02, C-03, C-04, H-08, H-14a, H-20, **NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec** | 13 |
-| **1 (统一抽象)** | H-01, H-02, H-03, H-04, H-13, H-15a, H-16a, H-17, H-18, H-19, M-01, M-18, M-19, M-22, H-11a, M-14a, NEW-01, **NEW-R02, NEW-R03b, NEW-R04, NEW-R09**, **UX-01, UX-05, UX-06** | 24 |
-| **2 (深度集成)** | H-05, H-07, H-09, H-10, H-11b, H-12, H-15b, H-16b, H-21, M-02, M-05, M-06, M-20, M-21, M-23, trace-jsonl, NEW-02, NEW-03, NEW-04, **NEW-R05, NEW-R05a, NEW-R06, NEW-R07, NEW-R08, NEW-R10, NEW-R14, NEW-R15-impl**, **UX-02, UX-07**, **RT-02, RT-03**, **NEW-VIZ-01** | 32 |
-| **3 (扩展性)** | M-03, M-04, M-07, M-08, M-09, M-10, M-12, M-13, M-15, M-16, M-17, L-08, NEW-06, **NEW-R11, NEW-R12**, **UX-03, UX-04**, **RT-01, RT-04** | 19 |
+| **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
+| **1 (统一抽象)** | H-01, H-02, H-03 ✅, H-04 ✅, H-13, H-15a ✅, H-16a ✅, H-18 ✅, H-19, M-01, M-18, M-19, H-11a ✅, M-14a, NEW-01 ✅, NEW-R02, NEW-R03b, NEW-R04, UX-01, UX-05, UX-06, **NEW-CONN-01** | 22 (7 done, ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05, H-07, H-09, H-10, H-11b, H-12, H-15b, H-16b, H-17, H-21, M-02, M-05, M-06, M-20, M-21, M-23, trace-jsonl, NEW-02~04, NEW-R05~R08, NEW-R10, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02, RT-03, NEW-VIZ-01, **NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 |
+| **3 (扩展性 + 计算连通)** | M-03, M-04, M-07~M-10, M-12, M-13, M-15~M-17, M-22, L-08, NEW-06, NEW-R11, NEW-R12, UX-03, UX-04, RT-01, RT-04, **NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete)** | 24 |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 |
 | **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 |
-| **跨 Phase (伞)** | **NEW-R01** | 1 |
-| **总计** | | **119** |
+| **跨 Phase (伞)** | NEW-R01 | 1 |
+| **CUT** | NEW-R09 | 1 |
+| **总计** | | **135** (119 原 + 15 新增 + 1 cut) |
 
-> **Note**: NEW-R01 (God-file splitting umbrella) 是跟踪项，子项为 NEW-R09 (Phase 1), NEW-R10 (Phase 2), NEW-R11 (Phase 3)。NEW-R05a (Pydantic v2 评估) 为 NEW-R05 子项。NEW-R09/R10 为条件性项 (有决策门禁)。NEW-R13 (包重命名) 已从条件性升级为确定性，移至 Phase 0 与 NEW-05 同步执行。UX-01~07 来自 `docs/user-stories-ux-gaps.md` 的 GAP 分析 + SLIM 工具精简。NEW-R15-impl 增加 `orch_policy_query` (GAP-06)。EVO-03 增加审稿修订循环 (GAP-05)。RT-01~04 来自 `docs/design-proposal-research-team-v2.md` (R4 dual-model READY: Codex 0 BLOCKER + Gemini 0 BLOCKER)。NEW-VIZ-01 来自 `docs/graph-visualization-layer.md` (9 轮双模型审查 CONVERGED)，Phase 2 通用基础设施。
+> **Note**: v1.8.0 变更: 新增 15 项 (NEW-CONN-01~05, NEW-IDEA-01, NEW-COMP-01/02, NEW-WF-01, NEW-SKILL-01, NEW-RT-01~05)。修改 13 项 (H-01 简化, H-04 冻结, H-15a 冻结, H-17 deferred, M-22 deferred, NEW-R09 cut, NEW-05a re-scoped, UX-02 升级, UX-04 扩展, EVO-01/02/03 依赖追加, NEW-WF-01 entry points, NEW-COMP-01 ingest tool)。来源: 三模型 scope audit 收敛 + 双模型 Pipeline 连通性审计 R4 收敛 + CLI-First Dual-Mode 架构收敛。
