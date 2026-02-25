@@ -159,22 +159,26 @@
         },
         "H-01": {
           "title": "McpError += retryable + retry_after_ms",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "H-14a"
           ],
-          "note": "Scope Audit 3/3: McpError += retryable + retry_after_ms. ~20 LOC."
+          "note": "done. McpError += retryable + retryAfterMs; RETRYABLE_BY_CODE map; toJSON includes both. ~30 LOC.",
+          "completed_at": "2026-02-25"
         },
         "H-02": {
           "title": "最小可观测性 (trace_id)",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
           "depends_on": [
             "H-01"
-          ]
+          ],
+          "note": "done. shared/tracing.ts + dispatcher trace_id injection + Python trace_id in call_tool_json/ledger.",
+          "completed_at": "2026-02-25"
+        }
         },
         "H-03": {
           "title": "RunState v1 统一枚举",
@@ -244,12 +248,14 @@
         },
         "H-19": {
           "title": "失败分类 + 重试策略",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "H-01"
-          ]
+          ],
+          "note": "done. TS: shared/retry-policy.ts + orchestrator/retry.ts (retryWithBackoff). Python stopgap: toolkit/retry.py (delete after TS validation).",
+          "completed_at": "2026-02-25"
         },
         "M-01": {
           "title": "Artifact 命名规范",
@@ -363,13 +369,14 @@
         },
         "NEW-CONN-01": {
           "title": "Discovery next_actions hints",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
           "depends_on": [
             "H-16a"
           ],
-          "note": "Pipeline connectivity: hint-only next_actions. ~100 LOC."
+          "note": "done. discoveryHints.ts helper + integrated in inspire_search, inspire_research_navigator, inspire_deep_research, hep_import_from_zotero.",
+          "completed_at": "2026-02-25"
         }
       }
     },

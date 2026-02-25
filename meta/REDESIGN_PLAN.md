@@ -440,8 +440,9 @@ autoresearch/                    # private monorepo (personal GitHub)
 | `ApprovalPacket v1` | `autoresearch-meta/schemas/approval_packet_v1.schema.json` | (不消费) | 生成 dataclass |
 | Artifact 命名规范 | `autoresearch-meta/ECOSYSTEM_DEV_CONTRACT.md` §Artifact | lint 脚本检查 | lint 脚本检查 |
 
-### H-01: McpError 扩展 (retryable + retry_after_ms)
+### H-01: McpError 扩展 (retryable + retry_after_ms) ✅ (已实现)
 
+> **状态**: done。在 `McpError` 中添加 `retryable: boolean` + `retryAfterMs?: number`，根据 `ErrorCode` 自动推断。~30 LOC。
 > **Scope Audit 收敛 (3/3)**: 不创建独立 `AutoresearchErrorEnvelope`。在现有 `McpError` (`packages/shared/src/errors.ts`) 中添加 `retryable` + `retry_after_ms` 两个字段即可。~20 LOC。
 
 **依赖**: H-14a (Phase 0, done)
@@ -472,7 +473,9 @@ UNSAFE_FS       → retryable=false
 - [ ] `new McpError('RATE_LIMIT', ...)` → `retryable === true`
 - [ ] `new McpError('INVALID_PARAMS', ...)` → `retryable === false`
 
-### H-02: 最小可观测性 (trace_id)
+### H-02: 最小可观测性 (trace_id) ✅ (已实现)
+
+> **状态**: done。`packages/shared/src/tracing.ts` 提供 `generateTraceId()` + `extractTraceId()`。dispatcher 每次 tool call 注入 trace_id，错误响应包含 trace_id + retryable。Python 侧 `call_tool_json()` 注入 `_trace_id`，`append_ledger_event()` 支持 `trace_id` 参数。
 
 **依赖**: H-01 (McpError.retryable — trace_id 在 dispatcher 层注入)
 **关联**: H-19
@@ -600,7 +603,9 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] 所有跨组件 artifact 指针输出包含 `ArtifactRefV1`
 - [ ] 消费者可通过 `sha256` + `size_bytes` 验证完整性
 
-### H-19: 失败分类 + 重试/退避策略
+### H-19: 失败分类 + 重试/退避策略 ✅ (已实现)
+
+> **状态**: done。TS 主实现: `packages/shared/src/retry-policy.ts` (RetryPolicy type) + `packages/orchestrator/src/retry.ts` (retryWithBackoff)。Python 临时 stopgap: `hep-autoresearch/.../retry.py`。Python 侧待 TS orchestrator 验收后立即删除。
 
 **依赖**: H-01 (McpError.retryable)
 
@@ -875,7 +880,9 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] session_protocol_v1.md 定义了完整的阶段枚举和 Agent 行为规则
 - [ ] 用户输入 "我想研究 X" 时 Agent 能识别阶段并给出明确指引
 
-### NEW-CONN-01: Discovery next_actions hints (Pipeline 连通性)
+### NEW-CONN-01: Discovery next_actions hints (Pipeline 连通性) ✅ (已实现)
+
+> **状态**: done。`packages/hep-mcp/src/tools/utils/discoveryHints.ts` 提供 `discoveryNextActions()` / `deepResearchAnalyzeNextActions()` / `zoteroImportNextActions()`。已集成到 `inspire_search`、`inspire_research_navigator`、`inspire_deep_research`、`hep_import_from_zotero` 四个 handler。
 
 > **来源**: `meta/docs/pipeline-connectivity-audit.md` — Island 3 (Literature Discovery 无 next_actions)
 > **Phase**: 1 (Pipeline 连通性子项，~100 LOC)
@@ -2600,13 +2607,13 @@ paper/
 | Phase | 缺陷 ID | 数量 |
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
-| **1 (统一抽象)** | H-01, H-02, H-03 ✅, H-04 ✅, H-13, H-15a ✅, H-16a ✅, H-18 ✅, H-19, M-01, M-18, M-19, H-11a ✅, M-14a, NEW-01 ✅, NEW-R02, NEW-R03b, NEW-R04, UX-01, UX-05, UX-06, **NEW-CONN-01** | 22 (7 done, ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
+| **1 (统一抽象)** | H-01 ✅, H-02 ✅, H-03 ✅, H-04 ✅, H-13, H-15a ✅, H-16a ✅, H-18 ✅, H-19 ✅, M-01, M-18, M-19, H-11a ✅, M-14a, NEW-01 ✅, NEW-R02, NEW-R03b, NEW-R04, UX-01, UX-05, UX-06, **NEW-CONN-01** ✅ | 22 (11 done, ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05, H-07, H-09, H-10, H-11b, H-12, H-15b, H-16b, H-17, H-21, M-02, M-05, M-06, M-20, M-21, M-23, trace-jsonl, NEW-02~04, NEW-R05~R08, NEW-R10, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02, RT-03, NEW-VIZ-01, **NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 |
 | **3 (扩展性 + 计算连通)** | M-03, M-04, M-07~M-10, M-12, M-13, M-15~M-17, M-22, L-08, NEW-06, NEW-R11, NEW-R12, UX-03, UX-04, RT-01, RT-04, **NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete)** | 24 |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 |
 | **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 |
 | **跨 Phase (伞)** | NEW-R01 | 1 |
 | **CUT** | NEW-R09 | 1 |
-| **总计** | | **135** (119 原 + 15 新增 + 1 cut) |
+| **总计** | | **135** (119 原 + 15 新增 + 1 cut) — 25 done |
 
 > **Note**: v1.8.0 变更: 新增 15 项 (NEW-CONN-01~05, NEW-IDEA-01, NEW-COMP-01/02, NEW-WF-01, NEW-SKILL-01, NEW-RT-01~05)。修改 13 项 (H-01 简化, H-04 冻结, H-15a 冻结, H-17 deferred, M-22 deferred, NEW-R09 cut, NEW-05a re-scoped, UX-02 升级, UX-04 扩展, EVO-01/02/03 依赖追加, NEW-WF-01 entry points, NEW-COMP-01 ingest tool)。来源: 三模型 scope audit 收敛 + 双模型 Pipeline 连通性审计 R4 收敛 + CLI-First Dual-Mode 架构收敛。
