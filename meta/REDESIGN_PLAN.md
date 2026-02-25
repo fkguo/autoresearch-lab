@@ -38,6 +38,7 @@
 > - 数据格式迁移脚本（直接采用新 schema，旧数据可丢弃重建）
 > - 运行时版本协商或兼容性矩阵维护
 > - 字段设为 optional "以兼容旧数据"——如果语义上应该 required，就直接 required
+> - **临时 stopgap / Python 退役路径保留缓冲期** — 一旦 TS 替代方案实现并通过验收，Python 侧对应功能必须**立即删除**，不留缓冲期，避免遗忘导致死代码累积
 >
 > 各项设计应追求最终形态的简洁性，而非增量兼容性。
 
@@ -603,7 +604,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 **依赖**: H-01 (McpError.retryable)
 
-> **Scope Audit 对齐 (v1.8.0)**: 运行时基础设施只建在 TS 侧。H-19 的 **主实现** 在 TS orchestrator (`packages/orchestrator/`)，供 NEW-RT-01/02 依赖。Python 侧为 **临时 stopgap**（Pipeline A 退役前维持基本重试能力），随 Phase 4+ Pipeline A 退役一并移除。
+> **Scope Audit 对齐 (v1.8.0)**: 运行时基础设施只建在 TS 侧。H-19 的 **主实现** 在 TS orchestrator (`packages/orchestrator/`)，供 NEW-RT-01/02 依赖。Python 侧为 **临时 stopgap**（Pipeline A 退役前维持基本重试能力）。**一旦 TS 实现就绪并通过验收，Python 侧 retry.py + mcp_stdio_client.py 中的重试逻辑必须立即删除，不设缓冲期**（开发阶段无外部用户，无向后兼容负担）。
 
 **修改文件**:
 | 文件 | 修改内容 |
