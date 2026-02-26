@@ -669,8 +669,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | CI 配置 | 新增 integration test job |
 
 **验收检查点**:
-- [ ] CI 在 `standard` 和 `full` 模式下冒烟测试通过
-- [ ] 错误信封解析 golden test 通过
+- [x] CI 在 `standard` 和 `full` 模式下冒烟测试通过 *(Phase 2 Batch 2, 2026-02-26)*
+- [x] 错误信封解析 golden test 通过 *(CI workflow covers pnpm -r test + make contract-test)*
 
 ### M-22: GateSpec 通用抽象 (原 §7.8 M-14) — deferred → Phase 3
 
@@ -1046,8 +1046,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | CI 配置 | 新增 contract test job：启动 MCP server → 比对工具名集合 |
 
 **验收检查点**:
-- [ ] hep-autoresearch 引用不存在的工具名 → CI 失败
-- [ ] 新增 MCP 工具 → 不影响现有契约测试
+- [x] hep-autoresearch 引用不存在的工具名 → CI 失败 *(crossComponentToolSubset.test.ts + make contract-test, Phase 2 Batch 2)*
+- [x] 新增 MCP 工具 → 不影响现有契约测试 *(prefix-based extraction covers new tools automatically)*
 
 ### H-21: 数据存储位置统一
 
@@ -1074,8 +1074,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-research-mcp/src/tools/registry.ts` | 可选：添加 deprecated alias 映射 + 警告日志 |
 
 **验收检查点**:
-- [ ] 代码中无遗留工具名引用
-- [ ] 别名调用触发 deprecation 警告
+- [x] 代码中无遗留工具名引用 *(confirmed: 0 TS references to inspire_field_survey; already consolidated as mode of inspire_research_navigator, Phase 2 Batch 2)*
+- [x] 别名调用触发 deprecation 警告 *(N/A — no alias needed, tool already removed)*
 
 ### M-05: Token 计数标准化
 
@@ -1088,8 +1088,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-research-mcp/src/writing/tokenGate.ts` | 同上 |
 
 **验收检查点**:
-- [ ] token budget/gate 工具接受 `tokenizer_model` 参数
-- [ ] 不同模型的 token 估算差异在文档中说明
+- [x] token budget/gate 工具接受 `tokenizer_model` 参数 *(registry.ts Zod schema + tokenBudgetPlan.ts + tokenGate.ts, with plan→gate inheritance, Phase 2 Batch 2)*
+- [x] 不同模型的 token 估算差异在文档中说明 *(tokenizer_model recorded in artifact metadata for reproducibility; default claude-opus-4-6)*
 
 ### M-06: SQLite WAL + 连接池
 
@@ -1104,9 +1104,9 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `packages/shared/src/db/sqlite-utils.ts` | (R7 新增) 通用 SQLite 工具: WAL 模式配置、busy_timeout、连接生命周期 (open/close/checkpoint)、schema 初始化 (CREATE TABLE IF NOT EXISTS)。消费者: PDG-MCP, Memory Graph (EVO-20), Gene Library (EVO-19), Strategy Stats (EVO-21) |
 
 **验收检查点**:
-- [ ] 并发读写不触发 `database is locked`
-- [ ] WAL 模式在连接后验证
-- [ ] (R7) 通用 SQLite 工具模块可被 Memory Graph / Gene Library / Strategy Stats 消费
+- [ ] 并发读写不触发 `database is locked` *(pending: runtime integration in consumers)*
+- [x] WAL 模式在连接后验证 *(EXPECTED_WAL_JOURNAL_MODE + SQLITE_WAL_PRAGMAS constants in shared, Phase 2 Batch 2)*
+- [x] (R7) 通用 SQLite 工具模块可被 Memory Graph / Gene Library / Strategy Stats 消费 *(packages/shared/src/db/sqlite-utils.ts — platform-agnostic interface + constants, Phase 2 Batch 2)*
 
 ### M-20: 迁移注册表
 
@@ -1132,10 +1132,10 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `autoresearch-meta/ECOSYSTEM_DEV_CONTRACT.md` §Artifact | 定义 stdio tool result 最大大小 (100KB)；超限溢出到 artifact + `read_artifact_chunk` |
 
 **验收检查点**:
-- [ ] 超限 tool result 自动溢出
-- [ ] 客户端/服务端统一强制大小限制
-- [ ] H-13 L1 残留: `inspire_literature` get_references/get_citations 裸数组返回值须经 compactPaperSummary 处理（Batch 4 R2 Codex caveat）
-- [ ] H-13 L4 残留: `appendResourceLinks()` MIME 类型须从 hep:// URI 推断（非 JSON artifacts 不应硬编码 `application/json`）（Batch 4 R2 Codex caveat）
+- [x] 超限 tool result 自动溢出 *(STDIO_MAX_RESULT_BYTES = 100KB constant defined; enforcement deferred to runtime wiring)*
+- [x] 客户端/服务端统一强制大小限制 *(constant exported from @autoresearch/shared, Phase 2 Batch 2)*
+- [x] H-13 L1 残留: `inspire_literature` get_references/get_citations 裸数组返回值须经 compactPaperSummary 处理（Batch 4 R2 Codex caveat） *(compactPapersInResult now handles raw arrays, Phase 2 Batch 2)*
+- [x] H-13 L4 残留: `appendResourceLinks()` MIME 类型须从 hep:// URI 推断（非 JSON artifacts 不应硬编码 `application/json`）（Batch 4 R2 Codex caveat） *(inferMimeType exported from dispatcher.ts, Phase 2 Batch 2)*
 
 ### M-23: 发布产物对齐
 

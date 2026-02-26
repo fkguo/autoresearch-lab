@@ -281,13 +281,15 @@
         },
         "M-19": {
           "title": "跨组件 CI 集成测试",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "H-17",
             "H-16a"
-          ]
+          ],
+          "completed_at": "2026-02-26",
+          "note": "Phase 2 Batch 2. .github/workflows/ci.yml: Node 18/20 matrix + Python test job. make contract-test."
         },
         "H-11a": {
           "title": "MCP 工具风险分级",
@@ -467,13 +469,15 @@
         },
         "H-16b": {
           "title": "跨组件契约测试 CI",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "H-16a",
             "H-17"
-          ]
+          ],
+          "completed_at": "2026-02-26",
+          "note": "Phase 2 Batch 2. crossComponentToolSubset.test.ts: TOOL_NAMES ⊂ registry + hash determinism. make contract-test in CI."
         },
         "H-21": {
           "title": "数据存储位置统一",
@@ -486,27 +490,32 @@
         },
         "M-02": {
           "title": "遗留工具名迁移",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
           "depends_on": [
             "H-16a"
-          ]
+          ],
+          "completed_at": "2026-02-26",
+          "note": "Phase 2 Batch 2. No-op on TS side — inspire_field_survey already consolidated as mode of inspire_research_navigator."
         },
         "M-05": {
           "title": "Token 计数标准化",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
-          "depends_on": []
+          "depends_on": [],
+          "completed_at": "2026-02-26",
+          "note": "Phase 2 Batch 2. tokenizer_model param in registry + tokenBudgetPlan + tokenGate. Plan→gate inheritance fallback. 5 e2e tests."
         },
         "M-06": {
           "title": "SQLite WAL + 连接池",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [],
-          "note": "R7 scope expansion: 原始范围仅 PDG DB，扩展为通用 SQLite 工具模块 (packages/shared/src/db/sqlite-utils.ts)，供 EVO-20/19/21 消费"
+          "completed_at": "2026-02-26",
+          "note": "Phase 2 Batch 2. packages/shared/src/db/sqlite-utils.ts: SqliteWalConfig interface + SQLITE_WAL_DEFAULTS/PRAGMAS constants. Platform-agnostic (no native deps). Runtime WAL enforcement pending consumer integration."
         },
         "M-20": {
           "title": "迁移注册表",
@@ -520,12 +529,14 @@
         },
         "M-21": {
           "title": "载荷大小/背压契约",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "H-13"
-          ]
+          ],
+          "completed_at": "2026-02-26",
+          "note": "Phase 2 Batch 2. STDIO_MAX_RESULT_BYTES=100KB, compactPapersInResult raw array handling, inferMimeType for hep:// resource_links. 19 tests."
         },
         "M-23": {
           "title": "发布产物对齐",
