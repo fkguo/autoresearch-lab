@@ -1056,7 +1056,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 **修改文件**:
 | 文件 | 修改内容 |
 |---|---|
-| `hep-autoresearch/src/hep_autoresearch/toolkit/mcp_stdio_client.py` | 默认配置 `HEP_DATA_DIR` 为 `~/.hep-research-mcp`（与 ECOSYSTEM_DEV_CONTRACT CFG-01 对齐）；可通过 env 覆盖 |
+| `hep-autoresearch/src/hep_autoresearch/toolkit/mcp_stdio_client.py` | 默认配置 `HEP_DATA_DIR` 为 `~/.hep-mcp`（与 TS 侧 dataDir.ts 对齐）；可通过 env 覆盖 |
 | 文档 | 说明 `HEP_DATA_DIR=.` 的项目相对模式 |
 
 **验收检查点**:
