@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.8.0-draft",
-  "updated_at": "2026-02-26T10:52:00Z",
+  "updated_at": "2026-02-26T16:10:00Z",
   "note": "v1.8.0-draft: Scope Audit + Pipeline Connectivity + CLI-First Dual-Mode. 135 items.",
   "phases": {
     "0": {
@@ -401,13 +401,15 @@
       "items": {
         "H-05": {
           "title": "跨平台文件锁",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "H-01",
             "H-03"
-          ]
+          ],
+          "completed_at": "2026-02-26",
+          "note": "Phase 2 Batch 3. FileLock class with fcntl.flock, timeout, metadata, stale detection. Replaced inline state_lock contextmanager. NOT reentrant (documented). 7 tests."
         },
         "H-07": {
           "title": "原子文件写入",
@@ -419,21 +421,25 @@
         },
         "H-09": {
           "title": "幂等性 CAS",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "H-01"
-          ]
+          ],
+          "completed_at": "2026-02-26",
+          "note": "Phase 2 Batch 3. transition_state() with CAS: read inside lock, validate run_id + expected_status, atomic persist. 7 tests."
         },
         "H-10": {
           "title": "Ledger 事件枚举",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
           "depends_on": [
             "H-03"
-          ]
+          ],
+          "completed_at": "2026-02-26",
+          "note": "Phase 2 Batch 3. EventType(str, Enum) with 21 members. validate_event_type() called in append_ledger_event(). 6 tests."
         },
         "H-11b": {
           "title": "MCP 权限组合策略",
@@ -481,12 +487,14 @@
         },
         "H-21": {
           "title": "数据存储位置统一",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
           "depends_on": [
             "H-20"
-          ]
+          ],
+          "completed_at": "2026-02-26",
+          "note": "Phase 2 Batch 3. .hep-research-mcp → .hep-mcp across mcp_config.py, method_design.py, project_scaffold.py, orchestrator_cli.py, workspace.json, .gitignore."
         },
         "M-02": {
           "title": "遗留工具名迁移",
@@ -540,12 +548,14 @@
         },
         "M-23": {
           "title": "发布产物对齐",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
           "depends_on": [
             "H-16a"
-          ]
+          ],
+          "completed_at": "2026-02-26",
+          "note": "Phase 2 Batch 3. make release target: pnpm build → codegen → check_version_sync.sh. Catches pyproject.toml vs package.json version mismatch."
         },
         "trace-jsonl": {
           "title": "全链路 trace_id + JSONL 日志",
@@ -622,11 +632,13 @@
         },
         "NEW-R07": {
           "title": "hep-autoresearch 测试覆盖门禁",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
           "depends_on": [],
-          "source": "deep-refactoring-analysis"
+          "source": "deep-refactoring-analysis",
+          "completed_at": "2026-02-26",
+          "note": "Phase 2 Batch 3. check_test_coverage_gate.py: 33-file baseline whitelist, new source files must have tests. make test-coverage-gate target."
         },
         "NEW-R08": {
           "title": "Skills LOC 预算",

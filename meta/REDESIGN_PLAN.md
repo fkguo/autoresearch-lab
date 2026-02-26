@@ -944,9 +944,9 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-autoresearch/src/hep_autoresearch/toolkit/orchestrator_state.py` | ledger `event_id` 改为单调递增序列号 |
 
 **验收检查点**:
-- [ ] macOS + Linux 上锁行为一致
-- [ ] 进程崩溃后重启 → 自动检测过期锁并恢复
-- [ ] ledger `event_id` 严格单调递增
+- [x] macOS + Linux 上锁行为一致
+- [x] 进程崩溃后重启 → 自动检测过期锁并恢复
+- [x] ledger `event_id` 严格单调递增
 
 ### H-07: 原子文件写入
 
@@ -977,8 +977,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `idea-core/src/idea_core/engine/service.py` | `_record_or_replay` + `_store_idempotency` 合并为原子操作：使用 `filelock` 保护 + 修订计数器 |
 
 **验收检查点**:
-- [ ] 并发提交相同 `idempotency_key` → 仅一个成功，另一个返回已有结果
-- [ ] 进程崩溃在副作用提交后 → 幂等性记录已保存
+- [x] 并发提交相同 `idempotency_key` → 仅一个成功，另一个返回已有结果
+- [x] 进程崩溃在副作用提交后 → 幂等性记录已保存
 
 ### H-10: Ledger 事件类型枚举
 
@@ -991,8 +991,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-autoresearch/src/hep_autoresearch/toolkit/orchestrator_state.py` | `append_ledger()` 验证 `event_type` 属于枚举；非枚举值拒绝写入 |
 
 **验收检查点**:
-- [ ] 非枚举 `event_type` 写入时抛出 `ValueError`
-- [ ] 现有 ledger 事件全部可映射到枚举值
+- [x] 非枚举 `event_type` 写入时抛出 `ValueError`
+- [x] 现有 ledger 事件全部可映射到枚举值
 
 ### H-11b: MCP 权限组合策略
 
@@ -1060,8 +1060,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | 文档 | 说明 `HEP_DATA_DIR=.` 的项目相对模式 |
 
 **验收检查点**:
-- [ ] 移动项目目录后 `hepar status` 仍能找到所有 artifact
-- [ ] `HEP_DATA_DIR` 环境变量覆盖默认值
+- [x] 移动项目目录后 `hepar status` 仍能找到所有 artifact
+- [x] `HEP_DATA_DIR` 环境变量覆盖默认值
 
 ### M-02: 遗留工具名迁移
 
@@ -1147,8 +1147,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `Makefile` (根目录) | 新增 `release` target：`pnpm build` → `generate_tool_catalog` → `generate_tool_names.py` → 统一版本号 |
 
 **验收检查点**:
-- [ ] `make release` 一键构建 TS + 生成 Python 绑定
-- [ ] 版本号在 `package.json` 和 `pyproject.toml` 中一致
+- [x] `make release` 一键构建 TS + 生成 Python 绑定
+- [x] 版本号在 `package.json` 和 `pyproject.toml` 中一致
 
 ### 全链路 trace_id + 结构化 JSONL 日志
 
@@ -1558,7 +1558,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] 审批三件套产物生成正确（packet_short.md ≤1页, packet.md 全量, approval_packet_v1.json 通过 schema）
 - [ ] `hepar approvals show` + `hepar report render` 命令可用
 - [ ] 证据抽象层 schema 定义完成 (NEW-R05)
-- [ ] hep-autoresearch 测试覆盖门禁 CI 就绪 (NEW-R07)
+- [x] hep-autoresearch 测试覆盖门禁 CI 就绪 (NEW-R07)
 - [ ] NEW-R15 编排器 MCP 工具实现 (`orch_run_*` + `orch_policy_query`) 可用
 - [ ] `computation_manifest_v1.schema.json` 定义完成 (UX-02)
 - [ ] 审批 packet_short 包含各 gate 特定上下文，人类可直接判断 (UX-07)
@@ -1618,9 +1618,9 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **策略**: CI 门禁: 每个 `hep-autoresearch/src/` 源文件必须有对应测试文件，新增源文件无测试 → CI 失败。
 
 **验收检查点**:
-- [ ] CI 检查源文件/测试文件一一对应
-- [ ] 新增源文件无测试 → CI 失败
-- [ ] 存量豁免清单有时间框定
+- [x] CI 检查源文件/测试文件一一对应
+- [x] 新增源文件无测试 → CI 失败
+- [x] 存量豁免清单有时间框定
 
 ### NEW-R08: Skills LOC 预算 ★深度重构
 
@@ -2612,7 +2612,7 @@ paper/
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01 ✅, H-02 ✅, H-03 ✅, H-04 ✅, H-13 ✅, H-15a ✅, H-16a ✅, H-18 ✅, H-19 ✅, M-01 ✅, M-14a ✅, M-18 ✅, M-19, H-11a ✅, NEW-01 ✅, NEW-R02 ✅, NEW-R03b, NEW-R04 ✅, UX-01, UX-05, UX-06 ✅, **NEW-CONN-01** ✅ | 22 (18 done, 4 pending; ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05, H-07 ✅, H-09, H-10, H-11b ✅, H-12 ✅, H-15b ✅, H-16b, H-17 ✅, H-21, M-02, M-05, M-06, M-20, M-21, M-23, trace-jsonl, NEW-02~04, NEW-R05~R08, NEW-R10, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02, RT-03, NEW-VIZ-01, **NEW-RT-01, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04, NEW-CONN-02 ✅, NEW-CONN-03, NEW-CONN-04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 (8 done, 35 pending) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05 ✅, H-07 ✅, H-09 ✅, H-10 ✅, H-11b ✅, H-12 ✅, H-15b ✅, H-16b ✅, H-17 ✅, H-21 ✅, M-02 ✅, M-05 ✅, M-06 ✅, M-19 ✅, M-20, M-21 ✅, M-23 ✅, trace-jsonl, NEW-02~04, NEW-R05~R06, NEW-R07 ✅, NEW-R08, NEW-R10, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02, RT-03, NEW-VIZ-01, **NEW-RT-01, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04, NEW-CONN-02 ✅, NEW-CONN-03, NEW-CONN-04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 (20 done, 23 pending) |
 | **3 (扩展性 + 计算连通)** | M-03, M-04, M-07~M-10, M-12, M-13, M-15~M-17, M-22, L-08, NEW-06, NEW-R11, NEW-R12, UX-03, UX-04, RT-01, RT-04, **NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete)** | 24 |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 |
 | **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 |
