@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.8.0-draft",
-  "updated_at": "2026-02-25T12:00:00Z",
+  "updated_at": "2026-02-26T10:52:00Z",
   "note": "v1.8.0-draft: Scope Audit + Pipeline Connectivity + CLI-First Dual-Mode. 135 items.",
   "phases": {
     "0": {
@@ -409,7 +409,8 @@
         },
         "H-07": {
           "title": "原子文件写入",
-          "status": "pending",
+          "status": "done",
+          "completed_at": "2026-02-26",
           "complexity": "medium",
           "assignee": null,
           "depends_on": []
@@ -434,7 +435,8 @@
         },
         "H-11b": {
           "title": "MCP 权限组合策略",
-          "status": "pending",
+          "status": "done",
+          "completed_at": "2026-02-26",
           "complexity": "high",
           "assignee": null,
           "depends_on": [
@@ -444,7 +446,8 @@
         },
         "H-12": {
           "title": "不可信内容沙箱",
-          "status": "pending",
+          "status": "done",
+          "completed_at": "2026-02-26",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
@@ -453,7 +456,8 @@
         },
         "H-15b": {
           "title": "Artifact 版本化统一",
-          "status": "pending",
+          "status": "done",
+          "completed_at": "2026-02-26",
           "complexity": "low",
           "assignee": null,
           "depends_on": [
@@ -833,7 +837,8 @@
         },
         "H-17": {
           "title": "运行时兼容性握手",
-          "status": "pending",
+          "status": "done",
+          "completed_at": "2026-02-26",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [

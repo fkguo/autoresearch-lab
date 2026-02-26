@@ -586,8 +586,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-autoresearch/src/hep_autoresearch/toolkit/mcp_stdio_client.py` | 启动时执行 `initialize → hep_health → tools/list` 握手；比对 `tool_catalog_hash` 与本地期望值 |
 
 **验收检查点**:
-- [ ] MCP server 升级后 hash 变化 → hep-autoresearch 启动时警告
-- [ ] CI 固定 hash 并在漂移时失败
+- [x] MCP server 升级后 hash 变化 → hep-autoresearch 启动时警告
+- [x] CI 固定 hash 并在漂移时失败
 
 ### H-18: ArtifactRef V1
 
@@ -963,9 +963,9 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-research-mcp/src/export/` 各导出点 | 同上 |
 
 **验收检查点**:
-- [ ] 进程 `kill -9` 后无截断/损坏 artifact
-- [ ] `.tmp` 文件在正常完成后不残留
-- [ ] tmp 文件与目标文件在同一文件系统 (通过 `stat` 验证 `st_dev` 一致)
+- [x] 进程 `kill -9` 后无截断/损坏 artifact
+- [x] `.tmp` 文件在正常完成后不残留
+- [x] tmp 文件与目标文件在同一文件系统 (通过 `stat` 验证 `st_dev` 一致)
 
 ### H-09: 幂等性 CAS
 
@@ -1004,8 +1004,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-research-mcp/src/tools/dispatcher.ts` | 高级权限组合策略：`destructive` + `write` 工具链调用需 gate 审批；capability composition policy 文档化 |
 
 **验收检查点**:
-- [ ] 多工具链含 `destructive` 工具 → 需 gate 审批
-- [ ] 单 `read` 工具链 → 直接执行
+- [x] 多工具链含 `destructive` 工具 → 需 gate 审批
+- [x] 单 `read` 工具链 → 直接执行
 
 ### H-12: 不可信内容沙箱
 
@@ -1018,8 +1018,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-research-mcp/src/research/preprocess/` | PDF/LaTeX 解析增加资源配额 (内存/时间) |
 
 **验收检查点**:
-- [ ] Zip Slip 测试用例 (`../../../etc/passwd`) → 拦截
-- [ ] 解压炸弹 (1GB 压缩为 1KB) → 拦截
+- [x] Zip Slip 测试用例 (`../../../etc/passwd`) → 拦截
+- [x] 解压炸弹 (1GB 压缩为 1KB) → 拦截
 
 ### H-15b: Artifact 版本化统一
 
@@ -1032,8 +1032,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-autoresearch/schemas/` | run_card, state 等 schema 统一 `schema_version` 字段位置（顶层第一个字段） |
 
 **验收检查点**:
-- [ ] 所有 artifact 可通过统一规则解析版本（文件名 + 内字段）
-- [ ] lint 脚本检查双标记一致性
+- [x] 所有 artifact 可通过统一规则解析版本（文件名 + 内字段）
+- [x] lint 脚本检查双标记一致性
 
 ### H-16b: 跨组件契约测试 CI
 
@@ -2612,12 +2612,12 @@ paper/
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01 ✅, H-02 ✅, H-03 ✅, H-04 ✅, H-13 ✅, H-15a ✅, H-16a ✅, H-18 ✅, H-19 ✅, M-01 ✅, M-14a ✅, M-18 ✅, M-19, H-11a ✅, NEW-01 ✅, NEW-R02 ✅, NEW-R03b, NEW-R04 ✅, UX-01, UX-05, UX-06 ✅, **NEW-CONN-01** ✅ | 22 (18 done, 4 pending; ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05, H-07, H-09, H-10, H-11b, H-12, H-15b, H-16b, H-17, H-21, M-02, M-05, M-06, M-20, M-21, M-23, trace-jsonl, NEW-02~04, NEW-R05~R08, NEW-R10, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02, RT-03, NEW-VIZ-01, **NEW-RT-01, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04, NEW-CONN-02 ✅, NEW-CONN-03, NEW-CONN-04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 (3 done, 40 pending) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05, H-07 ✅, H-09, H-10, H-11b ✅, H-12 ✅, H-15b ✅, H-16b, H-17 ✅, H-21, M-02, M-05, M-06, M-20, M-21, M-23, trace-jsonl, NEW-02~04, NEW-R05~R08, NEW-R10, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02, RT-03, NEW-VIZ-01, **NEW-RT-01, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04, NEW-CONN-02 ✅, NEW-CONN-03, NEW-CONN-04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 (8 done, 35 pending) |
 | **3 (扩展性 + 计算连通)** | M-03, M-04, M-07~M-10, M-12, M-13, M-15~M-17, M-22, L-08, NEW-06, NEW-R11, NEW-R12, UX-03, UX-04, RT-01, RT-04, **NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete)** | 24 |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 |
 | **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 |
 | **跨 Phase (伞)** | NEW-R01 | 1 |
 | **CUT** | NEW-R09 | 1 |
-| **总计** | | **135** (119 原 + 15 新增 + 1 cut) — 35 done |
+| **总计** | | **135** (119 原 + 15 新增 + 1 cut) — 40 done |
 
 > **Note**: v1.8.0 变更: 新增 15 项 (NEW-CONN-01~05, NEW-IDEA-01, NEW-COMP-01/02, NEW-WF-01, NEW-SKILL-01, NEW-RT-01~05)。修改 13 项 (H-01 简化, H-04 冻结, H-15a 冻结, H-17 deferred, M-22 deferred, NEW-R09 cut, NEW-05a re-scoped, UX-02 升级, UX-04 扩展, EVO-01/02/03 依赖追加, NEW-WF-01 entry points, NEW-COMP-01 ingest tool)。来源: 三模型 scope audit 收敛 + 双模型 Pipeline 连通性审计 R4 收敛 + CLI-First Dual-Mode 架构收敛。
