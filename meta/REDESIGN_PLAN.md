@@ -1108,7 +1108,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [x] WAL 模式在连接后验证 *(EXPECTED_WAL_JOURNAL_MODE + SQLITE_WAL_PRAGMAS constants in shared, Phase 2 Batch 2)*
 - [x] (R7) 通用 SQLite 工具模块可被 Memory Graph / Gene Library / Strategy Stats 消费 *(packages/shared/src/db/sqlite-utils.ts — platform-agnostic interface + constants, Phase 2 Batch 2)*
 
-### M-20: 迁移注册表
+### M-20: 迁移注册表 ✅ Phase 2 Batch 4
 
 **依赖**: H-15b (版本化统一), **H-21 (数据位置统一 — 涉及文件路径的迁移条目必须在 H-21 合并后执行)**
 
@@ -1119,8 +1119,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-autoresearch/src/hep_autoresearch/toolkit/migrate.py` | (新文件) `workspace migrate` 命令：检测旧版 artifact → 应用迁移链 |
 
 **验收检查点**:
-- [ ] N-1 版本 fixture 可通过 `workspace migrate` 升级
-- [ ] 迁移后 artifact 通过当前版本 schema 验证
+- [x] N-1 版本 fixture 可通过 `workspace migrate` 升级
+- [x] 迁移后 artifact 通过当前版本 schema 验证
 
 ### M-21: 载荷大小/背压契约
 
@@ -1150,7 +1150,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [x] `make release` 一键构建 TS + 生成 Python 绑定
 - [x] 版本号在 `package.json` 和 `pyproject.toml` 中一致
 
-### 全链路 trace_id + 结构化 JSONL 日志
+### 全链路 trace_id + 结构化 JSONL 日志 ✅ Phase 2 Batch 4
 
 **依赖**: H-02 (trace_id), H-01 (McpError), **M-14a (日志脱敏层，前置条件)**
 
@@ -1163,8 +1163,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-research-mcp/src/tools/dispatcher.ts` | tool 调用日志输出 JSONL 格式到 stderr |
 
 **验收检查点**:
-- [ ] 所有组件日志可被统一聚合工具 (`jq`) 解析
-- [ ] `trace_id` 贯穿 MCP → orchestrator → ledger
+- [x] 所有组件日志可被统一聚合工具 (`jq`) 解析
+- [x] `trace_id` 贯穿 MCP → orchestrator → ledger
 
 ### NEW-02: 审批产物三件套 + CLI 可读性重做
 
@@ -1557,7 +1557,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] 跨组件契约测试 CI 通过
 - [ ] 审批三件套产物生成正确（packet_short.md ≤1页, packet.md 全量, approval_packet_v1.json 通过 schema）
 - [ ] `hepar approvals show` + `hepar report render` 命令可用
-- [ ] 证据抽象层 schema 定义完成 (NEW-R05)
+- [x] 证据抽象层 schema 定义完成 (NEW-R05)
 - [x] hep-autoresearch 测试覆盖门禁 CI 就绪 (NEW-R07)
 - [ ] NEW-R15 编排器 MCP 工具实现 (`orch_run_*` + `orch_policy_query`) 可用
 - [ ] `computation_manifest_v1.schema.json` 定义完成 (UX-02)
@@ -1567,7 +1567,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] Graph Visualization Layer: UniversalNode/Edge schema + 5 domain adapters 可渲染 (NEW-VIZ-01)
 - [ ] 无 Phase 0/1 回归
 
-### NEW-R05: 证据抽象层 ★深度重构
+### NEW-R05: 证据抽象层 ✅ Phase 2 Batch 4 ★深度重构
 
 > **来源**: `docs/2026-02-20-deep-refactoring-analysis.md` §6
 
@@ -1583,9 +1583,9 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 | `packages/hep-research-mcp/src/vnext/writing/` | 替换手写类型为 codegen 生成的类型 |
 
 **验收检查点**:
-- [ ] 证据 schema 通过 JSON Schema Draft 2020-12 验证
-- [ ] codegen 生成的 TS/Python 类型替代手写定义
-- [ ] `ArtifactRefV1` 通过 `$ref` 组合，无字段重复
+- [x] 证据 schema 通过 JSON Schema Draft 2020-12 验证
+- [x] codegen 生成的 TS/Python 类型替代手写定义
+- [x] `ArtifactRefV1` 通过 `$ref` 组合，无字段重复
 
 ### NEW-R05a: Pydantic v2 代码生成目标评估 ★深度重构
 
@@ -1596,7 +1596,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **评估内容**: 将 `datamodel-code-generator` 的 Python 输出从 `dataclasses` 切换为 `Pydantic v2 BaseModel` (`--output-model-type pydantic_v2.BaseModel`)。需评估 `pydantic-core` Rust wheel 构建/安装风险。
 **决策门禁**: 时间框定评估; 如果 Rust wheel 在目标平台 (macOS arm64, Linux x86_64) 构建无问题，采纳; 否则保留 dataclasses。
 
-### NEW-R06: 分析类型 Schema 整合 ★深度重构
+### NEW-R06: 分析类型 Schema 整合 ✅ Phase 2 Batch 4 ★深度重构
 
 > **来源**: `docs/2026-02-20-deep-refactoring-analysis.md` §7
 
@@ -1605,8 +1605,8 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **现状**: 7 个版本化类型文件 (`analysis-results1.ts` ~ `analysis-results4.ts` 等) → 应整合为单一 canonical schema。
 
 **验收检查点**:
-- [ ] 单一 `analysis_results_v1.schema.json` SSOT
-- [ ] codegen 生成替代手写版本化文件
+- [x] 单一 `analysis_results_v1.schema.json` SSOT
+- [x] codegen 生成替代手写版本化文件
 
 ### NEW-R07: hep-autoresearch 测试覆盖门禁 ★深度重构
 
@@ -2612,12 +2612,12 @@ paper/
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01 ✅, H-02 ✅, H-03 ✅, H-04 ✅, H-13 ✅, H-15a ✅, H-16a ✅, H-18 ✅, H-19 ✅, M-01 ✅, M-14a ✅, M-18 ✅, M-19, H-11a ✅, NEW-01 ✅, NEW-R02 ✅, NEW-R03b, NEW-R04 ✅, UX-01, UX-05, UX-06 ✅, **NEW-CONN-01** ✅ | 22 (18 done, 4 pending; ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05 ✅, H-07 ✅, H-09 ✅, H-10 ✅, H-11b ✅, H-12 ✅, H-15b ✅, H-16b ✅, H-17 ✅, H-21 ✅, M-02 ✅, M-05 ✅, M-06 ✅, M-19 ✅, M-20, M-21 ✅, M-23 ✅, trace-jsonl, NEW-02~04, NEW-R05~R06, NEW-R07 ✅, NEW-R08, NEW-R10, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02, RT-03, NEW-VIZ-01, **NEW-RT-01, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04, NEW-CONN-02 ✅, NEW-CONN-03, NEW-CONN-04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 (20 done, 23 pending) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05 ✅, H-07 ✅, H-09 ✅, H-10 ✅, H-11b ✅, H-12 ✅, H-15b ✅, H-16b ✅, H-17 ✅, H-21 ✅, M-02 ✅, M-05 ✅, M-06 ✅, M-19 ✅, M-20 ✅, M-21 ✅, M-23 ✅, trace-jsonl ✅, NEW-02~04, NEW-R05 ✅, NEW-R06 ✅, NEW-R07 ✅, NEW-R08, NEW-R10, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02, RT-03, NEW-VIZ-01, **NEW-RT-01, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04, NEW-CONN-02 ✅, NEW-CONN-03, NEW-CONN-04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 (24 done, 19 pending) |
 | **3 (扩展性 + 计算连通)** | M-03, M-04, M-07~M-10, M-12, M-13, M-15~M-17, M-22, L-08, NEW-06, NEW-R11, NEW-R12, UX-03, UX-04, RT-01, RT-04, **NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete)** | 24 |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 |
 | **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 |
 | **跨 Phase (伞)** | NEW-R01 | 1 |
 | **CUT** | NEW-R09 | 1 |
-| **总计** | | **135** (119 原 + 15 新增 + 1 cut) — 40 done |
+| **总计** | | **135** (119 原 + 15 新增 + 1 cut) — 56 done |
 
 > **Note**: v1.8.0 变更: 新增 15 项 (NEW-CONN-01~05, NEW-IDEA-01, NEW-COMP-01/02, NEW-WF-01, NEW-SKILL-01, NEW-RT-01~05)。修改 13 项 (H-01 简化, H-04 冻结, H-15a 冻结, H-17 deferred, M-22 deferred, NEW-R09 cut, NEW-05a re-scoped, UX-02 升级, UX-04 扩展, EVO-01/02/03 依赖追加, NEW-WF-01 entry points, NEW-COMP-01 ingest tool)。来源: 三模型 scope audit 收敛 + 双模型 Pipeline 连通性审计 R4 收敛 + CLI-First Dual-Mode 架构收敛。
