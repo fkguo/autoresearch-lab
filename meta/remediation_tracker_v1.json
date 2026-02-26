@@ -261,19 +261,23 @@
         },
         "M-01": {
           "title": "Artifact 命名规范",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
-          "depends_on": []
+          "depends_on": [],
+          "completed_at": "2026-02-26",
+          "note": "lint_artifact_names.py + 14 artifact names renamed to _v1 convention. Makefile code-health-check updated."
         },
         "M-18": {
           "title": "配置管理统一",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
           "depends_on": [
             "H-20"
-          ]
+          ],
+          "completed_at": "2026-02-26",
+          "note": "ecosystem_config_v1.md registry + logConfigSummary() in hep-mcp config.ts, called at startup."
         },
         "M-19": {
           "title": "跨组件 CI 集成测试",
@@ -331,11 +335,13 @@
         },
         "NEW-R04": {
           "title": "Zotero 工具整合 (~2300 LOC 去重)",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [],
-          "source": "deep-refactoring-analysis"
+          "source": "deep-refactoring-analysis",
+          "completed_at": "2026-02-26",
+          "note": "vnext/zotero/tools.ts 2339→281 LOC (-2058). Helpers extracted to zotero-mcp/shared/zotero/helpers.ts. hepImportFromZotero kept as only vnext function."
         },
         "NEW-R09": {
           "title": "orchestrator_cli.py 拆分 (条件性)",
@@ -762,12 +768,13 @@
           "note": "~200 LOC. checkpoint/resume."
         },
         "NEW-CONN-02": {
-          "status": "pending",
+          "status": "done",
           "assignee": null,
           "title": "Review feedback next_actions",
           "complexity": "low",
           "depends_on": [],
-          "note": "~60 LOC."
+          "completed_at": "2026-02-26",
+          "note": "buildReviewNextActions() in submitReview.ts. follow_up queries→inspire_search + rebuild evidence; recommended_resume_from→writing tool. 7 tests."
         },
         "NEW-CONN-03": {
           "status": "pending",

@@ -77,14 +77,14 @@ Phase 1 (统一抽象)      ← 依赖 Phase 0 基础设施
       │
 Phase 2A (运行时可靠性):
   ├─ NEW-RT-01 TS AgentRunner (Anthropic SDK + lane queue + approval gate)
-  ├─ NEW-RT-02 MCP StdioClient reconnect
-  ├─ NEW-RT-03 OTel-aligned Span tracing
+  ├─ NEW-RT-02 MCP StdioClient reconnect ✅
+  ├─ NEW-RT-03 OTel-aligned Span tracing ✅
   │
 Phase 2B (Pipeline 连通 + 深度集成):
   ├─ H-05, H-07, H-09, H-10, H-11b, H-12, H-15b, H-16b, H-17, H-21
   ├─ M-02, M-05, M-06, M-20, M-21, M-23, trace-jsonl
   ├─ NEW-02, NEW-03, NEW-04
-  ├─ NEW-CONN-02 Review feedback next_actions (~60 LOC)
+  ├─ NEW-CONN-02 Review feedback next_actions (~60 LOC) ✅
   ├─ NEW-CONN-03 Computation evidence ingestion (~250 LOC)
   ├─ NEW-CONN-04 Idea → Run creation (~150 LOC)
   ├─ NEW-IDEA-01 idea-core MCP 桥接 (~400-800 LOC)
@@ -639,9 +639,9 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-research-mcp/src/writing/` 各文件 | 统一 artifact 文件名为 `<category>_<name>[_<index>]_v<N>.{json|tex}` |
 
 **验收检查点**:
-- [ ] CI lint 检查新 artifact 名称符合规范
-- [ ] 现有 artifact 名称全部符合或有迁移别名
-- [ ] **ART-01 .md 例外 (R4)**: `packet_short.md` / `packet.md` 为人类审批产物，在 lint 脚本中显式豁免（GATE-05 管辖，不受 ART-01 JSON/tex/jsonl 正则约束）
+- [x] CI lint 检查新 artifact 名称符合规范
+- [x] 现有 artifact 名称全部符合或有迁移别名
+- [x] **ART-01 .md 例外 (R4)**: `packet_short.md` / `packet.md` 为人类审批产物，在 lint 脚本中显式豁免（GATE-05 管辖，不受 ART-01 JSON/tex/jsonl 正则约束）
 
 ### M-18: 配置管理统一
 
@@ -654,8 +654,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `hep-autoresearch/src/hep_autoresearch/toolkit/mcp_stdio_client.py` | 启动时输出 config echo 摘要（已设置的配置键 + 来源） |
 
 **验收检查点**:
-- [ ] `hepar doctor` 输出当前生效配置及来源
-- [ ] 配置但未传播的键触发警告
+- [x] `hepar doctor` 输出当前生效配置及来源
+- [x] 配置但未传播的键触发警告
 
 ### M-19: 跨组件 CI 集成测试
 
@@ -795,9 +795,9 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `packages/hep-research-mcp/src/vnext/zotero/tools.ts` | 改为 thin adapter: import from `zotero-mcp`, 不重复实现 |
 
 **验收检查点**:
-- [ ] `vnext/zotero/tools.ts` 不包含独立的业务逻辑实现
-- [ ] Zotero 工具功能无回归 (现有测试通过)
-- [ ] 去重 ≥2000 LOC
+- [x] `vnext/zotero/tools.ts` 不包含独立的业务逻辑实现
+- [x] Zotero 工具功能无回归 (现有测试通过)
+- [x] 去重 ≥2000 LOC
 
 ### NEW-R09: `orchestrator_cli.py` 拆分 — CUT ★深度重构
 
@@ -1134,6 +1134,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 **验收检查点**:
 - [ ] 超限 tool result 自动溢出
 - [ ] 客户端/服务端统一强制大小限制
+- [ ] H-13 L1 残留: `inspire_literature` get_references/get_citations 裸数组返回值须经 compactPaperSummary 处理（Batch 4 R2 Codex caveat）
+- [ ] H-13 L4 残留: `appendResourceLinks()` MIME 类型须从 hep:// URI 推断（非 JSON artifacts 不应硬编码 `application/json`）（Batch 4 R2 Codex caveat）
 
 ### M-23: 发布产物对齐
 
@@ -1466,8 +1468,8 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **内容**: `submitReview` 在 `follow_up_evidence_queries.length > 0` 时添加 `next_actions` (建议 `inspire_search` + `hep_run_build_writing_evidence`, max 5 queries, max 200 chars each)；在 `recommended_resume_from` 存在时建议具体 writing 工具。Hint-only。
 
 **验收**:
-- [ ] 有 evidence queries 的 review → next_actions 非空
-- [ ] next_actions 遵循 `{ tool, args, reason }` 惯例
+- [x] 有 evidence queries 的 review → next_actions 非空
+- [x] next_actions 遵循 `{ tool, args, reason }` 惯例
 
 ### NEW-CONN-03: Computation Evidence Ingestion (Phase 2)
 
@@ -2609,13 +2611,13 @@ paper/
 | Phase | 缺陷 ID | 数量 |
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
-| **1 (统一抽象)** | H-01 ✅, H-02 ✅, H-03 ✅, H-04 ✅, H-13, H-15a ✅, H-16a ✅, H-18 ✅, H-19 ✅, M-01, M-18, M-19, H-11a ✅, M-14a, NEW-01 ✅, NEW-R02, NEW-R03b, NEW-R04, UX-01, UX-05, UX-06, **NEW-CONN-01** ✅ | 22 (11 done, ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05, H-07, H-09, H-10, H-11b, H-12, H-15b, H-16b, H-17, H-21, M-02, M-05, M-06, M-20, M-21, M-23, trace-jsonl, NEW-02~04, NEW-R05~R08, NEW-R10, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02, RT-03, NEW-VIZ-01, **NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 |
+| **1 (统一抽象)** | H-01 ✅, H-02 ✅, H-03 ✅, H-04 ✅, H-13 ✅, H-15a ✅, H-16a ✅, H-18 ✅, H-19 ✅, M-01 ✅, M-14a ✅, M-18 ✅, M-19, H-11a ✅, NEW-01 ✅, NEW-R02 ✅, NEW-R03b, NEW-R04 ✅, UX-01, UX-05, UX-06 ✅, **NEW-CONN-01** ✅ | 22 (18 done, 4 pending; ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05, H-07, H-09, H-10, H-11b, H-12, H-15b, H-16b, H-17, H-21, M-02, M-05, M-06, M-20, M-21, M-23, trace-jsonl, NEW-02~04, NEW-R05~R08, NEW-R10, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02, RT-03, NEW-VIZ-01, **NEW-RT-01, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04, NEW-CONN-02 ✅, NEW-CONN-03, NEW-CONN-04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 (3 done, 40 pending) |
 | **3 (扩展性 + 计算连通)** | M-03, M-04, M-07~M-10, M-12, M-13, M-15~M-17, M-22, L-08, NEW-06, NEW-R11, NEW-R12, UX-03, UX-04, RT-01, RT-04, **NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete)** | 24 |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 |
 | **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 |
 | **跨 Phase (伞)** | NEW-R01 | 1 |
 | **CUT** | NEW-R09 | 1 |
-| **总计** | | **135** (119 原 + 15 新增 + 1 cut) — 25 done |
+| **总计** | | **135** (119 原 + 15 新增 + 1 cut) — 35 done |
 
 > **Note**: v1.8.0 变更: 新增 15 项 (NEW-CONN-01~05, NEW-IDEA-01, NEW-COMP-01/02, NEW-WF-01, NEW-SKILL-01, NEW-RT-01~05)。修改 13 项 (H-01 简化, H-04 冻结, H-15a 冻结, H-17 deferred, M-22 deferred, NEW-R09 cut, NEW-05a re-scoped, UX-02 升级, UX-04 扩展, EVO-01/02/03 依赖追加, NEW-WF-01 entry points, NEW-COMP-01 ingest tool)。来源: 三模型 scope audit 收敛 + 双模型 Pipeline 连通性审计 R4 收敛 + CLI-First Dual-Mode 架构收敛。
