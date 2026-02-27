@@ -85,9 +85,9 @@ Phase 2B (Pipeline 连通 + 深度集成):
   ├─ M-02, M-05, M-06, M-20, M-21, M-23, trace-jsonl
   ├─ NEW-02, NEW-03, NEW-04
   ├─ NEW-CONN-02 Review feedback next_actions (~60 LOC) ✅
-  ├─ NEW-CONN-03 Computation evidence ingestion (~250 LOC)
+  ├─ NEW-CONN-03 Computation evidence ingestion (~250 LOC) ✅
   ├─ NEW-CONN-04 Idea → Run creation (~150 LOC)
-  ├─ NEW-IDEA-01 idea-core MCP 桥接 (~400-800 LOC)
+  ├─ NEW-IDEA-01 idea-core MCP 桥接 (~400-800 LOC) ✅
   ├─ NEW-05a Stage 3 idea-engine TS 增量重写开始
   ├─ NEW-WF-01 Workflow schema 设计 (~100 LOC)
   ├─ NEW-COMP-01 W_compute MCP 安全设计 (~200 LOC) ✅
@@ -1415,9 +1415,9 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **不做**: 不引入外部 agent framework (Mastra/LangGraph/Pi)。SDK 管 model interaction，自建管 domain state。
 
 **验收**:
-- [ ] AgentRunner 可驱动 MCP 工具调用循环
-- [ ] per-run 工具调用串行化 (lane queue)
-- [ ] approval gate 注入: 遇到 gate 时暂停等待批准
+- [x] AgentRunner 可驱动 MCP 工具调用循环
+- [x] per-run 工具调用串行化 (lane queue)
+- [x] approval gate 注入: 遇到 gate 时暂停等待批准
 
 ### NEW-RT-02: MCP StdioClient Reconnect ✅ Batch 4B (Phase 2 early)
 
@@ -1457,8 +1457,8 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **内容**: RunManifest `last_completed_step` + `resume_from` + checkpoint at step boundaries。
 
 **验收**:
-- [ ] AgentRunner 崩溃后可从 `last_completed_step` 恢复
-- [ ] `resume_from` 跳过已完成步骤
+- [x] AgentRunner 崩溃后可从 `last_completed_step` 恢复
+- [x] `resume_from` 跳过已完成步骤
 
 ### NEW-CONN-02: Review Feedback next_actions (Phase 2)
 
@@ -1489,9 +1489,9 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **不做**: 不修改 `EvidenceCatalogItemV1`。LaTeX-only 消费者按 `paper_id` 过滤，自然跳过计算 evidence。
 
 **验收**:
-- [ ] `ComputationEvidenceCatalogItemV1` JSON Schema 定义完成
-- [ ] `hep_run_ingest_skill_artifacts` 可读取 skill artifacts 并写入 evidence catalog
-- [ ] BM25 index 合并两类 evidence
+- [x] `ComputationEvidenceCatalogItemV1` JSON Schema 定义完成
+- [x] `hep_run_ingest_skill_artifacts` 可读取 skill artifacts 并写入 evidence catalog
+- [x] BM25 index 合并两类 evidence
 
 ### NEW-CONN-04: Idea → Run Creation (Phase 2B)
 
@@ -1518,9 +1518,9 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **内容**: MCP 工具暴露 idea-core Python API: `campaign.*`, `search.step`, `eval.run`。通过 JSON-RPC 调用现有 idea-core Python 进程。
 
 **验收**:
-- [ ] MCP 工具可创建 campaign 并执行 search step
-- [ ] idea-core 评估结果可通过 MCP 返回
-- [ ] 错误通过 McpError (retryable) 传播
+- [x] MCP 工具可创建 campaign 并执行 search step
+- [x] idea-core 评估结果可通过 MCP 返回
+- [x] 错误通过 McpError (retryable) 传播
 
 ### NEW-COMP-01: W_compute MCP 工具表面设计 (Phase 2 late)
 
@@ -1533,9 +1533,9 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **内容**: W_compute MCP 工具表面安全模型设计: C-02 containment (命令/输出验证) + A3 default gating (计算执行需人类批准) + allowlist。交付物包含 `hep_run_ingest_skill_artifacts` 工具规格。
 
 **验收**:
-- [ ] 安全模型设计文档通过双模型审核
-- [ ] `hep_run_ingest_skill_artifacts` 工具规格定义完成
-- [ ] 工具表面与 C-02 containment 对齐
+- [x] 安全模型设计文档通过双模型审核
+- [x] `hep_run_ingest_skill_artifacts` 工具规格定义完成
+- [x] 工具表面与 C-02 containment 对齐
 
 ### NEW-WF-01: Research Workflow Schema (Phase 2)
 
@@ -2691,12 +2691,12 @@ paper/
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01 ✅, H-02 ✅, H-03 ✅, H-04 ✅, H-13 ✅, H-15a ✅, H-16a ✅, H-18 ✅, H-19 ✅, M-01 ✅, M-14a ✅, M-18 ✅, M-19, H-11a ✅, NEW-01 ✅, NEW-R02 ✅, NEW-R03b, NEW-R04 ✅, UX-01, UX-05, UX-06 ✅, **NEW-CONN-01** ✅ | 22 (18 done, 4 pending; ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05 ✅, H-07 ✅, H-09 ✅, H-10 ✅, H-11b ✅, H-12 ✅, H-15b ✅, H-16b ✅, H-17 ✅, H-21 ✅, M-02 ✅, M-05 ✅, M-06 ✅, M-19 ✅, M-20 ✅, M-21 ✅, M-23 ✅, trace-jsonl ✅, NEW-02 ✅, NEW-03 ✅, NEW-04 ✅, NEW-R05 ✅, NEW-R06 ✅, NEW-R07 ✅, NEW-R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅, **NEW-RT-01, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04, NEW-CONN-02 ✅, NEW-CONN-03, NEW-CONN-04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-ARXIV-01, NEW-HEPDATA-01, NEW-05a Stage 3 (start)** | 45 (32 done, 13 pending) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05 ✅, H-07 ✅, H-09 ✅, H-10 ✅, H-11b ✅, H-12 ✅, H-15b ✅, H-16b ✅, H-17 ✅, H-21 ✅, M-02 ✅, M-05 ✅, M-06 ✅, M-19 ✅, M-20 ✅, M-21 ✅, M-23 ✅, trace-jsonl ✅, NEW-02 ✅, NEW-03 ✅, NEW-04 ✅, NEW-R05 ✅, NEW-R06 ✅, NEW-R07 ✅, NEW-R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl ✅, UX-02 ✅, UX-07 ✅, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅, **NEW-RT-01 ✅, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04 ✅, NEW-CONN-02 ✅, NEW-CONN-03 ✅, NEW-CONN-04, NEW-IDEA-01 ✅, NEW-COMP-01 ✅, NEW-WF-01, NEW-ARXIV-01, NEW-HEPDATA-01, NEW-05a Stage 3 (start)** | 45 (40 done, 5 pending) |
 | **3 (扩展性 + 计算连通)** | M-03, M-04, M-07~M-10, M-12, M-13, M-15~M-17, M-22, L-08, NEW-06, NEW-R11, NEW-R12, UX-03, UX-04, RT-01, RT-04, **NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete)** | 24 |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 |
 | **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 |
 | **跨 Phase (伞)** | NEW-R01 | 1 |
 | **CUT** | NEW-R09 | 1 |
-| **总计** | | **137** (119 原 + 17 新增 + 1 cut) — 60 done |
+| **总计** | | **137** (119 原 + 17 新增 + 1 cut) — 72 done |
 
 > **Note**: v1.8.0 变更: 新增 15 项 (NEW-CONN-01~05, NEW-IDEA-01, NEW-COMP-01/02, NEW-WF-01, NEW-SKILL-01, NEW-RT-01~05)。修改 13 项 (H-01 简化, H-04 冻结, H-15a 冻结, H-17 deferred, M-22 deferred, NEW-R09 cut, NEW-05a re-scoped, UX-02 升级, UX-04 扩展, EVO-01/02/03 依赖追加, NEW-WF-01 entry points, NEW-COMP-01 ingest tool)。来源: 三模型 scope audit 收敛 + 双模型 Pipeline 连通性审计 R4 收敛 + CLI-First Dual-Mode 架构收敛。
