@@ -92,6 +92,7 @@ Phase 2B (Pipeline 连通 + 深度集成):
   ├─ NEW-WF-01 Workflow schema 设计 (~100 LOC)
   ├─ NEW-COMP-01 W_compute MCP 安全设计 (~200 LOC)
   ├─ NEW-RT-04 Durable execution (~200 LOC)
+  ├─ NEW-ARXIV-01 arxiv-mcp 独立 MCP (~1700 LOC) ← Phase 2 early add
   ├─ UX-02 Computation contract (升级)
   ├─ UX-07, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅
   ├─ NEW-R05~R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl
@@ -1550,6 +1551,54 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] 至少 3 个模板: review, original_research, reproduction
 - [ ] entry point variants 覆盖 4 种起点
 
+### NEW-ARXIV-01: arxiv-mcp — 领域无关 arXiv MCP server ★infra
+
+> **背景**: arXiv 覆盖领域远超 HEP——物理（等离子体、凝聚态）、CS/ML/LLM、数学、生物、经济等均以 arXiv 为主要发布渠道。当前 arXiv 访问层深度嵌入 `hep-mcp` 内部（`arxivSource.ts` + `paperContent.ts` + `downloadUrls.ts`），且与 INSPIRE 元数据隐式耦合，非 HEP 用户无法直接使用。
+> **优先级**: Phase 2 early — 用户已有具体非 HEP 使用场景（等离子体物理、LLM 论文），需要领域无关的 arXiv 检索与内容访问能力。
+
+**依赖**: 无（自包含；不依赖 INSPIRE、PDG 或任何 HEP 特定组件）
+
+**估计**: ~1,700 LOC（~1,200 从 hep-mcp 迁移 + ~500 新脚手架 + 新工具）
+
+**模式**: 遵循 `pdg-mcp` 独立 MCP 模式——`packages/arxiv-mcp/` 为自包含 stdio MCP，`hep-mcp` 聚合其工具（与 pdg-mcp 聚合方式相同）。
+
+**迁移范围（从 hep-mcp 提取）**:
+
+| 文件 | LOC | 说明 |
+|------|-----|------|
+| `tools/research/arxivSource.ts` | 301 | arXiv API 查询、ID 规范化、source 可用性检查 |
+| `tools/research/downloadUrls.ts` | 152 | 下载 URL 生成（无副作用） |
+| `tools/research/paperContent.ts` | 475 | LaTeX/PDF 下载，streaming，tar.gz 解包 |
+| `tools/research/paperSource.ts` | 168 | 统一入口（urls/content/metadata/auto 四模式） |
+| `api/rateLimiter.ts` (arXiv 部分) | ~120 | `ArxivRateLimiter` + `arxivFetch()` |
+
+**新工具面（`arxiv_*` 命名空间）**:
+
+| 工具 | 类型 | 说明 |
+|------|------|------|
+| `arxiv_paper_source` | 迁移 | 原 `inspire_paper_source`，去除 INSPIRE 耦合；支持 urls/content/metadata/auto |
+| `arxiv_search` | 新增 | arXiv Atom API 搜索（query + 分类过滤 + 时间范围）；纯 arXiv，不经 INSPIRE |
+| `arxiv_get_metadata` | 新增 | 根据 arXiv ID 返回完整元数据（标题、作者、摘要、分类、DOI 等） |
+
+**hep-mcp 侧变更**:
+- 现有 `inspire_paper_source` 工具保留为**兼容别名**（内部转发至 `arxiv_paper_source`）；计划在 Phase 3 删除别名
+- `deepAnalyze.ts`、`measurementExtractor.ts`、`downloader.ts`、`evidenceIndex.ts` 的 arXiv import 改为来自 `@autoresearch/arxiv-mcp` 或提取的共享 client 库
+
+**关键设计约束**:
+- `arxiv-mcp` 不知道 INSPIRE 存在；INSPIRE→arXiv ID 映射留在 `hep-mcp` 层
+- 速率限制保持独立（3 秒间隔）；`hep-mcp` 的 INSPIRE 速率限制器不变
+- 工具命名: `arxiv_*`（不冲突 `hep_*` / `inspire_*` / `pdg_*`）
+- stdio 传输，遵循 `packages/hep-mcp/CLAUDE.md` Hard Constraints
+
+**验收检查点**:
+- [ ] `packages/arxiv-mcp/` 独立构建通过（`pnpm build`）
+- [ ] `arxiv_search` 可按 query + 分类搜索，返回结果列表（不依赖 INSPIRE）
+- [ ] `arxiv_paper_source` 支持 urls/content/metadata/auto 四模式
+- [ ] `arxiv_get_metadata` 返回完整元数据
+- [ ] `hep-mcp` 聚合 `arxiv-mcp` 工具，`inspire_paper_source` 别名可用
+- [ ] 原有 `inspire_paper_source` 测试通过（通过别名）
+- [ ] 全套 contract tests 通过（`pnpm test`）
+
 ### Phase 2 验收总检查点
 
 - [ ] 进程崩溃恢复测试通过（原子写入 + 锁恢复 + 幂等性）
@@ -1565,6 +1614,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] research-team 工具访问: full 模式 MCP 工具 + 溯源 clean-room + hard-fail 门禁 (RT-02)
 - [ ] research-team runner 抽象: 自定义 runner + API 可配置 + key 脱敏 (RT-03)
 - [ ] Graph Visualization Layer: UniversalNode/Edge schema + 5 domain adapters 可渲染 (NEW-VIZ-01)
+- [ ] arxiv-mcp: `arxiv_search` + `arxiv_paper_source` + `arxiv_get_metadata` 可用，hep-mcp 聚合通过 (NEW-ARXIV-01)
 - [ ] 无 Phase 0/1 回归
 
 ### NEW-R05: 证据抽象层 ✅ Phase 2 Batch 4 ★深度重构
@@ -2612,7 +2662,7 @@ paper/
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01 ✅, H-02 ✅, H-03 ✅, H-04 ✅, H-13 ✅, H-15a ✅, H-16a ✅, H-18 ✅, H-19 ✅, M-01 ✅, M-14a ✅, M-18 ✅, M-19, H-11a ✅, NEW-01 ✅, NEW-R02 ✅, NEW-R03b, NEW-R04 ✅, UX-01, UX-05, UX-06 ✅, **NEW-CONN-01** ✅ | 22 (18 done, 4 pending; ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05 ✅, H-07 ✅, H-09 ✅, H-10 ✅, H-11b ✅, H-12 ✅, H-15b ✅, H-16b ✅, H-17 ✅, H-21 ✅, M-02 ✅, M-05 ✅, M-06 ✅, M-19 ✅, M-20 ✅, M-21 ✅, M-23 ✅, trace-jsonl ✅, NEW-02 ✅, NEW-03 ✅, NEW-04 ✅, NEW-R05 ✅, NEW-R06 ✅, NEW-R07 ✅, NEW-R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅, **NEW-RT-01, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04, NEW-CONN-02 ✅, NEW-CONN-03, NEW-CONN-04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 (32 done, 11 pending) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05 ✅, H-07 ✅, H-09 ✅, H-10 ✅, H-11b ✅, H-12 ✅, H-15b ✅, H-16b ✅, H-17 ✅, H-21 ✅, M-02 ✅, M-05 ✅, M-06 ✅, M-19 ✅, M-20 ✅, M-21 ✅, M-23 ✅, trace-jsonl ✅, NEW-02 ✅, NEW-03 ✅, NEW-04 ✅, NEW-R05 ✅, NEW-R06 ✅, NEW-R07 ✅, NEW-R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅, **NEW-RT-01, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04, NEW-CONN-02 ✅, NEW-CONN-03, NEW-CONN-04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-ARXIV-01, NEW-05a Stage 3 (start)** | 44 (32 done, 12 pending) |
 | **3 (扩展性 + 计算连通)** | M-03, M-04, M-07~M-10, M-12, M-13, M-15~M-17, M-22, L-08, NEW-06, NEW-R11, NEW-R12, UX-03, UX-04, RT-01, RT-04, **NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete)** | 24 |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 |
 | **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 |
