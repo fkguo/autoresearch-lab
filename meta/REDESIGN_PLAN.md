@@ -76,7 +76,7 @@ Phase 1 (统一抽象)      ← 依赖 Phase 0 基础设施
   └─ NEW-R09 (CUT)
       │
 Phase 2A (运行时可靠性):
-  ├─ NEW-RT-01 TS AgentRunner (Anthropic SDK + lane queue + approval gate)
+  ├─ NEW-RT-01 TS AgentRunner (Anthropic SDK + lane queue + approval gate) ✅
   ├─ NEW-RT-02 MCP StdioClient reconnect ✅
   ├─ NEW-RT-03 OTel-aligned Span tracing ✅
   │
@@ -90,8 +90,8 @@ Phase 2B (Pipeline 连通 + 深度集成):
   ├─ NEW-IDEA-01 idea-core MCP 桥接 (~400-800 LOC)
   ├─ NEW-05a Stage 3 idea-engine TS 增量重写开始
   ├─ NEW-WF-01 Workflow schema 设计 (~100 LOC)
-  ├─ NEW-COMP-01 W_compute MCP 安全设计 (~200 LOC)
-  ├─ NEW-RT-04 Durable execution (~200 LOC)
+  ├─ NEW-COMP-01 W_compute MCP 安全设计 (~200 LOC) ✅
+  ├─ NEW-RT-04 Durable execution (~200 LOC) ✅
   ├─ NEW-ARXIV-01 arxiv-mcp 独立 MCP (~1700 LOC) ← Phase 2 early add
   ├─ NEW-HEPDATA-01 hepdata-mcp 独立 MCP (~800 LOC) ← Phase 2 early add
   ├─ UX-02 ✅ Computation contract (升级)
@@ -1259,10 +1259,10 @@ computation/
 > **渐进式集成**: Phase 2 交付 manifest.json MVP (由 research-team Member 或人类手动编写)。Phase 5 EVO-01 `package_selector` 完成后可自动生成 manifest，届时 UX-02 manifest schema 作为 EVO-01 的输出接口。
 
 **验收**:
-- [ ] `computation_manifest_v1.schema.json` 定义完成
-- [ ] research-team Member 输出可运行代码至 `computation/`
-- [ ] hep-calc 可消费 manifest.json 执行完整计算管线
-- [ ] manifest.json 包含环境要求 + 运行顺序 + 预期输出
+- [x] `computation_manifest_v1.schema.json` 定义完成
+- [x] research-team Member 输出可运行代码至 `computation/`
+- [x] hep-calc 可消费 manifest.json 执行完整计算管线
+- [x] manifest.json 包含环境要求 + 运行顺序 + 预期输出
 
 ### UX-07: 审批上下文丰富化 ✅ Phase 2 Batch 7 ★UX
 
@@ -1324,11 +1324,11 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **依赖**: NEW-02 (三件套基础设施), NEW-03 (CLI 查看命令), UX-01 (notebook 可提取摘要)
 
 **验收**:
-- [ ] 每个 gate (A0-A4) 的 packet_short 包含该阶段特定的上下文摘要
-- [ ] A5 packet_short 包含 notebook 结果节摘要 + 关键数值表 (integrity_report 占位，待 EVO-06 接入)
-- [ ] `hepar approvals show` 默认打印 packet_short 到终端
-- [ ] packet_short ~60 行软上限，超限时附加 `overflow: hepar approvals show --format full` 指针
-- [ ] 人类审阅者无需打开其他文件即可对 packet_short 做出判断
+- [x] 每个 gate (A0-A4) 的 packet_short 包含该阶段特定的上下文摘要
+- [x] A5 packet_short 包含 notebook 结果节摘要 + 关键数值表 (integrity_report 占位，待 EVO-06 接入)
+- [x] `hepar approvals show` 默认打印 packet_short 到终端
+- [x] packet_short ~60 行软上限，超限时附加 `overflow: hepar approvals show --format full` 指针
+- [x] 人类审阅者无需打开其他文件即可对 packet_short 做出判断
 
 ### RT-02: 工具访问增强 + 溯源 Clean-Room ✅ Phase 2 Batch 6 ★research-team
 
@@ -1638,8 +1638,8 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [x] 证据抽象层 schema 定义完成 (NEW-R05)
 - [x] hep-autoresearch 测试覆盖门禁 CI 就绪 (NEW-R07)
 - [ ] NEW-R15 编排器 MCP 工具实现 (`orch_run_*` + `orch_policy_query`) 可用
-- [ ] `computation_manifest_v1.schema.json` 定义完成 (UX-02)
-- [ ] 审批 packet_short 包含各 gate 特定上下文，人类可直接判断 (UX-07)
+- [x] `computation_manifest_v1.schema.json` 定义完成 (UX-02)
+- [x] 审批 packet_short 包含各 gate 特定上下文，人类可直接判断 (UX-07)
 - [ ] research-team 工具访问: full 模式 MCP 工具 + 溯源 clean-room + hard-fail 门禁 (RT-02)
 - [ ] research-team runner 抽象: 自定义 runner + API 可配置 + key 脱敏 (RT-03)
 - [ ] Graph Visualization Layer: UniversalNode/Edge schema + 5 domain adapters 可渲染 (NEW-VIZ-01)
@@ -1769,10 +1769,10 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **URI scheme**: `orch://runs/<run_id>` (与 `hep://` 的关系见 NEW-R15-spec)
 
 **验收检查点**:
-- [ ] 所有 `orch_run_*` 工具通过 contract tests
-- [ ] `orch_run_approve` 的 `approval_id` + `approval_packet_sha256` 双重验证工作
-- [ ] 命名空间无冲突 (`orch_run_*` vs `hep_run_*`)
-- [ ] `hepar approve/status/run` CLI 可通过 `orch_run_*` MCP 工具操作
+- [x] 所有 `orch_run_*` 工具通过 contract tests
+- [x] `orch_run_approve` 的 `approval_id` + `approval_packet_sha256` 双重验证工作
+- [x] 命名空间无冲突 (`orch_run_*` vs `hep_run_*`)
+- [x] `hepar approve/status/run` CLI 可通过 `orch_run_*` MCP 工具操作
 
 ---
 
