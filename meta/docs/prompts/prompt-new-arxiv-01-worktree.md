@@ -53,14 +53,25 @@ Phase D: PR
    - `packages/hep-mcp/src/tools/research/paperContent.ts`（475 LOC — **超 200 LOC 硬限制**）
    - `packages/hep-mcp/src/tools/research/paperSource.ts`（168 LOC）
    - `packages/hep-mcp/src/api/rateLimiter.ts`（仅 `ArxivRateLimiter` + `arxivFetch()` 部分）
-5. hep-mcp 中需要更新 import 的文件（记录依赖关系）：
+5. hep-mcp 中需要更新 import 的文件（**GitNexus blast radius 分析结果，比直觉多**）：
+
+   **直接 import 源文件（arxivSource/paperContent/paperSource/downloadUrls）**：
    - `packages/hep-mcp/src/tools/research/deepAnalyze.ts`
    - `packages/hep-mcp/src/tools/research/measurementExtractor.ts`
    - `packages/hep-mcp/src/tools/research/parseLatexContent.ts`
    - `packages/hep-mcp/src/tools/research/extractBibliography.ts`
    - `packages/hep-mcp/src/tools/research/extractTables.ts`
    - `packages/hep-mcp/src/tools/research/index.ts`
-   - `packages/hep-mcp/src/tools/registry.ts`（搜索 `inspire_paper_source`）
+   - `packages/hep-mcp/src/tools/writing/claimsTable/extractor.ts`（calls `getPaperContent`）
+   - `packages/hep-mcp/src/tools/registry.ts`（dynamic import `paperSource`）
+
+   **直接 import `arxivFetch` from rateLimiter（原始 prompt 遗漏）**：
+   - `packages/hep-mcp/src/core/evidence.ts`（calls `getPaperContent`）
+   - `packages/hep-mcp/src/core/writing/evidenceIndex.ts`（calls `arxivFetch` + `getPaperContent`）
+   - `packages/hep-mcp/src/corpora/style/downloader.ts`（calls `arxivFetch` + `resolveArxivId`）
+
+   合计 **11 个文件**需要更新 import（不含内部相互依赖的 4 个源文件）。
+   GitNexus 总 blast radius：`getPaperContent` = **CRITICAL**（17 符号，5 模块，20 执行流）。
 
 ### A-2 参考实现调研
 
@@ -207,8 +218,8 @@ python3 skills/review-swarm/scripts/bin/run_multi_task.py \
    - `package.json` — 添加 `@autoresearch/arxiv-mcp: workspace:*`
    - `src/index.ts` — 聚合 arxiv-mcp 工具（仿 PDG 模式）
    - `src/tools/registry.ts` — `inspire_paper_source` 改为 alias
-   - 更新 10+ 个 import 站点（用子 agent 搜索确认无遗漏）
-   - 删除已迁移的 4 个源文件
+   - 更新 **11 个 import 站点**（见 Phase A-1 完整列表，不得遗漏）
+   - 删除已迁移的 4 个源文件 + rateLimiter.ts 中的 ArxivRateLimiter 部分
 3. `pnpm -r build` 通过
 4. `pnpm -r test` 通过（含 regression）
 
@@ -239,6 +250,15 @@ arxiv-mcp (NEW-ARXIV-01) 完整实现
 - src/tools/research/deepAnalyze.ts（import 更新）
 - src/tools/research/measurementExtractor.ts（import 更新）
 - src/tools/research/parseLatexContent.ts（import 更新）
+- src/tools/research/extractBibliography.ts（import 更新）
+- src/tools/research/extractTables.ts（import 更新）
+- src/tools/research/index.ts（import 更新）
+- src/tools/writing/claimsTable/extractor.ts（import 更新）
+- src/core/evidence.ts（import 更新）
+- src/core/writing/evidenceIndex.ts（import arxivFetch 更新）
+- src/corpora/style/downloader.ts（import arxivFetch + resolveArxivId 更新）
+- src/api/rateLimiter.ts（删除 ArxivRateLimiter/arxivFetch 部分）
+- [删除] src/tools/research/arxivSource.ts, downloadUrls.ts, paperContent.ts, paperSource.ts
 - src/tools/research/extractBibliography.ts（import 更新）
 - src/tools/research/extractTables.ts（import 更新）
 - src/tools/research/index.ts（import 更新）
