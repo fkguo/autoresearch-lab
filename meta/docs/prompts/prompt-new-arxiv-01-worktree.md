@@ -2,9 +2,13 @@
 
 ## 模型选择
 
-- **Sonnet 4.6**（当前模型）：探索、阅读代码、制定方案、轻量任务、调用子 agent
-- **Opus 4.6**：仅在关键实现阶段（复杂 code + 跨文件重构）需要时手动切换
-- 方案制定、review 解读、子任务分配均用 Sonnet 即可
+**主力模型：Opus 4.6**（全程）
+
+理由：这是**跨组件架构迁移**——同时改动 hep-mcp（10+ import 站点 + backward compat alias）
+和新建 arxiv-mcp，regression 风险高。按 AGENTS.md 矩阵："跨组件架构变更 → Opus 4.6"。
+SWE-bench 75.6% vs Sonnet ~71%，在这类任务上差距被放大。
+
+子 agent 分派（Explore/搜索类）可用 Haiku/Sonnet，但主会话保持 Opus。
 
 ---
 

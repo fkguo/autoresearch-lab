@@ -2,9 +2,13 @@
 
 ## 模型选择
 
-- **Sonnet 4.6**（当前模型）：探索、阅读文档、制定方案、轻量任务、调用子 agent
-- **Opus 4.6**：仅在核心实现阶段需要时手动切换
-- 方案制定、review 解读均用 Sonnet 即可
+**主力模型：Sonnet 4.6**（全程）
+
+理由：新建单组件（无迁移、无 regression 风险），~800 LOC，中等复杂度。
+按 AGENTS.md 矩阵："单组件 complexity=medium → Sonnet 4.6"，成本效益更优。
+
+如遇复杂架构决策或设计分歧，可临时切换 Opus 4.6，完成后切回。
+子 agent 分派（Explore/搜索类）可用 Haiku。
 
 ---
 
