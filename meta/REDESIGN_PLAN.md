@@ -93,8 +93,8 @@ Phase 2B (Pipeline 连通 + 深度集成):
   ├─ NEW-COMP-01 W_compute MCP 安全设计 (~200 LOC)
   ├─ NEW-RT-04 Durable execution (~200 LOC)
   ├─ UX-02 Computation contract (升级)
-  ├─ UX-07, RT-02, RT-03, NEW-VIZ-01
-  ├─ NEW-R05~R08, NEW-R10, NEW-R14, NEW-R15-impl
+  ├─ UX-07, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅
+  ├─ NEW-R05~R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl
   │
 Phase 3 (扩展性 + 计算连通):
   ├─ NEW-05a Stage 3 续: idea-engine TS 重写完成
@@ -1328,7 +1328,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] packet_short ~60 行软上限，超限时附加 `overflow: hepar approvals show --format full` 指针
 - [ ] 人类审阅者无需打开其他文件即可对 packet_short 做出判断
 
-### RT-02: 工具访问增强 + 溯源 Clean-Room ★research-team
+### RT-02: 工具访问增强 + 溯源 Clean-Room ✅ Phase 2 Batch 6 ★research-team
 
 > **来源**: `docs/design-proposal-research-team-v2.md` §2 (R4 READY)
 
@@ -1356,7 +1356,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] audit log: tc_id/tool_name/args_hash/result_hash/workspace/timestamp
 - [ ] provenance.tool_call_ids 与 audit log 精确匹配验证
 
-### RT-03: 统一 Runner 抽象 + API 可配置性 ★research-team
+### RT-03: 统一 Runner 抽象 + API 可配置性 ✅ Phase 2 Batch 6 ★research-team
 
 > **来源**: `docs/design-proposal-research-team-v2.md` §3 (R4 READY)
 
@@ -1379,7 +1379,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] `--api-key-env` 传环境变量名，API key 不出现在进程列表/日志/artifact
 - [ ] `run_openai_compat.sh` 可调用 DeepSeek/Qwen/vLLM 端点
 
-### NEW-VIZ-01: Graph Visualization Layer — 通用 schema + 5 domain adapters ★infra
+### NEW-VIZ-01: Graph Visualization Layer — 通用 schema + 5 domain adapters ✅ Phase 2 Batch 6 ★infra
 
 > **设计文档**: `docs/graph-visualization-layer.md` (9 轮双模型审查收敛: Codex READY + Gemini READY)
 
@@ -1635,7 +1635,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] 6 个脚本拆分至 ≤200 eLOC (或有 CONTRACT-EXEMPT + sunset)
 - [ ] CI gate 覆盖 skills 目录
 
-### NEW-R10: `service.py` 拆分 (条件性) ★深度重构
+### NEW-R10: `service.py` 拆分 (条件性) ✅ Phase 2 Batch 6 ★深度重构
 
 > **来源**: `docs/2026-02-20-deep-refactoring-analysis.md` §9, NEW-R01 子项
 
@@ -2612,7 +2612,7 @@ paper/
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01 ✅, H-02 ✅, H-03 ✅, H-04 ✅, H-13 ✅, H-15a ✅, H-16a ✅, H-18 ✅, H-19 ✅, M-01 ✅, M-14a ✅, M-18 ✅, M-19, H-11a ✅, NEW-01 ✅, NEW-R02 ✅, NEW-R03b, NEW-R04 ✅, UX-01, UX-05, UX-06 ✅, **NEW-CONN-01** ✅ | 22 (18 done, 4 pending; ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05 ✅, H-07 ✅, H-09 ✅, H-10 ✅, H-11b ✅, H-12 ✅, H-15b ✅, H-16b ✅, H-17 ✅, H-21 ✅, M-02 ✅, M-05 ✅, M-06 ✅, M-19 ✅, M-20 ✅, M-21 ✅, M-23 ✅, trace-jsonl ✅, NEW-02 ✅, NEW-03 ✅, NEW-04 ✅, NEW-R05 ✅, NEW-R06 ✅, NEW-R07 ✅, NEW-R08 ✅, NEW-R10, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02, RT-03, NEW-VIZ-01, **NEW-RT-01, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04, NEW-CONN-02 ✅, NEW-CONN-03, NEW-CONN-04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 (28 done, 15 pending) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05 ✅, H-07 ✅, H-09 ✅, H-10 ✅, H-11b ✅, H-12 ✅, H-15b ✅, H-16b ✅, H-17 ✅, H-21 ✅, M-02 ✅, M-05 ✅, M-06 ✅, M-19 ✅, M-20 ✅, M-21 ✅, M-23 ✅, trace-jsonl ✅, NEW-02 ✅, NEW-03 ✅, NEW-04 ✅, NEW-R05 ✅, NEW-R06 ✅, NEW-R07 ✅, NEW-R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl, UX-02, UX-07, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅, **NEW-RT-01, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04, NEW-CONN-02 ✅, NEW-CONN-03, NEW-CONN-04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-05a Stage 3 (start)** | 43 (32 done, 11 pending) |
 | **3 (扩展性 + 计算连通)** | M-03, M-04, M-07~M-10, M-12, M-13, M-15~M-17, M-22, L-08, NEW-06, NEW-R11, NEW-R12, UX-03, UX-04, RT-01, RT-04, **NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete)** | 24 |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 |
 | **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 |
