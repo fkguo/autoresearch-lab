@@ -21,6 +21,15 @@ from idea_core.engine.operators import (
     SearchOperator,
 )
 from idea_core.engine.store import EngineStore
+from idea_core.engine.text_utils import (
+    contains_any,
+    contains_unit_token,
+    dedupe_preserve_order,
+    is_number,
+    sanitize_text,
+    sanitize_text_list,
+    token_set,
+)
 from idea_core.engine.utils import payload_hash, sha256_hex, utc_now_iso
 
 
@@ -579,41 +588,10 @@ class IdeaCoreService:
                 extra={"campaign_id": campaign_id},
             ) from exc
 
-    @staticmethod
-    def _sanitize_text(value: Any, fallback: str) -> str:
-        if not isinstance(value, str):
-            return fallback
-        compact = " ".join(value.split())
-        return compact if compact else fallback
-
-    @staticmethod
-    def _sanitize_text_list(value: Any, fallback: list[str]) -> list[str]:
-        if not isinstance(value, list):
-            return fallback
-        cleaned: list[str] = []
-        for item in value:
-            if not isinstance(item, str):
-                continue
-            compact = " ".join(item.split())
-            if compact:
-                cleaned.append(compact)
-        return cleaned or fallback
-
     @classmethod
     def _sanitize_evidence_uris(cls, value: Any) -> list[str]:
-        cleaned = cls._sanitize_text_list(value, fallback=[])
+        cleaned = sanitize_text_list(value, fallback=[])
         return cleaned or ["https://example.org/reference"]
-
-    @staticmethod
-    def _dedupe_preserve_order(values: Iterable[str]) -> list[str]:
-        deduped: list[str] = []
-        seen: set[str] = set()
-        for value in values:
-            if value in seen:
-                continue
-            seen.add(value)
-            deduped.append(value)
-        return deduped
 
     @classmethod
     def _node_claim_text(cls, node: dict[str, Any]) -> str:
@@ -626,10 +604,10 @@ class IdeaCoreService:
                         continue
                     claim_text = claim.get("claim_text")
                     if isinstance(claim_text, str) and claim_text.strip():
-                        return cls._sanitize_text(claim_text, fallback="")
+                        return sanitize_text(claim_text, fallback="")
         rationale = node.get("rationale_draft")
         if isinstance(rationale, dict):
-            return cls._sanitize_text(rationale.get("rationale"), fallback="")
+            return sanitize_text(rationale.get("rationale"), fallback="")
         return ""
 
     @classmethod
@@ -655,35 +633,17 @@ class IdeaCoreService:
                 for uri in raw_uris:
                     if isinstance(uri, str) and uri.strip():
                         uris.append(uri)
-        return cls._dedupe_preserve_order(uris)
-
-    @staticmethod
-    def _token_set(text: str) -> set[str]:
-        tokens: set[str] = set()
-        for raw in text.lower().split():
-            token = "".join(ch for ch in raw if ch.isalnum())
-            if len(token) >= 3:
-                tokens.add(token)
-        return tokens
+        return dedupe_preserve_order(uris)
 
     @classmethod
     def _text_similarity(cls, left: str, right: str) -> float:
-        left_tokens = cls._token_set(left)
-        right_tokens = cls._token_set(right)
+        left_tokens = token_set(left)
+        right_tokens = token_set(right)
         if not left_tokens or not right_tokens:
             return 0.0
         overlap = left_tokens & right_tokens
         union = left_tokens | right_tokens
         return len(overlap) / len(union)
-
-    @staticmethod
-    def _contains_any(text: str, keywords: tuple[str, ...]) -> bool:
-        lowered = text.lower()
-        return any(keyword in lowered for keyword in keywords)
-
-    @staticmethod
-    def _is_number(value: Any) -> bool:
-        return isinstance(value, (int, float)) and not isinstance(value, bool)
 
     @classmethod
     def _infer_hep_compute_rubric(
@@ -695,7 +655,7 @@ class IdeaCoreService:
     ) -> dict[str, Any]:
         context = " ".join([method, step, claim_context]).lower()
         for rubric_id, keywords, estimate, required_infrastructure in HEP_COMPUTE_RUBRIC_RULES:
-            if cls._contains_any(context, keywords):
+            if contains_any(context, keywords):
                 return {
                     "rubric_id": rubric_id,
                     "estimated_compute_hours_log10": float(estimate),
@@ -711,12 +671,6 @@ class IdeaCoreService:
     def _infrastructure_rank(required_infrastructure: str) -> int:
         return HEP_INFRASTRUCTURE_TIERS.get(required_infrastructure, -1)
 
-    @staticmethod
-    def _contains_unit_token(text: str, units: tuple[str, ...]) -> bool:
-        lowered = text.lower()
-        pattern = r"\b(?:" + "|".join(re.escape(unit) for unit in units) + r")\b"
-        return re.search(pattern, lowered) is not None
-
     @classmethod
     def _hep_claim_texts(cls, node: dict[str, Any]) -> list[tuple[str, str]]:
         idea_card = node.get("idea_card")
@@ -729,7 +683,7 @@ class IdeaCoreService:
         for idx, claim in enumerate(claims):
             if not isinstance(claim, dict):
                 continue
-            claim_text = cls._sanitize_text(claim.get("claim_text"), fallback="")
+            claim_text = sanitize_text(claim.get("claim_text"), fallback="")
             if claim_text:
                 claim_texts.append((f"idea_card.claims[{idx}].claim_text", claim_text))
         return claim_texts
@@ -772,8 +726,8 @@ class IdeaCoreService:
             lowered = claim_text.lower()
             has_number = any(ch.isdigit() for ch in lowered)
 
-            if has_number and cls._contains_any(lowered, ("mass", "energy", "width")):
-                if not cls._contains_unit_token(lowered, ("tev", "gev", "mev", "kev", "ev")):
+            if has_number and contains_any(lowered, ("mass", "energy", "width")):
+                if not contains_unit_token(lowered, ("tev", "gev", "mev", "kev", "ev")):
                     add_finding(
                         heuristic_class="consistency",
                         validator_id="hep.dimension_units.v1",
@@ -789,7 +743,7 @@ class IdeaCoreService:
                     )
 
             if has_number and "lifetime" in lowered:
-                if not cls._contains_unit_token(lowered, ("s", "ms", "us", "ns", "ps", "fs")):
+                if not contains_unit_token(lowered, ("s", "ms", "us", "ns", "ps", "fs")):
                     add_finding(
                         heuristic_class="consistency",
                         validator_id="hep.dimension_units.v1",
@@ -853,7 +807,7 @@ class IdeaCoreService:
         idea_card = node.get("idea_card")
         compute_plan = idea_card.get("minimal_compute_plan", []) if isinstance(idea_card, dict) else []
         heavy_claim_text = " ".join(text for _, text in claim_texts).lower()
-        heavy_compute_claim = cls._contains_any(
+        heavy_compute_claim = contains_any(
             heavy_claim_text,
             (
                 "lattice",
@@ -870,8 +824,8 @@ class IdeaCoreService:
             for idx, step in enumerate(compute_plan):
                 if not isinstance(step, dict):
                     continue
-                method = cls._sanitize_text(step.get("method"), fallback="").lower()
-                step_name = cls._sanitize_text(step.get("step"), fallback="").lower()
+                method = sanitize_text(step.get("method"), fallback="").lower()
+                step_name = sanitize_text(step.get("step"), fallback="").lower()
                 rubric = cls._infer_hep_compute_rubric(
                     method=method,
                     step=step_name,
@@ -880,7 +834,7 @@ class IdeaCoreService:
                 rubric_estimate = float(rubric["estimated_compute_hours_log10"])
                 rubric_infra = str(rubric["required_infrastructure"])
 
-                raw_required_infra = cls._sanitize_text(step.get("required_infrastructure"), fallback="").lower()
+                raw_required_infra = sanitize_text(step.get("required_infrastructure"), fallback="").lower()
                 if not raw_required_infra:
                     step["required_infrastructure"] = rubric_infra
                     required_infra = rubric_infra
@@ -888,7 +842,7 @@ class IdeaCoreService:
                     required_infra = raw_required_infra
 
                 estimate_value = step.get("estimated_compute_hours_log10")
-                if cls._is_number(estimate_value):
+                if is_number(estimate_value):
                     estimate = float(estimate_value)
                 else:
                     estimate = rubric_estimate
@@ -903,7 +857,7 @@ class IdeaCoreService:
                     f"idea_card.minimal_compute_plan[{idx}].estimated_compute_hours_log10"
                 )
 
-                if cls._contains_any(method, ("todo", "tbd", "unknown", "placeholder", "n/a", "unspecified")):
+                if contains_any(method, ("todo", "tbd", "unknown", "placeholder", "n/a", "unspecified")):
                     add_finding(
                         heuristic_class="feasibility",
                         validator_id="hep.compute_feasibility.v1",
@@ -1092,30 +1046,30 @@ class IdeaCoreService:
                 continue
             if segments[-1] == "critical":
                 blocking.append(mode)
-        return cls._dedupe_preserve_order(blocking)
+        return dedupe_preserve_order(blocking)
 
     @classmethod
     def _infer_delta_types(cls, node: dict[str, Any]) -> list[str]:
-        operator_id = cls._sanitize_text(node.get("operator_id"), fallback="unknown")
-        operator_family = cls._sanitize_text(node.get("operator_family"), fallback="unknown")
+        operator_id = sanitize_text(node.get("operator_id"), fallback="unknown")
+        operator_family = sanitize_text(node.get("operator_family"), fallback="unknown")
         claim_text = cls._node_claim_text(node)
         joined = " ".join([operator_id, operator_family, claim_text]).lower()
 
         delta_types: list[str] = []
-        if cls._contains_any(joined, ("anomaly", "mechanism")):
+        if contains_any(joined, ("anomaly", "mechanism")):
             delta_types.extend(["new_mechanism", "new_observable"])
-        if cls._contains_any(joined, ("symmetry", "formalism", "selection rule")):
+        if contains_any(joined, ("symmetry", "formalism", "selection rule")):
             delta_types.extend(["new_formalism", "new_constraint"])
-        if cls._contains_any(joined, ("limit", "scaling", "regime")):
+        if contains_any(joined, ("limit", "scaling", "regime")):
             delta_types.extend(["new_regime", "new_constraint"])
-        if cls._contains_any(joined, ("constraint", "forbidden", "allowed transition")):
+        if contains_any(joined, ("constraint", "forbidden", "allowed transition")):
             delta_types.append("new_constraint")
-        if cls._contains_any(joined, ("bridge", "expand", "method", "reformulation")):
+        if contains_any(joined, ("bridge", "expand", "method", "reformulation")):
             delta_types.append("new_method")
 
         if not delta_types:
             delta_types.append("new_method")
-        return cls._dedupe_preserve_order(delta_types)
+        return dedupe_preserve_order(delta_types)
 
     @classmethod
     def _find_closest_prior(
@@ -1181,10 +1135,10 @@ class IdeaCoreService:
             "transition",
             "constraint",
         )
-        if not cls._contains_any(current_claim, predictive_keywords):
+        if not contains_any(current_claim, predictive_keywords):
             flags.append("no_new_prediction")
 
-        return cls._dedupe_preserve_order(flags)
+        return dedupe_preserve_order(flags)
 
     @classmethod
     def _build_novelty_delta_table(
@@ -1203,7 +1157,7 @@ class IdeaCoreService:
         if prior_node is not None:
             closest_prior_uris.extend(cls._node_evidence_uris(prior_node))
         closest_prior_uris.extend(cls._node_evidence_uris(node))
-        closest_prior_uris = cls._dedupe_preserve_order(closest_prior_uris)[:3]
+        closest_prior_uris = dedupe_preserve_order(closest_prior_uris)[:3]
         if not closest_prior_uris:
             closest_prior_uris = [f"urn:idea-core:novelty-prior-unavailable:{node_id}"]
 
@@ -1213,7 +1167,7 @@ class IdeaCoreService:
             prior_node=prior_node,
             claim_similarity=claim_similarity,
         )
-        operator_id = cls._sanitize_text(node.get("operator_id"), fallback="unknown.operator")
+        operator_id = sanitize_text(node.get("operator_id"), fallback="unknown.operator")
         if non_novelty_flags:
             delta_statement = (
                 f"{operator_id} must produce a measurable observable-1 shift beyond the closest prior "
@@ -1231,7 +1185,7 @@ class IdeaCoreService:
         if isinstance(compute_plan, list) and compute_plan:
             first_step = compute_plan[0]
             if isinstance(first_step, dict):
-                method = cls._sanitize_text(first_step.get("method"), fallback=operator_id)
+                method = sanitize_text(first_step.get("method"), fallback=operator_id)
         verification_hook = (
             f"Run {method} and compare observable-1 against the closest prior evidence baseline."
         )
@@ -1248,8 +1202,8 @@ class IdeaCoreService:
 
     @classmethod
     def _rationale_hash_for_trace(cls, rationale_draft: dict[str, Any]) -> str:
-        title = cls._sanitize_text(rationale_draft.get("title"), "Untitled rationale")
-        rationale = cls._sanitize_text(rationale_draft.get("rationale"), "No rationale provided.")
+        title = sanitize_text(rationale_draft.get("title"), "Untitled rationale")
+        rationale = sanitize_text(rationale_draft.get("rationale"), "No rationale provided.")
         return f"sha256:{sha256_hex(title + '|' + rationale)}"
 
     @classmethod
@@ -1265,10 +1219,10 @@ class IdeaCoreService:
         compute_step: str,
         compute_method: str,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
-        title = cls._sanitize_text(rationale_draft.get("title"), "Untitled rationale")
-        rationale = cls._sanitize_text(rationale_draft.get("rationale"), "No rationale provided.")
-        risks = cls._sanitize_text_list(rationale_draft.get("risks"), fallback=["risk not specified"])
-        kill_criteria = cls._sanitize_text_list(
+        title = sanitize_text(rationale_draft.get("title"), "Untitled rationale")
+        rationale = sanitize_text(rationale_draft.get("rationale"), "No rationale provided.")
+        risks = sanitize_text_list(rationale_draft.get("risks"), fallback=["risk not specified"])
+        kill_criteria = sanitize_text_list(
             rationale_draft.get("kill_criteria"),
             fallback=["kill criterion not specified"],
         )
@@ -1278,11 +1232,11 @@ class IdeaCoreService:
                 f"{thesis_statement} This rationale requires formal validation before promotion."
             )
 
-        cleaned_hypothesis = cls._sanitize_text(
+        cleaned_hypothesis = sanitize_text(
             hypothesis,
             f"{title} should be testable in {formalism_id} with observable-1.",
         )
-        cleaned_claim = cls._sanitize_text(
+        cleaned_claim = sanitize_text(
             claim_text,
             f"{title} provides a falsifiable claim that can be checked against observable-1.",
         )
@@ -2383,7 +2337,7 @@ class IdeaCoreService:
                             for flag in row_flags:
                                 if isinstance(flag, str):
                                     non_novelty_flags.append(flag)
-                    non_novelty_flags = self._dedupe_preserve_order(non_novelty_flags)
+                    non_novelty_flags = dedupe_preserve_order(non_novelty_flags)
                     if non_novelty_flags:
                         failure_modes.extend([f"non_novel:{flag}" for flag in non_novelty_flags])
                         fix_suggestions.append(
@@ -2403,7 +2357,7 @@ class IdeaCoreService:
                     failure_modes=failure_modes,
                     fix_suggestions=fix_suggestions,
                 )
-                failure_modes = self._dedupe_preserve_order(failure_modes)
+                failure_modes = dedupe_preserve_order(failure_modes)
                 fix_suggestions = self._dedupe_fix_suggestions(fix_suggestions)
 
                 scorecard = {

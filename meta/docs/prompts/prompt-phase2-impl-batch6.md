@@ -196,7 +196,7 @@ python3 skills/review-swarm/scripts/bin/run_multi_task.py \
    - Phase 2 映射行更新 done count: 32/43
    - 总计行更新: done count += 4
 4. 更新 auto memory (`memory/MEMORY.md`): Phase 2 progress, Batch 6 learnings
-5. **生成下一批 prompt**: 按 `memory/batch-workflow.md` 自续协议，生成 `meta/docs/prompt-phase2-impl-batch7.md`
+5. **生成下一批 prompt**: 按 `memory/batch-workflow.md` 自续协议，生成 `meta/docs/prompts/prompt-phase2-impl-batch7.md`
 
 ---
 
@@ -206,7 +206,7 @@ After convergence + commit + push, MUST:
 
 1. Read REDESIGN_PLAN to identify next unblocked items (Phase 2 pending after Batch 6)
 2. Group into coherent batch (~500-800 LOC, 4-6 items)
-3. Write `meta/docs/prompt-phase2-impl-batch7.md` with full context
+3. Write `meta/docs/prompts/prompt-phase2-impl-batch7.md` with full context
 4. New prompt MUST also contain this self-continuation instruction (recursive)
 5. Recommended Batch 7 candidates (based on Batch 6 completion):
    - NEW-R15-impl (编排器 MCP 工具实现) — critical path, blocks NEW-RT-01/NEW-COMP-01/NEW-RT-04
