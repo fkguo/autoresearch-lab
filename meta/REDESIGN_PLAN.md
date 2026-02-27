@@ -94,9 +94,9 @@ Phase 2B (Pipeline 连通 + 深度集成):
   ├─ NEW-RT-04 Durable execution (~200 LOC)
   ├─ NEW-ARXIV-01 arxiv-mcp 独立 MCP (~1700 LOC) ← Phase 2 early add
   ├─ NEW-HEPDATA-01 hepdata-mcp 独立 MCP (~800 LOC) ← Phase 2 early add
-  ├─ UX-02 Computation contract (升级)
-  ├─ UX-07, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅
-  ├─ NEW-R05~R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl
+  ├─ UX-02 ✅ Computation contract (升级)
+  ├─ UX-07 ✅, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅
+  ├─ NEW-R05~R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl ✅
   │
 Phase 3 (扩展性 + 计算连通):
   ├─ NEW-05a Stage 3 续: idea-engine TS 重写完成
@@ -1230,7 +1230,7 @@ artifacts/runs/<run_id>/approvals/<approval_id>/
 - [ ] 报告含审计指针：每个引用的 artifact 附 URI + SHA256
 - [ ] `--out tex` 生成可编译的 LaTeX 文件
 
-### UX-02: 结构化计算代码目录 + Computation Contract ★UX
+### UX-02: 结构化计算代码目录 + Computation Contract ✅ Phase 2 Batch 7 ★UX
 
 > **新增 (2026-02-22)**: research-team 的计算规划 (Draft_Derivation §6 Mapping to Computation) 与 hep-calc 的执行输入 (job.yml) 之间缺少标准化衔接；计算产出的代码文件散落在 artifacts 各 run 目录中，缺少统一的可复现结构。
 > **Scope Audit 升级 (2/3)**: 从目录布局升级为**计算契约 (Computation Contract)**: 可编译为 run-cards / skill jobs，含 acceptance checks + expected outputs。
@@ -1264,7 +1264,7 @@ computation/
 - [ ] hep-calc 可消费 manifest.json 执行完整计算管线
 - [ ] manifest.json 包含环境要求 + 运行顺序 + 预期输出
 
-### UX-07: 审批上下文丰富化 ★UX
+### UX-07: 审批上下文丰富化 ✅ Phase 2 Batch 7 ★UX
 
 > **新增 (2026-02-22)**: 当前审批 packet 是模板填充的空壳 (`"(fill)"` 占位)，人类无法基于现有内容做出有效判断。尤其 A0 (idea) 和 A5 (最终结论) 两个最关键的 gate，审批者缺少物理判断所需的上下文。
 
@@ -1749,7 +1749,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] 各子包独立构建通过
 - [ ] 总 LOC 不变 (纯拆分，无功能变更)
 
-### NEW-R15-impl: 编排器 MCP 工具实现 ★深度重构
+### NEW-R15-impl: 编排器 MCP 工具实现 ✅ Phase 2 Batch 7 ★深度重构
 
 > **来源**: `docs/2026-02-20-deep-refactoring-analysis.md` §13 — NEW-R15 Phase 2 交付物
 
