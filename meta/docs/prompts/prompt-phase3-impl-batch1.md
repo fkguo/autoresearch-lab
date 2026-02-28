@@ -18,7 +18,7 @@
 
 ## Batch 1 实施内容
 
-本批次包含 **5 个独立项**，全部为 TS 或 shell，无内部依赖，可并行实施：
+本批次包含 **4 个独立项**，全部为 TS，无内部依赖，可并行实施：
 
 | 项目 | 路径 | LOC 估计 | 依赖 |
 |------|------|---------|------|
@@ -26,9 +26,12 @@
 | M-13 | `packages/hep-mcp/src/tools/registry.ts` | ~200 | 无 |
 | M-17 | `packages/shared/src/network.ts` | ~150 | 无 |
 | NEW-CONN-05 | `packages/hep-mcp/src/tools/` | ~100 | NEW-CONN-03 ✅ |
-| NEW-SKILL-01 | `skills/lean4-verify/` | ~200 | 无 |
 
-**总计**: ~750 LOC
+**总计**: ~550 LOC
+
+> **降优先级**: NEW-SKILL-01 (lean4-verify) 移至最后批次。Lean4 在 HEP 理论中实用场景有限
+> （路径积分/重整化无法形式化、mathlib 缺物理结构、投入产出比差）。
+> 如有需要，后续可替换为更实用的 skill（如 latex-math-audit 或 hep-calc 扩展）。
 
 ---
 
@@ -169,45 +172,6 @@ packages/shared/tests/networkGovernance.test.ts — 测试 (~70 LOC)
 
 ---
 
-## Item 5: NEW-SKILL-01 — lean4-verify Skill
-
-### 背景
-
-Lean4 作为无状态形式化验证节点。技能结构遵循 `skills/` 目录约定。
-
-### 实现要点
-
-1. 新建 `skills/lean4-verify/` 目录结构:
-   ```
-   skills/lean4-verify/
-   ├── SKILL.md           — 技能文档（frontmatter + 用法）
-   ├── scripts/
-   │   └── run_lean4.sh   — 主入口脚本
-   └── status.json        — 输出模板
-   ```
-2. `run_lean4.sh` 实现:
-   - 接受 `--project <path>` 参数
-   - 在项目目录中运行 `lake build`
-   - 解析输出，提取 proved theorems
-   - 写入 `status.json`: `{ "result": "PASS|FAIL", "proved_theorems": [...], "errors": [...] }`
-   - Exit code: 0 = PASS, 1 = FAIL, 2 = SETUP_ERROR
-3. `SKILL.md` frontmatter: `name: lean4-verify`, `description: Lean4 formal verification`
-
-### 新增文件
-
-```
-skills/lean4-verify/SKILL.md                  (~30 LOC)
-skills/lean4-verify/scripts/run_lean4.sh      (~120 LOC)
-```
-
-### 验收标准
-
-- [ ] `run_lean4.sh --project <path>` 可执行 Lean4 验证
-- [ ] `status.json` 包含 PASS/FAIL + proved theorems
-- [ ] SKILL.md 含规范 frontmatter
-
----
-
 ## 实施规范
 
 ### 一般约束
@@ -248,9 +212,9 @@ pnpm -r test
 1. **Commit**: `feat(phase3-batch1): <summary>`
 2. **Push**: `git push`
 3. **REDESIGN_PLAN 更新**:
-   - 勾掉 M-04, M-13, M-17, NEW-CONN-05, NEW-SKILL-01 验收项
+   - 勾掉 M-04, M-13, M-17, NEW-CONN-05 验收项
    - 更新 Phase 3 进度计数
-   - 更新总进度: 74 → 79
+   - 更新总进度: 74 → 78
 4. **NON-BLOCKING 处置**: 对每条 NON-BLOCKING finding 做显式处置（见 MEMORY.md 规则）
 5. **Serena 记忆更新**: 如有跨组件架构决策或新 codebase gotcha，写入对应记忆
 6. **Auto-generate NEXT batch prompt**: 读取 REDESIGN_PLAN 识别下一批可实施项，写入 `meta/docs/prompts/prompt-phase3-impl-batch2.md`
@@ -267,7 +231,6 @@ pnpm -r test
 | `packages/shared/src/networkGovernance.ts` | M-17 网络治理 |
 | `packages/shared/tests/networkGovernance.test.ts` | M-17 测试 |
 | `packages/hep-mcp/src/tools/` (measurements 相关) | NEW-CONN-05 pipeline feedback |
-| `skills/lean4-verify/` | NEW-SKILL-01 Lean4 技能 |
 | `meta/REDESIGN_PLAN.md` | 进度更新 |
 
 ## Phase 3 后续批次预览
@@ -278,3 +241,4 @@ pnpm -r test
 | Batch 3 | NEW-R11 (registry split, depends on M-13), NEW-R12 (idea-runs contract) | ~700 |
 | Batch 4 | UX-03/UX-04 (depends on NEW-06), NEW-COMP-02 | ~1000 |
 | Batch 5+ | RT-01, RT-04, NEW-RT-05, remaining M-* | TBD |
+| Late | NEW-SKILL-01 (lean4-verify, 低优先级) | ~200 |
