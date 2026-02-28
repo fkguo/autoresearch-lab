@@ -1,10 +1,15 @@
-# Writing Pipeline Deep Audit & Restructuring
+# hep-mcp Deep Audit & Restructuring
 
-> **作用**: 在 Phase 3 启动前，深入审查 hep-mcp 写作管线，评估哪些部分在当前 LLM 能力下
-> 仍有价值、哪些过度工程化需要简化或删除。产出为具体的重构方案，将直接影响 NEW-06 的实施范围。
+> **作用**: 在 Phase 3 启动前，对 hep-mcp 做一次全面架构审计。重点审查写作管线，同时评估
+> 整个 hep-mcp 中哪些部分在 2026 SOTA LLM 能力下属于过度工程化，应当砍掉或大幅简化。
+> 产出为具体的重构方案，将直接影响 Phase 3 的实施范围。
 >
 > **性质**: 这不是 REDESIGN_PLAN 中的 batch 实施，而是一次**架构审计**。产出是修订后的
-> NEW-06 设计 + 可能的新 REDESIGN_PLAN 条目。不直接写代码。
+> Phase 3 设计 + 可能的新 REDESIGN_PLAN 条目。不直接写代码。
+>
+> **指导原则**: 项目尚未发布，无外部用户。2026 年的 frontier LLM（200K+ context,
+> Claude Opus/Sonnet 4.6, GPT-5.2）已经非常强大。凡是 LLM 能力已经覆盖的、增加复杂度
+> 但不增加实际价值的工程化，都应该砍掉。宁可少做，不要过度工程化。
 
 ## 前置状态
 
@@ -26,8 +31,12 @@
 ### 核心问题
 
 > 在 2026 年 frontier LLM（200K+ context, Claude Opus/Sonnet 4.6, GPT-5.2）的能力下，
-> 当前写作管线的每个组件是 **genuinely useful** 还是 **net negative**（增加复杂度、
-> 降低连贯性、增加成本但不提升质量）？
+> hep-mcp 中的每个组件是 **genuinely useful** 还是 **过度工程化**（增加复杂度但不增加
+> 实际价值，或者 LLM 本身已经能做得更好）？
+>
+> 后续也构建了多个外部 skill（research-team, research-writer, paper-reviser, referee-review,
+> hep-calc, deep-learning-lab 等），这些 skill 是否与 hep-mcp 内部的某些功能重叠？
+> 重叠的部分是否应该从 hep-mcp 中移除？
 
 ### 具体审查维度
 
@@ -67,6 +76,21 @@
    - 哪些架构决策是早期遗留、在当前 LLM 能力下已不合适？
    - 工具数量（standard 79 / full 102）是否过多？哪些可以合并或删除？
 
+9. **与外部 skill 的功能重叠**:
+   - `research-writer` skill 已能 scaffold + 写作 RevTeX 论文 — 与 hep-mcp 写作管线重叠多少？
+   - `paper-reviser` skill 已能内容修订 — 与 `refinement_orchestrator` / `revision_plan` 重叠？
+   - `referee-review` skill 已能生成审稿意见 — 与 `submit_review` 重叠？
+   - `research-team` skill 已有多 agent 写作协作 — 与 N-best + judge 理念重叠？
+   - `hep-calc` skill 处理计算 — 与 computation evidence ingestion 的关系？
+   - 重叠功能应该保留在 hep-mcp 还是移到 skill 层？原则是什么？
+
+10. **"LLM 已经能做"的功能识别**:
+    - 2026 SOTA LLM 已能直接处理哪些任务，不再需要 MCP server 端的复杂编排？
+    - 例如：token budget planning（LLM 本身就知道如何分配篇幅）、
+      outline generation（LLM 直接写大纲比 N-best+judge 更连贯）、
+      section-level prompting（LLM 理解全文结构，不需要 server 拆分章节）
+    - 这些功能的 server 端实现是否属于"用 2023 年的思路解决 2026 年的问题"？
+
 ## 审查方法
 
 ### Phase 1: 代码考古（理解现状）
@@ -102,7 +126,7 @@ packages/hep-mcp/src/core/writing/
 packages/hep-mcp/src/tools/writing/llm/
 ├── config.ts                — getWritingModeConfig, client/internal 模式
 ├── types.ts                 — LLMClient 接口
-├── clients/                 — 各 provider 客户端实现
+├── clients/                 — 各 provider 客户端实现（7+ providers）
 └── deepWriterAgent.ts       — Deep writer agent
 ```
 
@@ -127,6 +151,15 @@ packages/hep-mcp/src/tools/writing/deepWriter/
 └── types.ts
 ```
 
+**外部 skill（检查功能重叠）**:
+```
+skills/research-writer/SKILL.md   — RevTeX 论文 scaffold + 写作
+skills/paper-reviser/SKILL.md     — 内容修订 + tracked changes
+skills/referee-review/SKILL.md    — 审稿意见生成
+skills/research-team/SKILL.md     — 多 agent 协作研究
+skills/hep-calc/SKILL.md          — 计算复现/审计
+```
+
 ### Phase 2: 使用模式分析
 
 1. 读取 `docs/WRITING_RECIPE_DRAFT_PATH.md` 和 `docs/WRITING_RECIPE_CLIENT_PATH.md`
@@ -141,27 +174,39 @@ packages/hep-mcp/src/tools/writing/deepWriter/
 
 3. 统计工具调用链长度：一篇完整论文需要多少次工具调用？
 
-### Phase 3: 竞品/研究对比
+### Phase 3: 2026 SOTA 能力评估 + 竞品对比
 
-回顾当前学术写作 AI 系统的做法：
-- 单次长 context 生成（如直接用 Claude/GPT 写论文）
-- RAG + 单次生成（如 Elicit, Consensus）
-- 多 agent 协作写作（如 AI Scientist）
-- 哪些有 N-best + judge？效果如何？
+1. **2026 LLM 能力基线**:
+   - Claude Opus/Sonnet 4.6, GPT-5.2 在学术写作上的实际能力
+   - 200K+ context 能放下什么？（完整证据库？多篇论文？）
+   - 结构化输出、工具调用、多步推理的可靠性
+   - 搜索相关研究和基准测试
+
+2. **竞品做法**:
+   - 单次长 context 生成（如直接用 Claude/GPT 写论文）
+   - RAG + 单次生成（如 Elicit, Consensus）
+   - 多 agent 协作写作（如 AI Scientist, AIME）
+   - 哪些有 N-best + judge？效果如何？
+
+3. **本项目的外部 skill 已覆盖哪些能力**:
+   - research-writer 已能做什么？与 hep-mcp Client Path 的对比
+   - research-team 的多 agent 写作与 N-best+judge 哪个更有效？
+   - 哪些功能应该从 hep-mcp 移到 skill 层？
 
 ### Phase 4: 输出重构方案
 
 产出一份具体的重构提案，包含：
 
-1. **保留清单**: 哪些模块/工具保留（附理由）
+1. **保留清单**: 哪些模块/工具保留（附理由 — 必须是 LLM 做不好或不应做的）
 2. **简化清单**: 哪些模块需要简化（附具体方案）
-3. **删除清单**: 哪些模块应该删除（附理由 + 影响分析）
-4. **新增清单**: 是否需要新增任何东西（如全文生成工具）
-5. **LLM 配置方案**: 三模式统一为单模式（确定保留哪一种 + 清理方案）
-6. **修订后的 NEW-06 设计**: 基于审计结论重新定义 NEW-06 的范围和目标
-7. **hep-mcp 架构调整建议**: 超出写作管线的整体架构改进（如有）
-8. **迁移路径**: 从当前状态到目标状态的步骤（可跨多个 batch）
-9. **对 REDESIGN_PLAN 的影响**: 哪些 Phase 3 条目需要修改/新增/删除
+3. **删除清单**: 哪些模块应该删除（附理由 + 影响分析 — 重点标注"LLM 已能做"的）
+4. **移至 skill 层清单**: 哪些功能应从 hep-mcp 移到外部 skill（附理由）
+5. **新增清单**: 是否需要新增任何东西（如全文生成工具）
+6. **LLM 配置方案**: 三模式统一为单模式（确定保留哪一种 + 清理方案）
+7. **修订后的 NEW-06 设计**: 基于审计结论重新定义 NEW-06 的范围（可能远超原始 scope）
+8. **hep-mcp 架构调整建议**: 超出写作管线的整体架构改进
+9. **迁移路径**: 从当前状态到目标状态的步骤（可跨多个 batch）
+10. **对 REDESIGN_PLAN 的影响**: 哪些 Phase 3 条目需要修改/新增/删除
 
 ## 约束
 
@@ -172,6 +217,8 @@ packages/hep-mcp/src/tools/writing/deepWriter/
 - **无向后兼容负担** — 可以 breaking change，不需要旧工具/模式保留
 - **无外部用户** — 项目尚未发布，只有作者在用，可以大幅重构
 - **不怕动大手术** — 如果 hep-mcp 的某些架构根基不合适，现在是调整的最佳时机
+- **过度工程化即负债** — 凡是 2026 SOTA LLM 已经能直接做好的，server 端的复杂编排就是负债而非资产
+- **Skill 层 vs MCP 层分工** — MCP server 应提供数据访问和确定性操作；编排逻辑和生成逻辑属于 agent/skill 层
 
 ## 输出物
 
