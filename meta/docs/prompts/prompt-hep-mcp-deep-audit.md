@@ -4,8 +4,8 @@
 > 存在 — 完全拆分、大幅重构、甚至砍掉整个包都是可能的结论。评估每个组件在 2026 SOTA LLM
 > 能力下是否仍有存在价值，产出为具体的重构方案（或替代方案），将直接影响整个项目的后续方向。
 >
-> **性质**: 这不是 REDESIGN_PLAN 中的 batch 实施，而是一次**架构审计**。产出可能是：
-> 修订后的 Phase 3 设计、hep-mcp 的拆分/重组方案、甚至是替代 hep-mcp 的全新架构。
+> **性质**: 这不是 REDESIGN_PLAN 中的 batch 实施，而是一次**架构审计 + 双模型收敛审核**。
+> 产出可能是：修订后的 Phase 3 设计、hep-mcp 的拆分/重组方案、甚至是替代 hep-mcp 的全新架构。
 > 不直接写代码。
 >
 > **指导原则**: 项目尚未发布，无外部用户。2026 年的 frontier LLM（200K+ context,
@@ -17,10 +17,34 @@
 ## 前置状态
 
 - **Phase 2**: 44/45 done, Phase 3 尚未开始
-- **写作管线规模**: ~20 个 MCP 工具，~15 个 core/writing/ 模块
-- **LLM 配置**: 三模式 (client/internal/passthrough)，环境变量驱动
-- **最近 commit**: `3e9c768` (Phase 3 Batch 1 prompt)
+- **hep-mcp 规模**: 98K LOC TS, standard 79 tools / full 102 tools
+- **写作管线占比**: core/writing 18.5K LOC + tools/writing 16.5K LOC = **35K LOC（36% of total）**
+- **LLM 客户端基础设施**: 935 LOC, 7+ provider 客户端, 三模式 (client/internal/passthrough)
+- **core/writing 模块数**: 37 个 `.ts` 文件
+- **写作相关工具**: ~25 个（含 outline/section/judge/review/integrate/token 等）
+- **最近 commit**: `f2d6add`
 - **测试基线**: 1156 TS tests
+
+### 外部 skill 已覆盖的能力
+
+以下 skill 均**完全独立于 hep-mcp**（零 MCP 工具依赖），各自已形成完整工作流：
+
+| Skill | 能力 | 与 hep-mcp 重叠 |
+|-------|------|-----------------|
+| `research-writer` | RevTeX 论文 scaffold + 可选节级起草 + hygiene 检查 | 重叠 hep-mcp Client Path 写作管线 |
+| `paper-reviser` | 内容修订 + tracked changes + Codex 深度验证 | 重叠 `refinement_orchestrator` + `revision_plan` |
+| `referee-review` | 离线审稿意见生成 | 重叠 `submit_review` |
+| `research-team` | 双 agent 收敛研究 + 可复现 capsule | 理念上重叠 N-best+judge（多视角质量保证） |
+| `hep-calc` | 符号/数值 HEP 计算 + FeynCalc/FeynArts | 互补 computation evidence ingestion |
+
+### 外部 MCP server 已覆盖的能力
+
+| MCP Server | 能力 | hep-mcp 中的角色 |
+|------------|------|-----------------|
+| `arxiv-mcp` | arXiv 搜索/元数据/源文件下载 | hep-mcp 聚合暴露（3 tools） |
+| `pdg-mcp` | PDG 粒子数据离线查询 | hep-mcp 聚合暴露（9 tools） |
+| `zotero-mcp` | Zotero Local API | hep-mcp 聚合暴露（7 tools） |
+| `hepdata-mcp` | HEPData 测量数据 | hep-mcp 聚合暴露 |
 
 ## 启动前必读
 
@@ -29,211 +53,189 @@
 3. `packages/hep-mcp/CLAUDE.md`（Evidence-first I/O, Quality-first principle）
 4. `docs/WRITING_RECIPE_DRAFT_PATH.md` + `docs/WRITING_RECIPE_CLIENT_PATH.md`
 
-## 审计目标
+## 预审结论（基于代码考古 + 能力对比）
 
-### 核心问题
+以下是在审计启动前已形成的初步判断，审计需**验证、修正或推翻**这些判断。
 
-> 在 2026 年 frontier LLM（200K+ context, Claude Opus/Sonnet 4.6, GPT-5.2）的能力下，
-> hep-mcp 中的每个组件是 **genuinely useful** 还是 **过度工程化**（增加复杂度但不增加
-> 实际价值，或者 LLM 本身已经能做得更好）？
->
-> 后续也构建了多个外部 skill（research-team, research-writer, paper-reviser, referee-review,
-> hep-calc, deep-learning-lab 等），这些 skill 是否与 hep-mcp 内部的某些功能重叠？
-> 重叠的部分是否应该从 hep-mcp 中移除？
+### 预判：应删除的部分（~35K LOC, ~25 tools）
 
-### 具体审查维度
+**写作生成管线（整体删除）** — 2026 SOTA LLM + research-writer skill 已完全覆盖：
 
-1. **N-best + Judge 架构**: 生成 N 个候选，由 judge 模型选择最佳
-   - 对强模型是否仍有显著质量提升？
-   - Judge 偏差（position bias, verbosity bias）是否抵消了收益？
-   - 成本 × N 是否值得？
+| 模块/工具 | LOC | 删除理由 |
+|-----------|-----|---------|
+| N-best 候选 + Judge 选择（outline + section） | ~3K | 对 Opus 4.6 级模型收益递减；judge 有 position bias (~40%) + verbosity bias (~15%)；成本 ×N 不值得；research-team 双 agent 收敛是更好的多视角方案 |
+| 章节碎片化写作（section candidates/write packets） | ~4K | 200K context 足以整篇生成；碎片化破坏叙事连贯性、论证链、符号一致性；research-writer 已支持整篇起草 |
+| create_packet + submit 两步模式 | ~3K | LLM agent 自己管理 prompting 比 server 准备 packet 更灵活；该模式是 2023 年"LLM 需要精确引导"思维的遗产 |
+| Token budget planning + gating | ~2K | 2026 LLM 原生理解篇幅分配，不需要 server 端的 token 预算强制 |
+| `refinement_orchestrator` | ~1.5K | 编排逻辑属于 agent/skill 层；paper-reviser skill 已有更好的修订工作流 |
+| `submit_review` / `revision_plan` | ~1.5K | referee-review + paper-reviser skill 已覆盖 |
+| `outlinePlanner` / `outlineJudge` | ~2K | LLM 直接生成大纲比 N-best+judge 更连贯；大纲不是独立优化目标 |
+| `papersetPlanner` / `papersetCuration` | ~1K | 论文集筛选是 LLM 已能直接完成的任务 |
+| `deepWriter` / `deepWriterAgent` | ~1.5K | 生成逻辑不属于 MCP server |
+| LLM 客户端基础设施（7 provider clients） | ~1K | MCP server 不应自己调 LLM；删除 internal + passthrough 模式 |
+| Style corpus 工具（8 tools） | ~2K | 风格学习属于 skill 层（research-writer 已有 corpus learning） |
+| `sectionQualityEvaluator` / `qualityPolicy` | ~1K | 质量评估由 LLM agent 直接判断 |
+| `staging.ts` / `candidatePool.ts` | ~1K | 为两步提交模式服务的基础设施，随主体一起删除 |
 
-2. **章节碎片化 vs 整体生成**: 逐章节独立写 vs 全文一次生成
-   - 连贯性损失有多大？
-   - 长 context 模型是否已能处理完整论文？
-   - 跨章节论证链如何保持？
+**删除后估算**: 98K → ~60K LOC, 102 tools → ~65 tools
 
-3. **create_packet + submit 两步模式**: server 准备 prompt packet → client 生成 → submit 回 server
-   - 这个模式是否仍需要？调用方 LLM 本身就能管理 prompting
-   - 能否简化为单步 execute？
+### 预判：应保留的部分（hep-mcp 真正的核心价值）
 
-4. **client/internal/passthrough 三模式 → 统一为单模式**:
-   - 项目尚未发布，无外部用户，无兼容负担
-   - **决策方向已定**: 三模式合并为一种。审计需确定保留哪一种，以及如何清理另外两种的代码
-   - 参考：MCP server 是工具层，不应自己调 LLM（反对 internal）；passthrough 无人使用（删除）
+以下是 LLM **做不到或不应做**的确定性操作和数据访问：
 
-5. **refinement_orchestrator 作为 MCP 工具**: 编排逻辑暴露为工具
-   - 编排决策应在 agent 层还是 server 层？
+| 类别 | 工具/模块 | 保留理由 |
+|------|-----------|---------|
+| **INSPIRE 数据访问** | `inspire_search`, `inspire_search_next`, `inspire_literature`, `inspire_resolve_citekey` | 唯一的 INSPIRE API 接口；LLM 无法直接查数据库 |
+| **INSPIRE 高级研究** | `inspire_paper_source`, `inspire_research_navigator`, `inspire_critical_research`, `inspire_find_crossover_topics`, `inspire_analyze_citation_stance` | 结构化研究工具，调用 INSPIRE API + 本地分析 |
+| **arxiv/pdg/zotero 聚合** | 19 tools (3+9+7) | 外部 MCP server 聚合，纯数据访问 |
+| **Evidence 层** | `build_evidence`, `query_evidence`, `query_evidence_semantic`, `playback_evidence`, `build_pdf_evidence`, `build_evidence_index_v1` | 核心价值：BM25 索引、语义搜索、PDF 提取 — LLM 无法替代 |
+| **Citation 验证** | `build_citation_mapping`, `citationVerifier`, `validate_bibliography` | 确定性验证：INSPIRE recid 解析、allowlist 检查 — 必须精确 |
+| **Measurements** | `build_measurements`, `compare_measurements`, `build_writing_critical` | 数值提取 + tension 检测 — 确定性分析 |
+| **Project/Run 状态** | `project_create/get/list`, `run_create`, `read_artifact_chunk`, `clear_manifest_lock`, `stage_content`, `health` | 状态管理 + artifact 存储骨架 |
+| **Export/Import** | `export_project`, `export_paper_scaffold`, `import_paper_bundle`, `import_from_zotero` | 确定性打包 + LaTeX 编译 |
+| **LaTeX 渲染 + 验证** | `render_latex`, `integrate_sections`, `parse_latex` | 确定性 LaTeX 处理 + 编译门禁 |
+| **Skill 集成** | `ingest_skill_artifacts`, `create_from_idea` | 跨组件桥接 |
+| **Evidence selection (RAG)** | `build_evidence_packet_section_v2`, `submit_rerank_result_v1`, `llmReranker` | BM25 + LLM rerank 是有价值的 RAG — **但需评估是否简化** |
 
-6. **Evidence 层**: evidence building, indexing, querying
-   - 这部分是否仍是核心价值？（预判：是）
-   - 是否需要调整以适应整体生成模式？
+### 预判：需要简化但保留的部分
 
-7. **质量门禁**: citation verification, LaTeX compilation, consistency checks
-   - 确定性检查是否仍有价值？（预判：是）
-   - 是否需要调整检查时机？
+| 模块 | 当前问题 | 简化方向 |
+|------|---------|---------|
+| `inspire_deep_research` | 太重的编排工具（mode=write 是整个 Client Path） | 拆分：数据收集保留，写作编排删除 |
+| `integrate_sections` | 目前为碎片化写作服务 | 简化为 LaTeX 编译 + 验证门禁（不管内容怎么来的） |
+| Evidence selection (RAG) | 为章节级写作设计的 evidence packet | 简化为通用 evidence retrieval（不绑定写作工具链） |
+| `build_writing_evidence` | 名字暗示仅为写作服务 | 重命名为通用 evidence building |
 
-8. **hep-mcp 整体架构合理性**: 不局限于写作管线
-   - 项目未发布，无外部用户，可以大幅调整
-   - 工具层级（core/writing/research/...）的划分是否合理？
-   - 哪些架构决策是早期遗留、在当前 LLM 能力下已不合适？
-   - 工具数量（standard 79 / full 102）是否过多？哪些可以合并或删除？
+### 预判：LLM 配置统一方案
 
-9. **与外部 skill 的功能重叠**:
-   - `research-writer` skill 已能 scaffold + 写作 RevTeX 论文 — 与 hep-mcp 写作管线重叠多少？
-   - `paper-reviser` skill 已能内容修订 — 与 `refinement_orchestrator` / `revision_plan` 重叠？
-   - `referee-review` skill 已能生成审稿意见 — 与 `submit_review` 重叠？
-   - `research-team` skill 已有多 agent 写作协作 — 与 N-best + judge 理念重叠？
-   - `hep-calc` skill 处理计算 — 与 computation evidence ingestion 的关系？
-   - 重叠功能应该保留在 hep-mcp 还是移到 skill 层？原则是什么？
+**决定**: 删除 internal + passthrough 模式，仅保留 **client 模式**。
 
-10. **"LLM 已经能做"的功能识别**:
-    - 2026 SOTA LLM 已能直接处理哪些任务，不再需要 MCP server 端的复杂编排？
-    - 例如：token budget planning（LLM 本身就知道如何分配篇幅）、
-      outline generation（LLM 直接写大纲比 N-best+judge 更连贯）、
-      section-level prompting（LLM 理解全文结构，不需要 server 拆分章节）
-    - 这些功能的 server 端实现是否属于"用 2023 年的思路解决 2026 年的问题"？
+理由：
+- MCP server 是**工具层**，不应自己调用 LLM（internal 模式违反这一原则）
+- passthrough 模式无人使用
+- client 模式 = 调用方 LLM 负责生成，MCP server 只提供数据 + 验证 — 这是正确的分层
 
-## 审查方法
+**清理范围**:
+- 删除 `packages/hep-mcp/src/tools/writing/llm/clients/` (7 provider 实现)
+- 删除 `getWritingModeConfig()` 中的 internal/passthrough 分支
+- 删除 `WRITING_LLM_PROVIDER`, `WRITING_LLM_MODEL` 等环境变量
+- 删除 `deepWriterAgent.ts`
 
-### Phase 1: 代码考古（理解现状）
+## 审计任务
 
-逐一读取以下文件并理解其角色：
+### 任务 1: 验证预审结论
 
-**写作工具注册**:
-```
-packages/hep-mcp/src/tools/registry.ts  — 搜索所有 hep_run_writing_* 工具
-```
+逐一读取"应删除"清单中的每个模块源码，验证：
 
-**核心写作模块**:
-```
-packages/hep-mcp/src/core/writing/
-├── outlinePlanner.ts        — 大纲生成（N-best + judge）
-├── outlineCandidates.ts     — 大纲候选
-├── outlineJudge.ts          — 大纲评审
-├── papersetPlanner.ts       — Paperset 规划
-├── sectionCandidates.ts     — 章节候选生成
-├── sectionJudge.ts          — 章节评审选择
-├── submitSection.ts         — 章节提交
-├── submitOutlinePlan.ts     — 大纲提交
-├── submitReview.ts          — 审稿提交
-├── submitRevisionPlan.ts    — 修订计划提交
-├── submitPapersetCuration.ts — Paperset 提交
-├── nbestJudgeSchemas.ts     — N-best judge schema 定义
-├── reproducibility.ts       — 可复现性检查
-└── integrateSections.ts     — 章节集成
-```
+1. **确认无遗漏价值**: 该模块是否有某个子功能是有独立价值的（不应随整体删除）？
+2. **确认 skill 层替代可行**: 对应的外部 skill 是否真正覆盖了该功能？
+3. **确认 LLM 能力覆盖**: 2026 SOTA LLM 是否确实能直接做好这件事？
+4. **识别依赖影响**: 删除该模块后，保留模块是否有断裂的依赖？
 
-**LLM 配置与客户端**:
-```
-packages/hep-mcp/src/tools/writing/llm/
-├── config.ts                — getWritingModeConfig, client/internal 模式
-├── types.ts                 — LLMClient 接口
-├── clients/                 — 各 provider 客户端实现（7+ providers）
-└── deepWriterAgent.ts       — Deep writer agent
-```
+对于"应保留"清单，验证：
+1. **确认不可替代性**: LLM 确实做不到或不应做？
+2. **识别简化空间**: 保留模块中是否有为被删除模块服务的子功能？
 
-**RAG / Evidence**:
-```
-packages/hep-mcp/src/tools/writing/rag/
-├── llmReranker.ts           — LLM 重排序
-├── evidencePacketBuilder.ts — Evidence packet 构建
-└── types.ts
-```
+### 任务 2: 产出重构方案
 
-**验证器**:
-```
-packages/hep-mcp/src/tools/writing/verifier/
-└── citationVerifier.ts      — 引用验证
-```
+基于验证后的结论，产出具体方案：
 
-**Deep Research Writer (Draft Path)**:
-```
-packages/hep-mcp/src/tools/writing/deepWriter/
-├── writer.ts                — inspire_deep_research(mode=write) 实现
-└── types.ts
-```
+1. **最终删除清单**: 模块名 + 文件路径 + 估算 LOC + 影响分析
+2. **最终保留清单**: 模块名 + 保留理由（必须是 LLM 做不好的）
+3. **简化清单**: 具体的简化方案（代码级）
+4. **LLM 配置清理方案**: 统一为 client 模式的具体步骤
+5. **工具合并方案**: 102 → 目标数量, 哪些工具可以合并
+6. **重命名/重组方案**: 删除后的目录结构调整
+7. **迁移路径**: 从当前状态到目标状态的实施步骤（可跨多个 batch）
+8. **修订后的 REDESIGN_PLAN 影响**: 哪些 Phase 3 条目需要修改/新增/删除
 
-**外部 skill（检查功能重叠）**:
-```
-skills/research-writer/SKILL.md   — RevTeX 论文 scaffold + 写作
-skills/paper-reviser/SKILL.md     — 内容修订 + tracked changes
-skills/referee-review/SKILL.md    — 审稿意见生成
-skills/research-team/SKILL.md     — 多 agent 协作研究
-skills/hep-calc/SKILL.md          — 计算复现/审计
-```
+### 任务 3: 重构方案双模型审核（GPT-5.2 + Gemini-3.1-pro-preview）
 
-### Phase 2: 使用模式分析
+重构方案完成后，**必须**通过双模型收敛审核再定稿。
 
-1. 读取 `docs/WRITING_RECIPE_DRAFT_PATH.md` 和 `docs/WRITING_RECIPE_CLIENT_PATH.md`
-   - 理解两条路径的实际用户旅程
-   - 识别哪些步骤是必经的、哪些是可选的
+**审核模型**: 这是方案审核（非代码审核），使用：
+- `gpt-5.2`（Codex CLI, `--model gpt-5.2`）
+- `gemini-3.1-pro-preview`（Gemini CLI）
 
-2. 读取测试文件，理解哪些写作功能有测试覆盖
+**审核流程**:
+
+1. **准备 review packet**:
    ```
-   packages/hep-mcp/tests/writing/
-   packages/hep-mcp/tests/core/
+   ~/.autoresearch-lab-dev/batch-reviews/hep-mcp-audit-review-system.md  — system prompt
+   ~/.autoresearch-lab-dev/batch-reviews/hep-mcp-audit-review-r1.md     — review packet
    ```
 
-3. 统计工具调用链长度：一篇完整论文需要多少次工具调用？
+2. **Review packet 内容**:
+   - 重构提案全文（保留/删除/简化清单 + 理由）
+   - 关键审查点:
+     - 删除清单中是否有误杀（有独立价值但被连带删除的功能）？
+     - 保留清单中是否有遗漏（应该删除但被保留的功能）？
+     - LLM 能力判断是否准确（是否高估了 2026 LLM 在某些任务上的能力）？
+     - 迁移路径是否可行（依赖关系是否正确处理）？
+     - 对项目整体研究能力的影响评估
 
-### Phase 3: 2026 SOTA 能力评估 + 竞品对比
+3. **运行 review-swarm**:
+   ```bash
+   python3 skills/review-swarm/scripts/bin/run_multi_task.py \
+     --out-dir ~/.autoresearch-lab-dev/batch-reviews/hep-mcp-audit-r{M}-review \
+     --system ~/.autoresearch-lab-dev/batch-reviews/hep-mcp-audit-review-system.md \
+     --prompt ~/.autoresearch-lab-dev/batch-reviews/hep-mcp-audit-review-r{M}.md
+   ```
+   注意: Codex 需要 `--model gpt-5.2` 覆盖默认的 `gpt-5.3-codex`（这是方案审核，不是代码审核）。
 
-1. **2026 LLM 能力基线**:
-   - Claude Opus/Sonnet 4.6, GPT-5.2 在学术写作上的实际能力
-   - 200K+ context 能放下什么？（完整证据库？多篇论文？）
-   - 结构化输出、工具调用、多步推理的可靠性
-   - 搜索相关研究和基准测试
+4. **收敛判定**: 遵循 `CLAUDE.md` §多模型收敛检查流程
+   - 0 BLOCKING from both models = CONVERGED
+   - 任一 BLOCKING → 修正后 R+1
+   - 最大 5 轮
 
-2. **竞品做法**:
-   - 单次长 context 生成（如直接用 Claude/GPT 写论文）
-   - RAG + 单次生成（如 Elicit, Consensus）
-   - 多 agent 协作写作（如 AI Scientist, AIME）
-   - 哪些有 N-best + judge？效果如何？
+5. **收敛后**: 修订 REDESIGN_PLAN，更新 Phase 3 内容
 
-3. **本项目的外部 skill 已覆盖哪些能力**:
-   - research-writer 已能做什么？与 hep-mcp Client Path 的对比
-   - research-team 的多 agent 写作与 N-best+judge 哪个更有效？
-   - 哪些功能应该从 hep-mcp 移到 skill 层？
+## 原则与分工线
 
-### Phase 4: 输出重构方案
+### MCP server 应该做什么（hep-mcp 的正确定位）
 
-产出一份具体的重构提案，包含：
+- **数据访问**: INSPIRE API, arXiv, PDG, Zotero, HEPData — 唯一接口
+- **确定性操作**: LaTeX 编译、引用验证、BM25 索引、PDF 提取、数值比较
+- **状态管理**: Project/Run 生命周期、artifact 存储、manifest 锁
+- **Evidence 检索**: BM25 + semantic search + LLM rerank（RAG 管道）
 
-1. **保留清单**: 哪些模块/工具保留（附理由 — 必须是 LLM 做不好或不应做的）
-2. **简化清单**: 哪些模块需要简化（附具体方案）
-3. **删除清单**: 哪些模块应该删除（附理由 + 影响分析 — 重点标注"LLM 已能做"的）
-4. **移至 skill 层清单**: 哪些功能应从 hep-mcp 移到外部 skill（附理由）
-5. **新增清单**: 是否需要新增任何东西（如全文生成工具）
-6. **LLM 配置方案**: 三模式统一为单模式（确定保留哪一种 + 清理方案）
-7. **修订后的 NEW-06 设计**: 基于审计结论重新定义 NEW-06 的范围（可能远超原始 scope）
-8. **hep-mcp 架构调整建议**: 超出写作管线的整体架构改进
-9. **迁移路径**: 从当前状态到目标状态的步骤（可跨多个 batch）
-10. **对 REDESIGN_PLAN 的影响**: 哪些 Phase 3 条目需要修改/新增/删除
+### MCP server 不应该做什么（应在 agent/skill 层）
+
+- **LLM 调用**: MCP server 不应内置 LLM 客户端或管理 LLM 生成
+- **编排逻辑**: N-best 选择、修订循环、质量评分 — 属于 agent 决策
+- **内容生成**: 大纲写作、章节写作、审稿意见 — 属于 LLM 直接能力
+- **Token 预算**: LLM 自己管理篇幅分配，不需要外部约束
+- **风格学习**: 属于 skill 层（research-writer 已有 corpus learning）
+
+### 判断标准
+
+对每个功能问三个问题：
+1. **LLM 能否直接做？** → 如果是，删除 server 端实现
+2. **外部 skill 是否已覆盖？** → 如果是，从 hep-mcp 移除
+3. **是否需要确定性/精确性？** → 如果是（引用验证、LaTeX 编译），保留
 
 ## 约束
 
 - **不写代码** — 这是审计和设计，不是实施
-- **Evidence-first 不动** — evidence building/indexing/querying 是核心价值，不在审查范围
-- **确定性检查不动** — LaTeX 编译、引用验证、一致性检查保留
 - **Quality-first 原则** — 任何简化必须不降低学术写作质量
 - **无向后兼容负担** — 可以 breaking change，不需要旧工具/模式保留
 - **无外部用户** — 项目尚未发布，只有作者在用，可以大幅重构
-- **不怕动大手术** — 如果 hep-mcp 的某些架构根基不合适，现在是调整的最佳时机
 - **过度工程化即负债** — 凡是 2026 SOTA LLM 已经能直接做好的，server 端的复杂编排就是负债而非资产
-- **Skill 层 vs MCP 层分工** — MCP server 应提供数据访问和确定性操作；编排逻辑和生成逻辑属于 agent/skill 层
+- **Skill 层 vs MCP 层分工** — MCP server 应提供数据访问和确定性操作；编排/生成逻辑属于 agent/skill 层
+- **双模型审核必须收敛** — 重构方案在 GPT-5.2 + Gemini 双模型审核收敛前不得定稿
 
 ## 输出物
 
 | 文件 | 说明 |
 |------|------|
-| `meta/docs/writing-pipeline-audit-report.md` | 审计报告（Phase 1-3 发现） |
-| `meta/docs/writing-pipeline-restructuring-proposal.md` | 重构提案（Phase 4） |
-| `meta/REDESIGN_PLAN.md` | 修订 NEW-06 + 受影响的 Phase 3 条目 |
+| `meta/docs/hep-mcp-audit-report.md` | 审计报告（验证结果 + 发现） |
+| `meta/docs/hep-mcp-restructuring-proposal.md` | 重构提案（最终方案，双模型收敛后） |
+| `~/.autoresearch-lab-dev/batch-reviews/hep-mcp-audit-*` | 审核产物（system prompt, packets, reviews） |
+| `meta/REDESIGN_PLAN.md` | 修订 Phase 3 + 受影响条目 |
 | `serena:write_memory` | 架构决策记录 |
 
 ## 审计完成后
 
-1. 将重构提案作为 review packet 提交双模型审核（方案审核用 `gpt-5.2`，非代码审核）
-2. 收敛后修订 REDESIGN_PLAN
-3. 然后再启动 Phase 3 Batch 1（或调整 Batch 1 内容以适应新设计）
+1. 双模型审核收敛 → 定稿重构提案
+2. 修订 REDESIGN_PLAN（Phase 3 内容可能大幅调整）
+3. 然后再启动 Phase 3 实施（Batch 1 内容可能需要调整以适应新设计）
