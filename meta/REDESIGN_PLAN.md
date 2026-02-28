@@ -86,10 +86,10 @@ Phase 2B (Pipeline 连通 + 深度集成):
   ├─ NEW-02, NEW-03, NEW-04
   ├─ NEW-CONN-02 Review feedback next_actions (~60 LOC) ✅
   ├─ NEW-CONN-03 Computation evidence ingestion (~250 LOC) ✅
-  ├─ NEW-CONN-04 Idea → Run creation (~150 LOC)
+  ├─ NEW-CONN-04 Idea → Run creation (~150 LOC) ✅
   ├─ NEW-IDEA-01 idea-core MCP 桥接 (~400-800 LOC) ✅
   ├─ NEW-05a Stage 3 idea-engine TS 增量重写开始
-  ├─ NEW-WF-01 Workflow schema 设计 (~100 LOC)
+  ├─ NEW-WF-01 Workflow schema 设计 (~100 LOC) ✅
   ├─ NEW-COMP-01 W_compute MCP 安全设计 (~200 LOC) ✅
   ├─ NEW-RT-04 Durable execution (~200 LOC) ✅
   ├─ NEW-ARXIV-01 arxiv-mcp 独立 MCP (~1700 LOC) ← Phase 2 early add
@@ -1500,12 +1500,12 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **依赖**: NEW-IDEA-01
 **估计**: ~150 LOC
 
-**内容**: `hep_run_create_from_idea` 接收 IdeaHandoffC2 URI, 创建 project + run, stage thesis/claims 为 outline seed, 返回 hint-only `next_actions` (inspire_search + build_evidence + ingest_skill_artifacts)。纯 staging，无网络调用。
+**内容**: `hep_run_create_from_idea` 接收 IdeaHandoffC2 URI, 创建 project + run, stage thesis/claims 为 outline seed, 返回 hint-only `next_actions` (inspire_search + build_evidence + build_evidence_index)。纯 staging，无网络调用。
 
 **验收**:
-- [ ] 从 IdeaHandoffC2 URI 创建 run
-- [ ] outline seed 包含 thesis/claims
-- [ ] next_actions 建议后续 pipeline 步骤
+- [x] 从 IdeaHandoffC2 URI 创建 run
+- [x] outline seed 包含 thesis/claims
+- [x] next_actions 建议后续 pipeline 步骤
 
 ### NEW-IDEA-01: idea-core MCP 桥接 (`@autoresearch/idea-mcp`) (Phase 2)
 
@@ -1548,9 +1548,9 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **内容**: `research_workflow_v1.schema.json` — 声明式研究工作流图 + 统一状态模型 + hash-in-ledger + 模板系统。Entry point variants: `from_literature`, `from_idea`, `from_computation`, `from_existing_paper`。初始引用 NEW-CONN-01~03，NEW-CONN-04 就绪后追加。
 
 **验收**:
-- [ ] schema 定义完成，含 nodes/edges/gates/entry_points
-- [ ] 至少 3 个模板: review, original_research, reproduction
-- [ ] entry point variants 覆盖 4 种起点
+- [x] schema 定义完成，含 nodes/edges/gates/entry_points
+- [x] 至少 3 个模板: review, original_research, reproduction
+- [x] entry point variants 覆盖 4 种起点
 
 ### NEW-ARXIV-01: arxiv-mcp — 领域无关 arXiv MCP server ★infra
 
@@ -1637,13 +1637,13 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] `hepar approvals show` + `hepar report render` 命令可用
 - [x] 证据抽象层 schema 定义完成 (NEW-R05)
 - [x] hep-autoresearch 测试覆盖门禁 CI 就绪 (NEW-R07)
-- [ ] NEW-R15 编排器 MCP 工具实现 (`orch_run_*` + `orch_policy_query`) 可用
+- [x] NEW-R15 编排器 MCP 工具实现 (`orch_run_*` + `orch_policy_query`) 可用
 - [x] `computation_manifest_v1.schema.json` 定义完成 (UX-02)
 - [x] 审批 packet_short 包含各 gate 特定上下文，人类可直接判断 (UX-07)
-- [ ] research-team 工具访问: full 模式 MCP 工具 + 溯源 clean-room + hard-fail 门禁 (RT-02)
-- [ ] research-team runner 抽象: 自定义 runner + API 可配置 + key 脱敏 (RT-03)
-- [ ] Graph Visualization Layer: UniversalNode/Edge schema + 5 domain adapters 可渲染 (NEW-VIZ-01)
-- [ ] arxiv-mcp: `arxiv_search` + `arxiv_paper_source` + `arxiv_get_metadata` 可用，hep-mcp 聚合通过 (NEW-ARXIV-01)
+- [x] research-team 工具访问: full 模式 MCP 工具 + 溯源 clean-room + hard-fail 门禁 (RT-02)
+- [x] research-team runner 抽象: 自定义 runner + API 可配置 + key 脱敏 (RT-03)
+- [x] Graph Visualization Layer: UniversalNode/Edge schema + 5 domain adapters 可渲染 (NEW-VIZ-01)
+- [x] arxiv-mcp: `arxiv_search` + `arxiv_paper_source` + `arxiv_get_metadata` 可用，hep-mcp 聚合通过 (NEW-ARXIV-01)
 - [ ] 无 Phase 0/1 回归
 
 ### NEW-R05: 证据抽象层 ✅ Phase 2 Batch 4 ★深度重构
@@ -2691,12 +2691,12 @@ paper/
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01 ✅, H-02 ✅, H-03 ✅, H-04 ✅, H-13 ✅, H-15a ✅, H-16a ✅, H-18 ✅, H-19 ✅, M-01 ✅, M-14a ✅, M-18 ✅, M-19, H-11a ✅, NEW-01 ✅, NEW-R02 ✅, NEW-R03b, NEW-R04 ✅, UX-01, UX-05, UX-06 ✅, **NEW-CONN-01** ✅ | 22 (18 done, 4 pending; ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05 ✅, H-07 ✅, H-09 ✅, H-10 ✅, H-11b ✅, H-12 ✅, H-15b ✅, H-16b ✅, H-17 ✅, H-21 ✅, M-02 ✅, M-05 ✅, M-06 ✅, M-19 ✅, M-20 ✅, M-21 ✅, M-23 ✅, trace-jsonl ✅, NEW-02 ✅, NEW-03 ✅, NEW-04 ✅, NEW-R05 ✅, NEW-R06 ✅, NEW-R07 ✅, NEW-R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl ✅, UX-02 ✅, UX-07 ✅, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅, **NEW-RT-01 ✅, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04 ✅, NEW-CONN-02 ✅, NEW-CONN-03 ✅, NEW-CONN-04, NEW-IDEA-01 ✅, NEW-COMP-01 ✅, NEW-WF-01, NEW-ARXIV-01 ✅, NEW-HEPDATA-01 ✅, NEW-05a Stage 3 (start)** | 45 (42 done, 3 pending) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05 ✅, H-07 ✅, H-09 ✅, H-10 ✅, H-11b ✅, H-12 ✅, H-15b ✅, H-16b ✅, H-17 ✅, H-21 ✅, M-02 ✅, M-05 ✅, M-06 ✅, M-19 ✅, M-20 ✅, M-21 ✅, M-23 ✅, trace-jsonl ✅, NEW-02 ✅, NEW-03 ✅, NEW-04 ✅, NEW-R05 ✅, NEW-R06 ✅, NEW-R07 ✅, NEW-R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl ✅, UX-02 ✅, UX-07 ✅, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅, **NEW-RT-01 ✅, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04 ✅, NEW-CONN-02 ✅, NEW-CONN-03 ✅, NEW-CONN-04 ✅, NEW-IDEA-01 ✅, NEW-COMP-01 ✅, NEW-WF-01 ✅, NEW-ARXIV-01 ✅, NEW-HEPDATA-01 ✅, NEW-05a Stage 3 (start)** | 45 (44 done, 1 pending) |
 | **3 (扩展性 + 计算连通)** | M-03, M-04, M-07~M-10, M-12, M-13, M-15~M-17, M-22, L-08, NEW-06, NEW-R11, NEW-R12, UX-03, UX-04, RT-01, RT-04, **NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete)** | 24 |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 |
 | **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 |
 | **跨 Phase (伞)** | NEW-R01 | 1 |
 | **CUT** | NEW-R09 | 1 |
-| **总计** | | **137** (119 原 + 17 新增 + 1 cut) — 72 done |
+| **总计** | | **137** (119 原 + 17 新增 + 1 cut) — 74 done |
 
 > **Note**: v1.8.0 变更: 新增 15 项 (NEW-CONN-01~05, NEW-IDEA-01, NEW-COMP-01/02, NEW-WF-01, NEW-SKILL-01, NEW-RT-01~05)。修改 13 项 (H-01 简化, H-04 冻结, H-15a 冻结, H-17 deferred, M-22 deferred, NEW-R09 cut, NEW-05a re-scoped, UX-02 升级, UX-04 扩展, EVO-01/02/03 依赖追加, NEW-WF-01 entry points, NEW-COMP-01 ingest tool)。来源: 三模型 scope audit 收敛 + 双模型 Pipeline 连通性审计 R4 收敛 + CLI-First Dual-Mode 架构收敛。
