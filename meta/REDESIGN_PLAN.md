@@ -1799,31 +1799,46 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 | M-17 | 网络出口治理 | `hep-research-mcp/packages/shared/src/network.ts` | 外联域名白名单 (`inspirehep.net`, `arxiv.org`, `127.0.0.1`) + 请求速率限制 | 非白名单域名请求被拒绝 |
 | L-08 | MCP 进度/取消 UX | `hep-autoresearch/src/hep_autoresearch/toolkit/mcp_stdio_client.py` | 可选附加 progress token + 回调；长时间步骤展示进度 | 长时间操作有进度输出 |
 
-### NEW-06: MCP 写作流水线工具整合 (审计 §7.7.5)
+### NEW-06: MCP 写作流水线移除 (深度审计 2026-03-01)
 
-**现状**: 写作流水线暴露 ~20 个工具，其中大量 `create_*_packet` + `submit_*` 配对本质上是"准备数据→提交结果"的两步操作。`refinement_orchestrator` 等编排逻辑也作为独立工具暴露，增加了人类用户和 agent 的认知负担。
-**动机**: 降低工具数量 (目标: 83→~65 full mode)，简化 agent 编排，提升研究质量和用户体验。
+> **重写 (2026-03-01)**: 原 NEW-06 计划"整合" ~20 个写作工具为更少的 execute 工具。深度审计结论：整个写作 generation/orchestration pipeline 应从 MCP server 中删除，而非整合。详见 `meta/docs/hep-mcp-audit-report.md` + `meta/docs/hep-mcp-restructuring-proposal.md`。
+> **R8 收敛 (2026-03-01)**: 双模型审核（Codex gpt-5.2 + Gemini 3.1 Pro）经 8 轮迭代收敛，14 个 BLOCKING findings 全部解决。proposal 稳定。
 
-**整合策略**:
+**现状**: 写作流水线 ~40K LOC, ~30 tools，嵌入 LLM 客户端（违反 MCP best practice），实现属于 agent/skill 层的编排逻辑，且已被外部 skills (research-writer, paper-reviser, referee-review) 完整替代。
 
-| 当前工具对 | 整合方案 | 理由 |
-|---|---|---|
-| `create_*_packet` + `submit_*` (evidence, section, outline, judge 等) | 合并为单步 `*_execute` 工具，内部编排 create→submit | agent 无需管理中间 packet 状态 |
-| `refinement_orchestrator_v1` | 内化为 agent 编排逻辑，不暴露为 MCP 工具 | 编排决策属于 agent 层，非 server 层 |
-| `create_section_candidates` + `submit_section_candidates` + `create_section_judge` + `submit_section_judge` | 合并为 `section_generate_and_select` | 减少 4→1 工具 |
+**动机**:
+1. **MCP 架构正确性**: MCP server 不应嵌入 LLM 客户端 (Docker, O'Reilly/Goose, MCP spec, Phil Schmid, Klavis AI 均确认为反模式)
+2. **代码减负**: 98K → ~58K LOC, 102 → 72 tools (full), 79 → 56 tools (standard)
+3. **功能无损失**: research-writer + paper-reviser + referee-review skills 完整覆盖写作能力
+4. **SOTA LLM 能力**: EQ-Bench Longform 确认 per-section 近零退化，但单次生成仍有限 — 策略应在 skill 层而非 MCP server 层实现
 
-**修改文件**:
+**执行计划**: 4-batch migration (详见 `meta/docs/hep-mcp-restructuring-proposal.md` §7):
+- **Batch 1**: Extraction + corpora 删除 — 提取 `utils/latex.ts`, `utils/bibtex.ts`, `core/writing/writingTypes.ts`; 移除 `verifyCitations` + citation verification; 删除 `corpora/` (16 files + 8 tool registrations); `exportProject.ts` 容忍验证 artifact 缺失
+- **Batch 2**: 写作管线核心删除 — `deepResearch.ts` mode='write' 移除 → `deepWriterAgent.ts` 删除 → `core/writing/` 32 files 删除 → `tools/writing/` bulk 删除 (保留 `llm/` + `types.ts`) → registry ~28 tool registrations 移除
+- **Batch 3**: LLM 客户端迁移 — MCP sampling plumbing (`sendRequest`/`createMessage` 加入 `ToolHandlerContext`) → `theoreticalConflicts.ts` 迁移 → `tools/writing/llm/` + `types.ts` 删除 → stale hints 清理
+- **Batch 4**: 测试清理 + 验证
 
-| 文件 | 修改内容 |
-|---|---|
-| `hep-research-mcp/src/tools/writing/` | 新增合并工具，旧工具标记 `@deprecated` 但保留一个 minor version |
-| `hep-autoresearch/src/hep_autoresearch/toolkit/mcp_tools.py` | 更新生成的工具常量 |
-| `tool_catalog.{standard,full}.json` | 重新生成，工具数下降 |
+**保留模块** (core/writing/ — 6 files):
+- `renderLatex.ts` — Draft Path LaTeX 渲染 (确定性操作; citation verification 已移除)
+- `latexCompileGate.ts` — LaTeX 编译检查
+- `draftSchemas.ts` — Draft path Zod schemas
+- `staging.ts` — stageRunContent (hep_run_stage_content 工具使用)
+- `evidence.ts` — buildRunWritingEvidence + embeddings query (evidenceSemantic.ts 依赖)
+- `writingTypes.ts` [NEW] — SentenceAttribution/SentenceType (从 tools/writing/types.ts 提取)
+
+**修改文件**: (大规模删除，详见 restructuring proposal §3-§7)
 
 **验收检查点**:
-- [ ] full mode 工具数 ≤70
-- [ ] 旧工具标记 deprecated，新工具功能等价
-- [ ] 写作流水线端到端测试通过（使用新合并工具）
+- [ ] `pnpm -r build` 通过 0 errors
+- [ ] `pnpm -r test` 通过 (~470 tests, 从 726 下降; hep-mcp package)
+- [ ] `getTools('full')` = 72
+- [ ] `getTools('standard')` = 56
+- [ ] 30 tools deleted (23 standard + 7 full-only)
+- [ ] deepResearch.ts 中无 mode='write'
+- [ ] `hep://corpora/` resource namespace 完全移除
+- [ ] `tools/writing/llm/` 完全删除 (含 clients/, config.ts, types.ts, index.ts)
+- [ ] 无 `createLLMClient` 调用 (replaced by MCP sampling)
+- [ ] `docs/ARCHITECTURE.md` 更新
 
 ### UX-03: 论文版本追踪 + 输出路径统一 ★UX
 
@@ -1854,7 +1869,7 @@ paper/
 └── latest -> v2/              ← symlink
 ```
 
-**依赖**: NEW-06 (写作管线整合)
+**依赖**: 无 (原依赖 NEW-06 写作管线整合，现 NEW-06 改为写作管线移除，UX-03 不再依赖写作工具)
 
 **验收**:
 - [ ] `hep_export_paper_scaffold --version 2` 输出到 `paper/v2/`
@@ -1867,14 +1882,14 @@ paper/
 > **新增 (2026-02-22)**: Agent 依赖自然语言 skill (SKILL.md) 理解工具调用顺序，不同 Agent 理解可能不一致。同期合并 inspire_search + hep_inspire_search_export。
 > **Scope Audit 扩展 (2/3)**: 从静态 recipe 扩展为**可执行 workflow schema**: 含计算节点、`orch_run_*` gate 操作。Recipe 是 workflow schema 的具体实例化。详见 NEW-WF-01。
 
-**依赖**: NEW-06 (工具整合完成后定义 recipe), H-16a (工具名常量化), NEW-R15-impl (recipes 需要 orch_run_* 存在)
+**依赖**: NEW-06 (写作管线移除后定义 recipe), H-16a (工具名常量化), NEW-R15-impl (recipes 需要 orch_run_* 存在)
 
 **变更**:
 
 | 文件 | 变更 |
 |---|---|
 | `autoresearch-meta/schemas/workflow_recipe_v1.schema.json` | Recipe schema: steps[], gates[], tool references |
-| `autoresearch-meta/recipes/` | 标准 recipe 定义: `literature_to_evidence.json`, `derivation_cycle.json`, `writing_pipeline.json`, `review_cycle.json` |
+| `autoresearch-meta/recipes/` | 标准 recipe 定义: `literature_to_evidence.json`, `derivation_cycle.json`, `review_cycle.json` (注: `writing_pipeline.json` 已移除 — 写作管线从 MCP server 删除, 见 NEW-06) |
 | hep-research-mcp tools | 合并 `inspire_search` + `hep_inspire_search_export` → `inspire_search` (保留名，增加 `export_mode` 可选参数) |
 
 **Recipe 示例** (`literature_to_evidence.json`):
@@ -1890,11 +1905,11 @@ paper/
 }
 ```
 
-**依赖**: NEW-06 (工具整合完成后定义 recipe), H-16a (工具名常量化)
+**依赖**: NEW-06 (写作管线移除后定义 recipe), H-16a (工具名常量化)
 
 **验收**:
 - [ ] `workflow_recipe_v1.schema.json` 定义完成
-- [ ] 至少 4 个标准 recipe 定义 (literature, derivation, writing, review)
+- [ ] 至少 3 个标准 recipe 定义 (literature, derivation, review; writing 已移除见 NEW-06)
 - [ ] inspire_search + hep_inspire_search_export 合并为一个工具
 - [ ] Agent 可加载 recipe JSON 执行标准工作流
 
@@ -1902,7 +1917,7 @@ paper/
 
 > **来源**: `docs/design-proposal-research-team-v2.md` §1 (R4 READY)
 
-**依赖**: UX-06 (session protocol), NEW-06 (MCP 工具整合), RT-02 (clean-room gate)
+**依赖**: UX-06 (session protocol), NEW-06 (写作管线移除), RT-02 (clean-room gate)
 
 **现状**: research-team 仅支持 peer-review 对称模式。
 
@@ -2004,17 +2019,20 @@ paper/
 
 ### Phase 3 验收总检查点
 
-- [ ] 全部 19 项修复通过各自测试 (原 13 + NEW-R11/R12 + UX-03/UX-04)
+- [ ] 全部 21 项修复通过各自测试 (原 19 + NEW-MCP-SAMPLING + NEW-SKILL-WRITING)
 - [ ] Schema 扩展性测试通过（`x-*` 字段不破坏验证）
 - [ ] 日志无 secrets 泄露
 - [ ] ERR-01/SYNC-03/ART-03 CI 验证从 grep 升级为 AST-based lint（TS: ESLint custom rule; Python: ast 模块）
 - [ ] `registry.ts` 按领域拆分完成 (NEW-R11)
 - [ ] `idea-runs` 集成契约定义完成 (NEW-R12)
 - [ ] 论文版本追踪 + paper_manifest_v2 就绪 (UX-03)
-- [ ] 至少 4 个标准 workflow recipe 定义 (UX-04)
+- [ ] 至少 3 个标准 workflow recipe 定义 (UX-04, writing recipe 移除)
 - [ ] inspire 工具合并完成 (UX-04)
 - [ ] research-team 三模式工作流: peer/leader/asymmetric + 增量验证 + convergence gate (RT-01)
 - [ ] research-team ↔ idea-generator 桥接: --idea-source + 反向种子 (RT-04)
+- [ ] 写作管线移除完成: ~40K LOC 删除, 102→72 tools (full), 79→56 tools (standard) (NEW-06)
+- [ ] LLM 客户端迁移至 MCP sampling: 1 consumer (theoreticalConflicts.ts), ToolHandlerContext plumbing 完成 (NEW-MCP-SAMPLING)
+- [ ] 统一写作 skill 就绪 (NEW-SKILL-WRITING)
 - [ ] 无 Phase 0/1/2 回归
 
 ### NEW-R11: `registry.ts` 领域拆分 (M-13 范围扩展) ★深度重构
@@ -2023,8 +2041,8 @@ paper/
 
 **依赖**: M-13 (MCP 模块化)
 
-**现状**: `registry.ts` 2975 LOC, 包含所有领域的工具注册。M-13 规划了分组标签但未规划文件级拆分。
-**目标**: 拆分为 `tools/registry/{inspire,zotero,pdg,writing,project}.ts` + `tools/registry/shared.ts`。
+**现状**: `registry.ts` 2975 LOC, 包含所有领域的工具注册。M-13 规划了分组标签但未规划文件级拆分。NEW-06 写作管线移除后预计缩减至 ~1800 LOC，但拆分仍有价值。
+**目标**: 拆分为 `tools/registry/{inspire,zotero,pdg,project}.ts` + `tools/registry/shared.ts`（写作 registry 随 NEW-06 删除，无需独立文件）。
 
 **验收检查点**:
 - [ ] 6 个文件，每个 ≤500 LOC
@@ -2067,6 +2085,55 @@ paper/
 - [ ] FQ 工具名使用 `mcp__hep-mcp__` 前缀
 - [ ] 旧名称 `hep-research` alias 可用 (过渡期)
 - [ ] 全生态系统 grep `hep-research-mcp` 仅返回 alias/migration 相关代码
+
+### NEW-MCP-SAMPLING: theoreticalConflicts 迁移至 MCP Sampling (深度审计 2026-03-01)
+
+> **来源**: `meta/docs/hep-mcp-audit-report.md` — 嵌入 LLM 客户端反模式修复
+> **R8 简化 (2026-03-01)**: 原计划 2 consumers (llmReranker + theoreticalConflicts)。proposal R4 发现 `llmReranker.ts` 所有 consumer 在 DELETE list → 随 NEW-06 Batch 2 删除。仅剩 1 consumer: `theoreticalConflicts.ts`。
+
+**依赖**: NEW-06 Batch 2 完成后 (llmReranker 已随其 consumers 删除)
+**关系**: 编排为 NEW-06 Batch 3 的 step 1-2。非独立项 — 与 NEW-06 Batch 3 同步执行。
+**估计**: ~150 LOC (plumbing + migration)
+
+**现状**: `theoreticalConflicts.ts` 通过 `tools/writing/llm/clients/` 直接嵌入 LLM 客户端调用。这违反 MCP 架构最佳实践。`llmReranker.ts` 已无需迁移 — 所有 consumer 在 NEW-06 Batch 2 删除。
+
+**变更**:
+1. **Plumb MCP sampling into ToolHandlerContext**: 将 `extra.sendRequest` (MCP SDK) 从 `index.ts` → `dispatcher.ts` → tool handlers 传递。添加 `createMessage` 便利 wrapper
+2. TheoreticalConflicts: 准备 conflict analysis prompt → `ctx.createMessage(...)` → 解析结果
+3. Thread ctx through handler chain: `registry.ts` handler → `performCriticalResearch()` → `performTheoreticalConflicts()`
+4. 删除 `tools/writing/llm/` directory (clients/, config.ts, types.ts, index.ts) — 与 `tools/writing/types.ts`
+5. 注意: sampling 依赖 MCP client 实现 `sampling/createMessage`; 若 client 不支持, `mode='theoretical'` 将失败 (acceptable per CLAUDE.md §全局约束)
+
+**验收检查点**:
+- [ ] `tools/writing/llm/` 目录完全删除
+- [ ] `tools/writing/types.ts` 删除
+- [ ] 无 `createLLMClient` 调用残留
+- [ ] `theoreticalConflicts.ts` 使用 `ctx.createMessage` (MCP sampling)
+- [ ] `ToolHandlerContext` 包含 `sendRequest` + `createMessage`
+- [ ] Conflict analysis 端到端测试通过
+
+### NEW-SKILL-WRITING: 增强 research-writer Skill (深度审计 2026-03-01)
+
+> **来源**: `meta/docs/hep-mcp-audit-report.md` §7.4 — 写作管线移除后的能力填补
+> **修订 (2026-03-01)**: 原计划新建 `skills/writing-pipeline/` 统一写作 skill。改为增强现有 research-writer，避免 skill 膨胀。research-writer 已实现 outline + section generation；只需补充 hep-mcp evidence 工具集成。
+
+**依赖**: NEW-06 (写作管线移除完成后)
+**估计**: ~200 LOC (SKILL.md 修订 + 脚本增强)
+
+**现状**: research-writer 已实现 RevTeX scaffold + outline + section-by-section generation + LaTeX compilation。但缺少与 hep-mcp evidence catalog 的集成。paper-reviser 和 referee-review 各自独立运行。
+
+**变更**:
+1. 增强 `skills/research-writer/SKILL.md` — 添加 hep-mcp evidence 工具调用流程
+2. 添加 evidence grounding 步骤: `hep_project_query_evidence` / `hep_project_query_evidence_semantic` → 每节写作前检索相关 evidence
+3. Citation 来源从 evidence catalog（INSPIRE recid + arXiv ID）获取，非 allowlist
+4. 通过 `hep_render_latex` 渲染 + `hep_export_project` 打包
+5. Section-by-section 策略在 skill 层实现（SOTA 模型 per-section 退化近零，但单次生成仍有长度限制）
+
+**验收检查点**:
+- [ ] `SKILL.md` 包含 hep-mcp evidence 工具调用流程
+- [ ] 每节写作前检索 evidence (BM25 或 semantic)
+- [ ] 调用 `hep_render_latex` + `hep_export_project`
+- [ ] 端到端: evidence → outline → section draft → render → export
 
 ---
 
