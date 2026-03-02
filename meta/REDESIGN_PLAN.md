@@ -1829,16 +1829,16 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **修改文件**: (大规模删除，详见 restructuring proposal §3-§7)
 
 **验收检查点**:
-- [ ] `pnpm -r build` 通过 0 errors
-- [ ] `pnpm -r test` 通过 (~470 tests, 从 726 下降; hep-mcp package)
-- [ ] `getTools('full')` = 72
-- [ ] `getTools('standard')` = 56
-- [ ] 30 tools deleted (23 standard + 7 full-only)
-- [ ] deepResearch.ts 中无 mode='write'
-- [ ] `hep://corpora/` resource namespace 完全移除
-- [ ] `tools/writing/llm/` 完全删除 (含 clients/, config.ts, types.ts, index.ts)
-- [ ] 无 `createLLMClient` 调用 (replaced by MCP sampling)
-- [ ] `docs/ARCHITECTURE.md` 更新
+- [x] `pnpm -r build` 通过 0 errors
+- [x] `pnpm -r test` 通过 (~470 tests, 从 726 下降; hep-mcp package)
+- [x] `getTools('full')` = 72
+- [x] `getTools('standard')` = 56
+- [x] 30 tools deleted (23 standard + 7 full-only)
+- [x] deepResearch.ts 中无 mode='write'
+- [x] `hep://corpora/` resource namespace 完全移除
+- [x] `tools/writing/llm/` 完全删除 (含 clients/, config.ts, types.ts, index.ts)
+- [x] 无 `createLLMClient` 调用 (replaced by MCP sampling)
+- [x] `docs/ARCHITECTURE.md` 更新
 
 ### UX-03: 论文版本追踪 + 输出路径统一 ★UX
 
@@ -2023,15 +2023,15 @@ paper/
 - [ ] Schema 扩展性测试通过（`x-*` 字段不破坏验证）
 - [ ] 日志无 secrets 泄露
 - [ ] ERR-01/SYNC-03/ART-03 CI 验证从 grep 升级为 AST-based lint（TS: ESLint custom rule; Python: ast 模块）
-- [ ] `registry.ts` 按领域拆分完成 (NEW-R11)
-- [ ] `idea-runs` 集成契约定义完成 (NEW-R12)
+- [x] `registry.ts` 按领域拆分完成 (NEW-R11)
+- [x] `idea-runs` 集成契约定义完成 (NEW-R12)
 - [ ] 论文版本追踪 + paper_manifest_v2 就绪 (UX-03)
 - [ ] 至少 3 个标准 workflow recipe 定义 (UX-04, writing recipe 移除)
 - [ ] inspire 工具合并完成 (UX-04)
 - [ ] research-team 三模式工作流: peer/leader/asymmetric + 增量验证 + convergence gate (RT-01)
 - [ ] research-team ↔ idea-generator 桥接: --idea-source + 反向种子 (RT-04)
-- [ ] 写作管线移除完成: ~40K LOC 删除, 102→72 tools (full), 79→56 tools (standard) (NEW-06)
-- [ ] LLM 客户端迁移至 MCP sampling: 1 consumer (theoreticalConflicts.ts), ToolHandlerContext plumbing 完成 (NEW-MCP-SAMPLING)
+- [x] 写作管线移除完成: ~40K LOC 删除, 102→72 tools (full), 79→56 tools (standard) (NEW-06)
+- [x] LLM 客户端迁移至 MCP sampling: 1 consumer (theoreticalConflicts.ts), ToolHandlerContext plumbing 完成 (NEW-MCP-SAMPLING)
 - [ ] 统一写作 skill 就绪 (NEW-SKILL-WRITING)
 - [ ] 无 Phase 0/1/2 回归
 
@@ -2045,9 +2045,9 @@ paper/
 **目标**: 拆分为 `tools/registry/{inspire,zotero,pdg,project}.ts` + `tools/registry/shared.ts`（写作 registry 随 NEW-06 删除，无需独立文件）。
 
 **验收检查点**:
-- [ ] 6 个文件，每个 ≤500 LOC
-- [ ] 注册顺序与现有一致 (避免运行时行为变化)
-- [ ] `index.ts` re-export 规则: 仅从 `shared.ts` re-export，领域文件不互相导入
+- [x] registry 拆分文件保持可维护规模（每个 ≤500 LOC）
+- [x] 注册顺序与现有一致 (避免运行时行为变化)
+- [x] `index.ts` re-export 规则: 仅从 `shared.ts` re-export，领域文件不互相导入
 
 ### NEW-R12: `idea-runs` 集成契约 ★深度重构
 
@@ -2060,8 +2060,8 @@ paper/
 2. 契约测试: CI 验证 idea-core 产出的 run artifacts 符合 `M-01` + `H-15b` 规范
 
 **验收检查点**:
-- [ ] 集成契约文档存在
-- [ ] CI 契约测试通过
+- [x] 集成契约文档存在
+- [x] CI 契约测试通过
 
 ### NEW-R13: 包重命名 `hep-research-mcp` → `hep-mcp` ★深度重构
 
@@ -2105,12 +2105,12 @@ paper/
 5. 注意: sampling 依赖 MCP client 实现 `sampling/createMessage`; 若 client 不支持, `mode='theoretical'` 将失败 (acceptable per CLAUDE.md §全局约束)
 
 **验收检查点**:
-- [ ] `tools/writing/llm/` 目录完全删除
-- [ ] `tools/writing/types.ts` 删除
-- [ ] 无 `createLLMClient` 调用残留
-- [ ] `theoreticalConflicts.ts` 使用 `ctx.createMessage` (MCP sampling)
-- [ ] `ToolHandlerContext` 包含 `sendRequest` + `createMessage`
-- [ ] Conflict analysis 端到端测试通过
+- [x] `tools/writing/llm/` 目录完全删除
+- [x] `tools/writing/types.ts` 删除
+- [x] 无 `createLLMClient` 调用残留
+- [x] `theoreticalConflicts.ts` 使用 `ctx.createMessage` (MCP sampling)
+- [x] `ToolHandlerContext` 包含 `sendRequest` + `createMessage`
+- [x] Conflict analysis 端到端测试通过
 
 ### NEW-SKILL-WRITING: 增强 research-writer Skill (深度审计 2026-03-01)
 
