@@ -1987,7 +1987,8 @@ paper/
 - PASS 类型 (7 种): METHOD, REFERENCE, CONVENTION, PITFALL, CRITERION, TOOL, ASSUMPTION
 - BLOCK 类型 (7 种): NUM_RESULT, SYM_RESULT, DERIV_CHAIN, VERDICT, CODE_OUTPUT, AGREEMENT, COMPARISON
 - 决策规则: BLOCK 优先于 PASS（保守优先）；混合内容尝试分句处理，不可靠则整段 BLOCK
-- V1 纯规则（正则+关键词），确定性可审计；V2（后续）可选 LLM 辅助分类器
+- ~~V1 纯规则（正则+关键词）~~：已被 V2 替换。V1 在 5 轮 review-swarm 中持续发现自然语言绕过向量（30+ BLOCKING）
+- V2 LLM 分类器（2026-03-04 完成）：三层降级（structured output → json_object → prompt-only），严格 fail-closed，`urlparse()` HTTPS 验证
 
 **变更**:
 
