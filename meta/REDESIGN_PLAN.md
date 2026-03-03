@@ -1872,10 +1872,10 @@ paper/
 **依赖**: 无 (原依赖 NEW-06 写作管线整合，现 NEW-06 改为写作管线移除，UX-03 不再依赖写作工具)
 
 **验收**:
-- [ ] `hep_export_paper_scaffold --version 2` 输出到 `paper/v2/`
-- [ ] `changes_v1_to_v2.diff` 自动生成
-- [ ] research-writer 通过 MCP 工具生成论文 (不再独立 LaTeX 生成)
-- [ ] paper_manifest_v2.schema.json 包含 version + parent_version
+- [x] `hep_export_paper_scaffold --version 2` 输出到 `paper/v2/`
+- [x] `changes_v1_to_v2.diff` 自动生成
+- [x] research-writer consume 可处理版本化 manifest（deterministic precedence + v1/v2 schemaVersion）
+- [x] paper_manifest_v2.schema.json 包含 version + parent_version
 
 ### UX-04: 结构化工具编排 Recipe + Workflow Schema ★UX
 
@@ -1908,10 +1908,10 @@ paper/
 **依赖**: NEW-06 (写作管线移除后定义 recipe), H-16a (工具名常量化)
 
 **验收**:
-- [ ] `workflow_recipe_v1.schema.json` 定义完成
-- [ ] 至少 3 个标准 recipe 定义 (literature, derivation, review; writing 已移除见 NEW-06)
-- [ ] inspire_search + hep_inspire_search_export 合并为一个工具
-- [ ] Agent 可加载 recipe JSON 执行标准工作流
+- [x] `workflow_recipe_v1.schema.json` 定义完成
+- [x] 至少 3 个标准 recipe 定义 (literature, derivation, review; writing 已移除见 NEW-06)
+- [x] `inspire_search` 覆盖导出能力（`hep_inspire_search_export` 语义可达）
+- [x] Agent 可加载 recipe JSON 执行标准工作流（schema/fixture 测试覆盖）
 
 ### RT-01: 可配置工作流模式 (`--workflow-mode`) ★research-team
 
@@ -1933,15 +1933,18 @@ paper/
 | `scripts/bin/claim_extractor.py` | (新) 从 step result 提取核心 Claims + 方程/数据 |
 
 **关键设计**:
-- **leader**: 增量验证 (outline → step-by-step → integration)，early stop (连续 2 CHALLENGED)
-- **asymmetric**: critical_steps[] 独立推导 + convergence check，其余步骤逐步验证
-- **peer**: 不变
+- **默认模式**: `leader`（research-team 主流程语义上本来就是 leader + members；见 `meta/docs/sota-multi-agent-verification-2026.md` §架构差异说明）
+  - `peer` 保留用于纯对等场景（两个完全对等 reviewer，无明确 leader）
+  - `workflow_mode` 在 `research_team_config.json` 中可显式覆盖
+- **leader**: 增量验证 (outline → step-by-step → integration)，early stop (连续 2 CHALLENGED)；跨 provider 异构配置时（通过 RT-03 runner 层接入不同 provider）leader 独立性天然保证
+- **asymmetric**: critical_steps[] 独立推导（verifier 不可见 leader 答案）+ convergence check，其余步骤逐步验证；是 leader 的强化版
+- **convergence gate**: 始终使用确定性启发式解析（不引入 LLM judge）；mode-aware 分支仍保持结构化输出解析
 
 **验收**:
-- [ ] `--workflow-mode peer` 行为与当前完全一致 (回归测试)
-- [ ] `--workflow-mode leader` 增量验证完整流程 + CHALLENGED 修复重试 (--max-step-retries 默认 3)
-- [ ] `--workflow-mode asymmetric` + critical_steps[] 独立推导 + convergence check
-- [ ] convergence gate 正确区分三种模式的通过条件
+- [x] `--workflow-mode peer` 行为与当前完全一致 (回归测试)
+- [x] `--workflow-mode leader` 增量验证完整流程 + CHALLENGED 修复重试 (--max-step-retries 默认 3)
+- [x] `--workflow-mode asymmetric` + critical_steps[] 独立推导 + convergence check
+- [x] convergence gate 正确区分三种模式的通过条件
 
 ### RT-04: Innovation ↔ idea-generator 桥接 ★research-team
 
@@ -1960,9 +1963,69 @@ paper/
 | INNOVATION_LOG.md | 新增 `## External Seeds` section; lead schema 对齐 `idea_card_v1` |
 
 **验收**:
-- [ ] `--idea-source` 注入时 system prompt 包含已评估 idea 列表
-- [ ] breakthrough lead schema 与 `idea_card_v1` 可相互转换
-- [ ] `idea-core campaign seed --from-innovation-log` 可提取 active leads
+- [x] `--idea-source` 注入时 system prompt 包含已评估 idea 列表（结构化 JSON，非 Markdown 文本）
+- [x] breakthrough lead schema 与 `idea_card_v1` 可相互转换（字段映射有 schema 校验，不依赖纯文本解析）
+- [x] `idea-core campaign seed --from-innovation-log` 可提取 active leads
+- [x] `--idea-source` 接受 `seed_pack_v1.json` 路径或 `idea_card_v1` 列表；Markdown 注入仅作 fallback
+
+### RT-05: 结构化协作 — Semi-permeable Clean Room ★research-team
+
+> **来源**: 2026-03-02 SOTA 文献修订 + 用户经验反馈。详见 `meta/docs/sota-multi-agent-verification-2026.md` §第四部分–§第七部分。
+> **发表潜力**: 足以支撑独立论文（Paper A: 方法论文）+ HEP 应用论文（Paper B），详见 §第六部分。
+
+**依赖**: RT-01 (三模式工作流), RT-02 (clean-room gate)
+
+**现状**: research-team 在独立工作阶段（Phase 1）和收敛判定阶段（Phase 4）表现良好，但完全缺少人类科研中的两个关键环节：(1) 工作前的方法对齐（Phase 0），(2) 遇到困难时的定向咨询（Phase 2）。用户亲身确认的问题包括：两个 member 选同一个 trivial headline 验证、数值方法选择从不被系统性审查。
+
+**SOTA 依据**:
+- [17] AIED 2025: peer-to-peer collaboration（共享中间过程+交叉验证）> critical debate（交换完整答案后争论）
+- [18] ICML MAS 2025: 自由辩论可导致准确率下降
+- [19] OpenReview 2025: 层级结构化协作 resilience 最优
+- 新颖性分析（§第五部分）确认：按内容语义类型过滤（N1）、多阶段渗透率模型（N2）、生物膜类比（N3）、反 sycophancy 第三条路径（N4）、HOW/WHAT 语义区分（N5）均为新颖贡献
+
+**设计核心**: Information Membrane（信息膜）——按内容语义类型定义渗透率。
+- PASS 类型 (7 种): METHOD, REFERENCE, CONVENTION, PITFALL, CRITERION, TOOL, ASSUMPTION
+- BLOCK 类型 (7 种): NUM_RESULT, SYM_RESULT, DERIV_CHAIN, VERDICT, CODE_OUTPUT, AGREEMENT, COMPARISON
+- 决策规则: BLOCK 优先于 PASS（保守优先）；混合内容尝试分句处理，不可靠则整段 BLOCK
+- V1 纯规则（正则+关键词），确定性可审计；V2（后续）可选 LLM 辅助分类器
+
+**变更**:
+
+| 文件 | 变更 |
+|---|---|
+| `run_team_cycle.sh` | 新增 `--collaboration-phases 0,1,2,3` 阶段控制（默认: `1` 即现有行为） |
+| `assets/system_alignment.txt` | (新, ~50 行) Phase 0 方法对齐 system prompt（输出方法路径/约定/难点/文献，禁止计算） |
+| `assets/system_consultation.txt` | (新, ~40 行) Phase 2 定向咨询 system prompt（HOW-only 约束，禁止透露结果） |
+| `assets/system_divergence.txt` | (新, ~30 行) Phase 5 分歧解决 system prompt |
+| `scripts/bin/compile_method_landscape.py` | (新, ~150 行) Phase 0 输出编译：Membrane 过滤 + 结构化合并为 method_landscape.md |
+| `scripts/bin/extract_consultation_flags.py` | (新, ~120 行) Phase 1 报告中解析 FLAG/UNCERTAIN → 生成结构化 HOW 问题 |
+| `scripts/bin/filter_consultation_response.py` | (新, ~80 行) Phase 2 回答应用 Membrane，BLOCK 内容替换为 [REDACTED] |
+| `scripts/lib/information_membrane.py` | (新, ~300 行) Membrane V1 核心：BLOCK/PASS 检测规则 + filter_message() + 审计日志 |
+| `scripts/gates/check_team_convergence.py` | 扩展：Phase 0/2/5 输出纳入收敛判定上下文 |
+| `tests/test_information_membrane.py` | (新, ~200 行) Membrane PASS/BLOCK 各类型覆盖 |
+| `tests/test_method_landscape.py` | (新, ~100 行) Phase 0 编译器测试 |
+| `tests/test_consultation_flags.py` | (新, ~80 行) Phase 2 FLAG 解析测试 |
+
+**关键设计**:
+- **向后兼容**: `--collaboration-phases 1` 时行为与 RT-01 完全一致（仅 Phase 1 独立工作）
+- **渐进启用**: Level 0 (`1`) → Level 1 (`0,1`) → Level 2 (`0,1,2,3`) → Level 3 (`0,1,2,3,5`)
+- **与 RT-01 集成**: peer/leader 模式支持所有 Phase；asymmetric 模式 Phase 2 硬禁用（与盲化冲突）
+- **审计**: 每次 Membrane 操作生成 JSONL 审计日志 `<run_dir>/membrane_audit/`
+- **不引入 A2A 框架**: 所有信息流经编排器的 Information Membrane，不使用 agent 间直接通信
+
+**估计**: ~1350 LOC (新代码) + ~200 LOC (改动)
+
+**验收**:
+- [ ] `--collaboration-phases 1` 行为与 RT-01 完全一致（回归测试）
+- [ ] `--collaboration-phases 0,1` 在 Phase 0 产生 Method Landscape 并注入 Phase 1 packet
+- [ ] Method Landscape 中不含数值结论/完整推导（信息膜 BLOCK）
+- [ ] `--collaboration-phases 0,1,2,3` 完整五阶段流程可运行
+- [ ] Phase 2 仅在 FLAG/UNCERTAIN 触发时激活；无 FLAG 时自动跳过
+- [ ] Phase 2 回答经过信息膜过滤，不含数值结果/判定结论
+- [ ] Information Membrane V1 有独立单元测试覆盖 PASS/BLOCK 各 7 种类型（≥14 test cases）
+- [ ] Membrane 审计日志包含 input_hash + blocked_details + membrane_version
+- [ ] convergence gate 接受 Phase 0/2/5 上下文（mode-aware）
+- [ ] asymmetric 模式下 Phase 2 硬禁用（测试覆盖此约束）
 
 ### NEW-CONN-05: Cross-validation → Pipeline Feedback (Phase 3, deferred)
 
@@ -2025,9 +2088,9 @@ paper/
 - [ ] ERR-01/SYNC-03/ART-03 CI 验证从 grep 升级为 AST-based lint（TS: ESLint custom rule; Python: ast 模块）
 - [x] `registry.ts` 按领域拆分完成 (NEW-R11)
 - [x] `idea-runs` 集成契约定义完成 (NEW-R12)
-- [ ] 论文版本追踪 + paper_manifest_v2 就绪 (UX-03)
-- [ ] 至少 3 个标准 workflow recipe 定义 (UX-04, writing recipe 移除)
-- [ ] inspire 工具合并完成 (UX-04)
+- [x] 论文版本追踪 + paper_manifest_v2 就绪 (UX-03)
+- [x] 至少 3 个标准 workflow recipe 定义 (UX-04, writing recipe 移除)
+- [x] inspire 工具合并完成 (UX-04)
 - [ ] research-team 三模式工作流: peer/leader/asymmetric + 增量验证 + convergence gate (RT-01)
 - [ ] research-team ↔ idea-generator 桥接: --idea-source + 反向种子 (RT-04)
 - [x] 写作管线移除完成: ~40K LOC 删除, 102→72 tools (full), 79→56 tools (standard) (NEW-06)
