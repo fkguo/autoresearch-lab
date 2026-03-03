@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.8.0-draft",
-  "updated_at": "2026-02-26T16:10:00Z",
+  "updated_at": "2026-03-02T06:25:00Z",
   "note": "v1.8.0-draft: Scope Audit + Pipeline Connectivity + CLI-First Dual-Mode. 135 items.",
   "phases": {
     "0": {
@@ -178,7 +178,6 @@
           ],
           "note": "done. shared/tracing.ts + dispatcher trace_id injection + Python trace_id in call_tool_json/ledger.",
           "completed_at": "2026-02-25"
-        }
         },
         "H-03": {
           "title": "RunState v1 统一枚举",
@@ -962,14 +961,27 @@
         },
         "NEW-06": {
           "title": "MCP 写作流水线工具整合",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
           "assignee": null,
-          "depends_on": []
+          "depends_on": [],
+          "completed_at": "2026-03-01",
+          "note": "Batch 1-4 complete on main: writing pipeline removed, tool counts stabilized (standard=56/full=72), tests/docs cleanup finished. See commits c8c5a01, 33c2448, 095887e."
+        },
+        "NEW-MCP-SAMPLING": {
+          "title": "theoreticalConflicts 迁移至 MCP Sampling",
+          "status": "done",
+          "complexity": "low",
+          "assignee": null,
+          "depends_on": [
+            "NEW-06"
+          ],
+          "completed_at": "2026-03-01",
+          "note": "Completed with NEW-06 Batch 3: ToolHandlerContext plumbed createMessage/sendRequest, theoreticalConflicts migrated to MCP sampling, writing/llm + types removed. See commit 7b0ebb7."
         },
         "NEW-R11": {
           "title": "registry.ts 领域拆分 (M-13 scope expansion)",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
@@ -979,7 +991,7 @@
         },
         "NEW-R12": {
           "title": "idea-runs 集成契约",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
           "depends_on": [],
@@ -987,17 +999,19 @@
         },
         "UX-03": {
           "title": "论文版本追踪 + 输出路径统一",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "NEW-06"
           ],
-          "source": "user-stories-ux-gaps"
+          "source": "user-stories-ux-gaps",
+          "completed_at": "2026-03-02",
+          "note": "Phase 3 Batch 3 converged (R3): versioned paper scaffold output (paper/vN), v2 manifest fields (version/parent_version/review_ref), unversioned overwrite guard for version-chain safety, versioned import path support via hep_import_paper_bundle(version), tests+smoke+review-swarm PASS."
         },
         "UX-04": {
           "title": "结构化工具编排 Recipe + inspire 工具合并",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
@@ -1006,11 +1020,12 @@
             "NEW-R15-impl"
           ],
           "source": "user-stories-ux-gaps",
-          "note": "Scope Audit 扩展: workflow schema + orch_run_* gate 操作."
+          "note": "Phase 3 Batch 3 converged (R3): workflow_recipe_v1 schema + 3 standard recipes shipped, inspire_search export path merged with wrapper semantic reachability retained, contract coverage and full hep-mcp tests PASS.",
+          "completed_at": "2026-03-02"
         },
         "RT-01": {
           "title": "可配置工作流模式 (peer/leader/asymmetric)",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
           "assignee": null,
           "depends_on": [
@@ -1019,18 +1034,18 @@
             "RT-02"
           ],
           "source": "design-proposal-research-team-v2",
-          "note": "三模式工作流 + 增量验证 + convergence gate; 实现语言取决于 NEW-05a 进度"
+          "note": "三模式工作流 + 增量验证 + convergence gate; leader 为默认（跨 provider 异构 ensemble + leader 角色已是实际用法；peer 保留用于纯对等场景）; asymmetric 用于 critical_steps 独立验证; gate 保持确定性解析. SOTA 依据: meta/docs/sota-multi-agent-verification-2026.md"
         },
         "RT-04": {
           "title": "Innovation ↔ idea-generator 桥接",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "NEW-R12"
           ],
           "source": "design-proposal-research-team-v2",
-          "note": "--idea-source 注入 + INNOVATION_LOG 反向种子 + idea_card_ref schema 对齐"
+          "note": "--idea-source 接受 seed_pack_v1.json 或 idea_card_v1 列表（JSON 结构化注入，Markdown 文本为 fallback）; INNOVATION_LOG lead 须映射到 idea_card_v1 字段（schema 校验）; SOTA 依据: meta/docs/sota-multi-agent-verification-2026.md §RT-04"
         },
         "NEW-CONN-05": {
           "status": "pending",
