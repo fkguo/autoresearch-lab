@@ -1968,7 +1968,7 @@ paper/
 - [x] `idea-core campaign seed --from-innovation-log` 可提取 active leads
 - [x] `--idea-source` 接受 `seed_pack_v1.json` 路径或 `idea_card_v1` 列表；Markdown 注入仅作 fallback
 
-### RT-05: 结构化协作 — Semi-permeable Clean Room ★research-team
+### RT-05: 结构化协作 — Semi-permeable Clean Room ✅ Phase 3 Batch 5 ★research-team
 
 > **来源**: 2026-03-02 SOTA 文献修订 + 用户经验反馈。详见 `meta/docs/sota-multi-agent-verification-2026.md` §第四部分–§第七部分。
 > **发表潜力**: 足以支撑独立论文（Paper A: 方法论文）+ HEP 应用论文（Paper B），详见 §第六部分。
@@ -2016,16 +2016,16 @@ paper/
 **估计**: ~1350 LOC (新代码) + ~200 LOC (改动)
 
 **验收**:
-- [ ] `--collaboration-phases 1` 行为与 RT-01 完全一致（回归测试）
-- [ ] `--collaboration-phases 0,1` 在 Phase 0 产生 Method Landscape 并注入 Phase 1 packet
-- [ ] Method Landscape 中不含数值结论/完整推导（信息膜 BLOCK）
-- [ ] `--collaboration-phases 0,1,2,3` 完整五阶段流程可运行
-- [ ] Phase 2 仅在 FLAG/UNCERTAIN 触发时激活；无 FLAG 时自动跳过
-- [ ] Phase 2 回答经过信息膜过滤，不含数值结果/判定结论
-- [ ] Information Membrane V1 有独立单元测试覆盖 PASS/BLOCK 各 7 种类型（≥14 test cases）
-- [ ] Membrane 审计日志包含 input_hash + blocked_details + membrane_version
-- [ ] convergence gate 接受 Phase 0/2/5 上下文（mode-aware）
-- [ ] asymmetric 模式下 Phase 2 硬禁用（测试覆盖此约束）
+- [x] `--collaboration-phases 1` 行为与 RT-01 完全一致（回归测试）
+- [x] `--collaboration-phases 0,1` 在 Phase 0 产生 Method Landscape 并注入 Phase 1 packet
+- [x] Method Landscape 中不含数值结论/完整推导（信息膜 BLOCK）
+- [x] `--collaboration-phases 0,1,2,3` 完整五阶段流程可运行
+- [x] Phase 2 仅在 FLAG/UNCERTAIN 触发时激活；无 FLAG 时自动跳过
+- [x] Phase 2 回答经过信息膜过滤，不含数值结果/判定结论
+- [x] Information Membrane V1 有独立单元测试覆盖 PASS/BLOCK 各 7 种类型（≥14 test cases）
+- [x] Membrane 审计日志包含 input_hash + blocked_details + membrane_version
+- [x] convergence gate 接受 Phase 0/2/5 上下文（mode-aware）
+- [x] asymmetric 模式下 Phase 2 硬禁用（测试覆盖此约束）
 
 ### NEW-CONN-05: Cross-validation → Pipeline Feedback (Phase 3, deferred)
 

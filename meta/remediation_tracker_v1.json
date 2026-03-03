@@ -1047,6 +1047,18 @@
           "source": "design-proposal-research-team-v2",
           "note": "--idea-source 接受 seed_pack_v1.json 或 idea_card_v1 列表（JSON 结构化注入，Markdown 文本为 fallback）; INNOVATION_LOG lead 须映射到 idea_card_v1 字段（schema 校验）; SOTA 依据: meta/docs/sota-multi-agent-verification-2026.md §RT-04"
         },
+        "RT-05": {
+          "title": "Semi-permeable Clean Room (Information Membrane)",
+          "status": "done",
+          "complexity": "high",
+          "assignee": null,
+          "depends_on": [
+            "RT-01",
+            "RT-02"
+          ],
+          "source": "sota-multi-agent-verification-2026",
+          "note": "Information Membrane V1 (rule-based): 7 PASS + 7 BLOCK content types; Phase 0 method alignment, Phase 2 targeted consultation, Phase 5 divergence resolution; --collaboration-phases CLI control; JSONL audit logging; 77 new tests (171 total). SOTA 依据: meta/docs/sota-multi-agent-verification-2026.md §7"
+        },
         "NEW-CONN-05": {
           "status": "pending",
           "assignee": null,
