@@ -1112,12 +1112,12 @@
           "note": "Scope Audit 3/3: deferred to Phase 3."
         },
         "NEW-OPENALEX-01": {
-          "status": "pending",
+          "status": "done",
           "assignee": null,
           "title": "openalex-mcp standalone MCP",
           "complexity": "medium",
           "depends_on": [],
-          "note": "~1700 LOC. 设计 v4 三模型收敛完成。"
+          "note": "~2976 LOC. Phase 3 Batch 6. R1→R5 Codex+Kimi convergence. 95 tests. packages/openalex-mcp/ standalone MCP + hep-mcp aggregation (maturity: experimental)."
         },
         "NEW-SKILL-WRITING": {
           "status": "done",

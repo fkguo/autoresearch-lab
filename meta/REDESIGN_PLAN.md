@@ -2144,7 +2144,7 @@ paper/
 - [x] 写作管线移除完成: ~40K LOC 删除, 102→72 tools (full), 79→56 tools (standard) (NEW-06)
 - [x] LLM 客户端迁移至 MCP sampling: 1 consumer (theoreticalConflicts.ts), ToolHandlerContext plumbing 完成 (NEW-MCP-SAMPLING)
 - [x] 统一写作 skill 就绪 (NEW-SKILL-WRITING)
-- [ ] openalex-mcp 独立构建通过，hep-mcp 聚合完成 (NEW-OPENALEX-01)
+- [x] openalex-mcp 独立构建通过，hep-mcp 聚合完成 (NEW-OPENALEX-01)
 - [ ] 无 Phase 0/1/2 回归
 
 ### NEW-R11: `registry.ts` 领域拆分 (M-13 范围扩展) ★深度重构
