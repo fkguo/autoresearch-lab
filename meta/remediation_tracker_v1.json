@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "plan_version": "1.8.0-draft",
-  "updated_at": "2026-03-02T06:25:00Z",
-  "note": "v1.8.0-draft: Scope Audit + Pipeline Connectivity + CLI-First Dual-Mode. 135 items.",
+  "plan_version": "1.9.0-draft",
+  "updated_at": "2026-03-04",
+  "note": "v1.9.0-draft: v1.8.0 + NEW-OPENALEX-01 追加 Phase 3. 138 items.",
   "phases": {
     "0": {
       "name": "止血",
@@ -803,7 +803,7 @@
           "note": "buildReviewNextActions() in submitReview.ts. follow_up queries→inspire_search + rebuild evidence; recommended_resume_from→writing tool. 7 tests."
         },
         "NEW-CONN-03": {
-          "status": "pending",
+          "status": "done",
           "assignee": null,
           "title": "Computation evidence ingestion",
           "complexity": "medium",
@@ -811,7 +811,8 @@
             "NEW-COMP-01",
             "NEW-01"
           ],
-          "note": "~250 LOC. parallel schema."
+          "note": "Batch 9: computation evidence ingestion via hep_run_ingest_skill_artifacts.",
+          "completed_at": "2026-03-03"
         },
         "NEW-CONN-04": {
           "status": "pending",
@@ -1060,14 +1061,15 @@
           "note": "V2 (LLM-based, 2026-03-04): replaced V1 regex after 5 rounds of bypass vectors (30+ BLOCKING). Three-tier LLM fallback (structured→json_object→prompt-only), strict fail-closed, urlparse() HTTPS validation, duplicate-index fail-open fix, AUTH_ERROR distinction, segment_index audit matching. Review convergence: R1-R2 (V2 initial) → R3 (HTTPS bypass fix) → R4 (duplicate-index fix) → R5 (Codex+Gemini READY). 61 membrane tests, 184 total."
         },
         "NEW-CONN-05": {
-          "status": "pending",
+          "status": "done",
           "assignee": null,
           "title": "Cross-validation → Pipeline feedback",
           "complexity": "low",
           "depends_on": [
             "NEW-CONN-03"
           ],
-          "note": "~100 LOC. Phase 3 deferred."
+          "note": "Batch 7: ~50 LOC. Added next_actions to compareProjectMeasurements (evidence review + systematic uncertainty check suggestions). 3 new tests.",
+          "completed_at": "2026-03-04"
         },
         "NEW-COMP-02": {
           "status": "pending",
@@ -1108,6 +1110,25 @@
             "H-04"
           ],
           "note": "Scope Audit 3/3: deferred to Phase 3."
+        },
+        "NEW-OPENALEX-01": {
+          "status": "pending",
+          "assignee": null,
+          "title": "openalex-mcp standalone MCP",
+          "complexity": "medium",
+          "depends_on": [],
+          "note": "~1700 LOC. 设计 v4 三模型收敛完成。"
+        },
+        "NEW-SKILL-WRITING": {
+          "status": "done",
+          "assignee": null,
+          "title": "Enhance research-writer Skill",
+          "complexity": "low",
+          "depends_on": [
+            "NEW-06"
+          ],
+          "completed_at": "2026-03-04",
+          "note": "Batch 7: ~150 LOC SKILL.md. Added evidence-grounded writing workflow (hep-mcp evidence query + render + export integration)."
         }
       }
     },

@@ -2033,7 +2033,7 @@ paper/
 - [x] convergence gate 接受 Phase 0/2/5 上下文（mode-aware）
 - [x] asymmetric 模式下 Phase 2 硬禁用（测试覆盖此约束）
 
-### NEW-CONN-05: Cross-validation → Pipeline Feedback (Phase 3, deferred)
+### NEW-CONN-05: Cross-validation → Pipeline Feedback (Phase 3, deferred) ✅ Phase 3 Batch 7
 
 > **来源**: `meta/docs/pipeline-connectivity-audit.md` — Island 4 (Cross-validation LaTeX-only 输入)
 
@@ -2043,8 +2043,8 @@ paper/
 **内容**: `hep_run_build_measurements` 和 `hep_project_compare_measurements` 在发现 tension 时返回 `next_actions` 到 review/revision。扩展 measurements 消费计算 evidence。
 
 **验收**:
-- [ ] tension 发现时 next_actions 非空
-- [ ] measurements 可消费计算 evidence (ComputationEvidenceCatalogItemV1)
+- [x] tension 发现时 next_actions 非空
+- [x] measurements 可消费计算 evidence (ComputationEvidenceCatalogItemV1)
 
 ### NEW-COMP-02: W_compute MCP 实现 (Phase 3)
 
@@ -2143,7 +2143,7 @@ paper/
 - [x] research-team ↔ idea-generator 桥接: --idea-source + 反向种子 (RT-04)
 - [x] 写作管线移除完成: ~40K LOC 删除, 102→72 tools (full), 79→56 tools (standard) (NEW-06)
 - [x] LLM 客户端迁移至 MCP sampling: 1 consumer (theoreticalConflicts.ts), ToolHandlerContext plumbing 完成 (NEW-MCP-SAMPLING)
-- [ ] 统一写作 skill 就绪 (NEW-SKILL-WRITING)
+- [x] 统一写作 skill 就绪 (NEW-SKILL-WRITING)
 - [ ] openalex-mcp 独立构建通过，hep-mcp 聚合完成 (NEW-OPENALEX-01)
 - [ ] 无 Phase 0/1/2 回归
 
@@ -2224,7 +2224,7 @@ paper/
 - [x] `ToolHandlerContext` 包含 `sendRequest` + `createMessage`
 - [x] Conflict analysis 端到端测试通过
 
-### NEW-SKILL-WRITING: 增强 research-writer Skill (深度审计 2026-03-01)
+### NEW-SKILL-WRITING: 增强 research-writer Skill (深度审计 2026-03-01) ✅ Phase 3 Batch 7
 
 > **来源**: `meta/docs/hep-mcp-audit-report.md` §7.4 — 写作管线移除后的能力填补
 > **修订 (2026-03-01)**: 原计划新建 `skills/writing-pipeline/` 统一写作 skill。改为增强现有 research-writer，避免 skill 膨胀。research-writer 已实现 outline + section generation；只需补充 hep-mcp evidence 工具集成。
@@ -2242,10 +2242,10 @@ paper/
 5. Section-by-section 策略在 skill 层实现（SOTA 模型 per-section 退化近零，但单次生成仍有长度限制）
 
 **验收检查点**:
-- [ ] `SKILL.md` 包含 hep-mcp evidence 工具调用流程
-- [ ] 每节写作前检索 evidence (BM25 或 semantic)
-- [ ] 调用 `hep_render_latex` + `hep_export_project`
-- [ ] 端到端: evidence → outline → section draft → render → export
+- [x] `SKILL.md` 包含 hep-mcp evidence 工具调用流程
+- [x] 每节写作前检索 evidence (BM25 或 semantic)
+- [x] 调用 `hep_render_latex` + `hep_export_project`
+- [x] 端到端: evidence → outline → section draft → render → export
 
 ---
 
