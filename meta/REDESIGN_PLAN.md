@@ -1,10 +1,14 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.8.0-draft (R10: Scope Audit 三模型收敛 + Pipeline 连通性双模型 R4 收敛 + CLI-First Dual-Mode 架构确立)
-> **日期**: 2026-02-25
-> **基线**: v1.7.0-draft + `meta/docs/scope-audit-converged.md` (三模型收敛) + `meta/docs/scope-audit-dual-mode-converged.md` (CLI-First 收敛) + `meta/docs/pipeline-connectivity-audit.md` (双模型 R4 收敛)
-> **重构项总数**: 137 项 (119 前序 + 17 新增 + 1 cut)
+> **版本**: 1.9.0-draft (NEW-OPENALEX-01 追加 Phase 3)
+> **日期**: 2026-03-04
+> **基线**: v1.8.0-draft
+> **重构项总数**: 138 项 (119 前序 + 18 新增 + 1 cut)
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.0 Changelog**:
+> - 追加 NEW-OPENALEX-01: openalex-mcp standalone MCP (Phase 3, 在 NEW-SKILL-WRITING + NEW-CONN-05 之前实施)
+> - 设计 v4 已完成 Claude + Codex + Gemini 三模型两轮审阅收敛
 >
 > **v1.8.0 Changelog**:
 > - Scope audit 三模型收敛结论落地: H-01 简化, H-04/H-15a 冻结, H-17/M-22 deferred, NEW-R09 cut
@@ -102,6 +106,7 @@ Phase 3 (扩展性 + 计算连通):
   ├─ NEW-05a Stage 3 续: idea-engine TS 重写完成
   ├─ NEW-COMP-02 W_compute MCP 实现 (~500 LOC)
   ├─ NEW-CONN-05 Cross-validation → Pipeline feedback (~100 LOC)
+  ├─ NEW-OPENALEX-01 openalex-mcp standalone MCP (~1700 LOC)
   ├─ NEW-SKILL-01 lean4-verify skill (~200 LOC)
   ├─ NEW-RT-05 Eval framework (~500 LOC)
   ├─ M-22 GateSpec 通用抽象 (deferred from P1)
@@ -2081,9 +2086,51 @@ paper/
 - [ ] 可定义评估场景并自动运行
 - [ ] 评估结果可追踪到 Span
 
+### NEW-OPENALEX-01: openalex-mcp — 学术知识图谱 MCP server ✅ Phase 3 Batch 6 ★infra
+
+> **追加 (2026-03-04)**: [OpenAlex](https://openalex.org/) 是全球最大的开放学术知识图谱，覆盖 2.5 亿+ 跨学科文献，与 INSPIRE-HEP（HEP 领域专用）互补。设计 v4 已完成 Claude + Codex + Gemini 三模型两轮审阅收敛。规范见 `~/.claude/skills/openalex/PLAN.md`。
+
+**依赖**: 无（设计已完成）
+**估计**: ~1700 LOC（4 阶段，21 步骤）
+
+**模式**: 遵循 `hepdata-mcp` / `arxiv-mcp` 独立 standalone MCP 模式——`packages/openalex-mcp/` 为自包含 stdio MCP，`hep-mcp` 聚合其工具（`maturity: experimental`）。
+
+**工具面（`openalex_*` 命名空间，11 个工具）**:
+
+| 工具 | 风险级别 | 说明 |
+|------|---------|------|
+| `openalex_search` | read | 全文/关键词搜索任意 entity 类型 |
+| `openalex_get` | read | 按 OpenAlex ID / DOI / ORCID / ROR 获取单个实体 |
+| `openalex_filter` | read | 结构化过滤（发表年份、open access 状态等） |
+| `openalex_group` | read | 聚合分析（按年、机构、来源分组统计） |
+| `openalex_references` | read | 获取 work 的参考文献列表 |
+| `openalex_citations` | read | 获取 work 的被引列表 |
+| `openalex_batch` | read | 批量获取多个 entity（JSONL 输出） |
+| `openalex_autocomplete` | read | 实体名称自动补全 |
+| `openalex_paginate` | read | 分页检索（interactive cursor-return / bulk JSONL 两模式） |
+| `openalex_rate_limit` | read | 查询当前速率限制状态 |
+| `openalex_content` | destructive | 下载 work 全文（OA PDF/HTML）；需 `_confirm: true` |
+
+**关键实现约束**（设计审阅收敛结论）:
+- `per-page` 参数名含连字符（非下划线），需 `PARAM_NAME_MAP` 翻译
+- 单次响应不超过 200 条；大结果走 JSONL 文件输出
+- cursor 分页始终优先；不用 page-based 超过第 1 页（OpenAlex 10k 页面限制）
+- `select` 参数必须自动追加 `id,doi`（`augmentSelect()`）
+- budget 超限不 throw，返回 `{ complete: false, stop_reason: 'budget_exceeded' }`
+- `concepts` entity 类型保留（兼容旧 ID）
+
+**验收检查点**:
+- [x] `packages/openalex-mcp/` 独立构建通过（`pnpm build`）
+- [x] 11 个 `openalex_*` 工具注册完整
+- [x] `openalex_content` 风险级别 `destructive`，需 `_confirm: true`
+- [x] cursor 分页正确实现（不使用 page-based 超过 p1）
+- [x] 速率限制器：singleton + mutex-style withSlot 序列化 + `Retry-After` 合规
+- [x] `hep-mcp` 聚合 `openalex-mcp` 工具，`maturity: experimental`
+- [x] `pnpm -r test` 通过（identifiers / schemas / pagination / paramMapping / rateLimiter / batchRouting 覆盖，95/95）
+
 ### Phase 3 验收总检查点
 
-- [ ] 全部 21 项修复通过各自测试 (原 19 + NEW-MCP-SAMPLING + NEW-SKILL-WRITING)
+- [ ] 全部 22 项修复通过各自测试 (原 19 + NEW-MCP-SAMPLING + NEW-SKILL-WRITING + NEW-OPENALEX-01)
 - [ ] Schema 扩展性测试通过（`x-*` 字段不破坏验证）
 - [ ] 日志无 secrets 泄露
 - [ ] ERR-01/SYNC-03/ART-03 CI 验证从 grep 升级为 AST-based lint（TS: ESLint custom rule; Python: ast 模块）
@@ -2097,6 +2144,7 @@ paper/
 - [x] 写作管线移除完成: ~40K LOC 删除, 102→72 tools (full), 79→56 tools (standard) (NEW-06)
 - [x] LLM 客户端迁移至 MCP sampling: 1 consumer (theoreticalConflicts.ts), ToolHandlerContext plumbing 完成 (NEW-MCP-SAMPLING)
 - [ ] 统一写作 skill 就绪 (NEW-SKILL-WRITING)
+- [ ] openalex-mcp 独立构建通过，hep-mcp 聚合完成 (NEW-OPENALEX-01)
 - [ ] 无 Phase 0/1/2 回归
 
 ### NEW-R11: `registry.ts` 领域拆分 (M-13 范围扩展) ★深度重构
