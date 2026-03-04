@@ -1057,7 +1057,7 @@
             "RT-02"
           ],
           "source": "sota-multi-agent-verification-2026",
-          "note": "Information Membrane V1 (rule-based): 7 PASS + 7 BLOCK content types; Phase 0 method alignment, Phase 2 targeted consultation, Phase 5 divergence resolution; --collaboration-phases CLI control; JSONL audit logging; 77 new tests (171 total). SOTA 依据: meta/docs/sota-multi-agent-verification-2026.md §7"
+          "note": "V2 (LLM-based, 2026-03-04): replaced V1 regex after 5 rounds of bypass vectors (30+ BLOCKING). Three-tier LLM fallback (structured→json_object→prompt-only), strict fail-closed, urlparse() HTTPS validation, duplicate-index fail-open fix, AUTH_ERROR distinction, segment_index audit matching. Review convergence: R1-R2 (V2 initial) → R3 (HTTPS bypass fix) → R4 (duplicate-index fix) → R5 (Codex+Gemini READY). 61 membrane tests, 184 total."
         },
         "NEW-CONN-05": {
           "status": "pending",
