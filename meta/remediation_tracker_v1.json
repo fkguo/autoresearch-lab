@@ -703,7 +703,7 @@
         },
         "UX-07": {
           "title": "审批上下文丰富化 (per-gate context assemblers)",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
@@ -712,34 +712,38 @@
             "UX-01"
           ],
           "source": "user-stories-ux-gaps",
-          "note": "Phase 2: A0-A4 context assemblers + A5 基础摘要; Phase 5 渐进增强: A5 integrity_report (EVO-06) + A2 blast_radius (EVO-19)"
+          "completed_at": "2026-02-27",
+          "note": "Phase 2: A0-A4 context assemblers + A5 基础摘要; Phase 5 渐进增强: A5 integrity_report (EVO-06) + A2 blast_radius (EVO-19). Implemented in hep-autoresearch approval_packet.py + hepar approvals show (commit 4a79d2b)."
         },
         "RT-02": {
           "title": "工具访问增强 + 溯源 Clean-Room",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
           "assignee": null,
           "depends_on": [],
           "source": "design-proposal-research-team-v2",
-          "note": "两层工具模型 (restricted/full) + 工作区隔离 + provenance 交叉验证 + hard-fail 门禁; 实现语言取决于 NEW-05a 进度"
+          "completed_at": "2026-02-27",
+          "note": "两层工具模型 (restricted/full) + 工作区隔离 + provenance 交叉验证 + hard-fail 门禁; full_access 采用 request/execute proxy (file_read/command_run/network_fetch) + append-only audit log; clean-room gate hard-fail (exit 3/4). Implemented in skills/research-team (commit 9072625)."
         },
         "RT-03": {
           "title": "统一 Runner 抽象 + API 可配置性",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [],
           "source": "design-proposal-research-team-v2",
-          "note": "runner 接口约定 + OpenAI-compatible runner + --api-key-env 脱敏"
+          "completed_at": "2026-02-27",
+          "note": "runner 接口约定 + OpenAI-compatible runner + --api-key-env 脱敏 (forbid plaintext --api-key). Implemented in skills/research-team (commit 9072625)."
         },
         "NEW-VIZ-01": {
           "title": "Graph Visualization Layer — 通用 schema + 5 domain adapters",
-          "status": "design_complete",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [],
           "design_doc": "docs/graph-visualization-layer.md",
-          "note": "跨域图可视化基础设施: UniversalNode/Edge schema + Claim DAG, Memory Graph, Literature, Idea Map, Progress Graph adapters. 9 轮双模型审查收敛."
+          "completed_at": "2026-02-27",
+          "note": "跨域图可视化基础设施: UniversalNode/Edge schema + Claim DAG, Memory Graph, Literature, Idea Map, Progress Graph adapters + Graphviz renderer. Note: current Claim DAG / w_compute pipelines still use legacy Python renderers; TS graph-viz is library-level and not wired into those call chains (deferred until TS migration). Implemented in packages/shared/src/graph-viz (commit 9072625)."
         },
         "NEW-05a-stage3": {
           "title": "idea-engine TS 增量重写 (Stage 3)",

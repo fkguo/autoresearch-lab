@@ -1349,21 +1349,21 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 | 文件 | 变更 |
 |---|---|
-| `run_team_cycle.sh` | 新增 `--member-X-tool-access {restricted\|full}`；生成随机化 workspace 路径 |
-| `run_member_review.py` | full 模式启用 MCP 工具 + provenance 收集 |
-| `scripts/lib/provenance.py` | (新) provenance schema (claim_id/step_id/tool_call_ids 三级关联)、提取、验证 |
-| `scripts/gates/check_clean_room.py` | 重写: workspace 隔离检查 + provenance 交叉验证 + hard-fail 门禁 |
-| `scripts/lib/audit_interceptor.py` | MCP tool_use 调用记录 (tc_id + workspace) + 跨 workspace 访问检测 |
-| `scripts/lib/workspace_isolator.py` | (新) 随机化 workspace + 路径泄漏防护 + shell 安全约束 |
+| `skills/research-team/scripts/bin/run_team_cycle.sh` | 新增 `--member-X-tool-access {restricted\|full}`；full 模式生成随机化 workspace 路径 |
+| `skills/research-team/scripts/bin/run_member_review.py` | full_access 模式: request/execute proxy (file_read/command_run/network_fetch) + evidence/provenance 汇总 |
+| `skills/research-team/scripts/lib/provenance.py` | provenance schema (claim_id/step_id/tool_call_ids 三级关联)、提取、验证 |
+| `skills/research-team/scripts/gates/check_clean_room.py` | workspace 隔离检查 + provenance/audit 交叉验证 + hard-fail 门禁 |
+| `skills/research-team/scripts/lib/audit_interceptor.py` | append-only audit log (tc_id + workspace) — tool calls: file_read/command_run/network_fetch |
+| `skills/research-team/scripts/lib/workspace_isolator.py` | 随机化 workspace + 路径泄漏防护 + shell 安全约束 |
 
 **关键设计**: 三层 clean-room — (1) 工作区隔离 (随机路径+路径遍历阻断), (2) 溯源交叉验证, (3) hard-fail 门禁 (CONTAMINATION_DETECTED/critical PROVENANCE_MISMATCH → 不可降级)。
 
 **验收**:
-- [ ] full 模式: 成员可使用原生 MCP 工具 + provenance 自动记录
-- [ ] 工作区隔离: 随机化路径 + shell cwd 锁定 + 路径遍历阻断
-- [ ] clean-room gate: CONTAMINATION_DETECTED → hard-fail; critical PROVENANCE_MISMATCH → hard-fail
-- [ ] audit log: tc_id/tool_name/args_hash/result_hash/workspace/timestamp
-- [ ] provenance.tool_call_ids 与 audit log 精确匹配验证
+- [x] full 模式: 成员可使用 request/execute proxy tools (file_read/command_run/network_fetch) + provenance 自动记录
+- [x] 工作区隔离: 随机化路径 + shell cwd 锁定 + 路径遍历阻断
+- [x] clean-room gate: CONTAMINATION_DETECTED → hard-fail; PROVENANCE_MISMATCH/PROVENANCE_MISSING → hard-fail
+- [x] audit log: tc_id/tool_name/args_hash/result_hash/workspace/timestamp_utc
+- [x] provenance.tool_call_ids 与 audit log 精确匹配验证
 
 ### RT-03: 统一 Runner 抽象 + API 可配置性 ✅ Phase 2 Batch 6 ★research-team
 
@@ -1377,16 +1377,16 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 | 文件 | 变更 |
 |---|---|
-| `run_team_cycle.sh` | 新增 `--member-X-runner`, `--member-X-api-base-url`, `--member-X-api-key-env`, `--member-X-api-provider` |
-| `scripts/runners/run_{claude,gemini,codex}.sh` | 增加 `--api-base-url` / `--api-key-env` 支持 |
-| `scripts/runners/run_openai_compat.sh` | (新) 通用 OpenAI-compatible runner |
+| `skills/research-team/scripts/bin/run_team_cycle.sh` | 新增 `--member-X-runner`, `--member-X-api-base-url`, `--member-X-api-key-env` + member-b runner kind/fallback |
+| `skills/research-team/assets/run_{claude,gemini,codex}.sh` | runner 统一接口；Claude 支持 `--api-base-url/--api-key-env`，Gemini 为接口对齐接受但不使用，Codex runner 保持最小接口 |
+| `skills/research-team/scripts/runners/run_openai_compat.sh` | 通用 OpenAI-compatible runner（DeepSeek/Qwen/vLLM/LM Studio/Ollama 等） |
 
 **安全约束**: `--api-key <value>` 明文传参被禁止 (CLI 直接报错拒绝)。
 
 **验收**:
-- [ ] `--member-X-runner` 自定义 runner 脚本可替换内置 runner
-- [ ] `--api-key-env` 传环境变量名，API key 不出现在进程列表/日志/artifact
-- [ ] `run_openai_compat.sh` 可调用 DeepSeek/Qwen/vLLM 端点
+- [x] `--member-X-runner` 自定义 runner 脚本可替换内置 runner
+- [x] `--api-key-env` 传环境变量名，API key 不出现在进程列表/日志/artifact
+- [x] `run_openai_compat.sh` 可调用 DeepSeek/Qwen/vLLM 端点
 
 ### NEW-VIZ-01: Graph Visualization Layer — 通用 schema + 5 domain adapters ✅ Phase 2 Batch 6 ★infra
 
@@ -1400,14 +1400,14 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 | 文件 | 变更 |
 |---|---|
-| `packages/shared/src/graph/universal-schema.ts` | UniversalNode/UniversalEdge 通用接口 + graph builder |
-| `packages/shared/src/graph/adapters/` | 5 个 domain adapter: claim, memory, literature, idea, progress |
-| `packages/shared/src/graph/renderers/` | Graphviz DOT + JSON export + HTML (vis.js/D3) |
+| `packages/shared/src/graph-viz/types.ts` | UniversalNode/UniversalEdge 通用接口 + render options + Adapter 接口 |
+| `packages/shared/src/graph-viz/adapters/` + `packages/shared/src/memory-graph/viz-adapter.ts` | 5 个 domain adapter: claim, memory, literature, idea, progress |
+| `packages/shared/src/graph-viz/{render,graphviz}.ts` | Graphviz DOT/PNG/SVG 渲染 + JSON 导出 |
 
 **验收**:
-- [ ] UniversalNode/UniversalEdge schema 支持任意 domain metadata
-- [ ] 5 个 adapter 各自产出 universal graph 并可渲染为 DOT/SVG
-- [ ] 现有 `render_claim_graph.py` 功能被 claim adapter 覆盖
+- [x] UniversalNode/UniversalEdge schema 支持任意 domain metadata
+- [x] 5 个 adapter 各自产出 universal graph 并可渲染为 DOT/SVG
+- [x] claim adapter 覆盖 `render_claim_graph.py` 的输入/渲染能力（当前 pipeline 仍走 legacy Python，接线延后到 TS 迁移阶段）
 
 ### NEW-RT-01: TS AgentRunner (Phase 2 early)
 
