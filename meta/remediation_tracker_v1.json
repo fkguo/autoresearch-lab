@@ -2,7 +2,7 @@
   "schema_version": 2,
   "plan_version": "1.9.0-draft",
   "updated_at": "2026-03-04",
-  "note": "v1.9.0-draft: v1.8.0 + NEW-OPENALEX-01 追加 Phase 3. 138 items.",
+  "note": "v1.9.0-draft: v1.8.0 + NEW-OPENALEX-01 + NEW-SEM-01~13 追加 Phase 3 (Batch 8~16 SEM track, Codex+GLM-5 审核收敛). 152 items.",
   "phases": {
     "0": {
       "name": "止血",
@@ -752,7 +752,8 @@
           "note": "Re-scoped from NEW-05a. Phase 2-3 增量迁移."
         },
         "NEW-RT-01": {
-          "status": "pending",
+          "status": "done",
+          "completed_at": "2026-03-04",
           "assignee": null,
           "title": "TS AgentRunner",
           "complexity": "medium",
@@ -1091,15 +1092,16 @@
           "note": "~200 LOC."
         },
         "NEW-RT-05": {
-          "status": "pending",
-          "assignee": null,
+          "status": "done",
+          "completed_at": "2026-03-04",
+          "assignee": "gpt-5.2",
           "title": "Eval framework",
           "complexity": "medium",
           "depends_on": [
             "NEW-RT-01",
             "NEW-RT-03"
           ],
-          "note": "~500 LOC."
+          "note": "~500 LOC. Phase 3 Batch 8 (SEM track P0). Implemented src/eval/{schema,metrics,runner,baseline} + demo_retrieval_eval fixture + migration of all eval tests to EvalSetSchema/runEvalSet. Review-swarm convergence: Opus=CONVERGED, OpenCode(kimi-for-coding/k2p5)=CONVERGED (0 blocking)."
         },
         "M-22": {
           "title": "GateSpec 通用抽象",
@@ -1129,6 +1131,145 @@
           ],
           "completed_at": "2026-03-04",
           "note": "Batch 7: ~150 LOC SKILL.md. Added evidence-grounded writing workflow (hep-mcp evidence query + render + export integration)."
+        },
+        "NEW-SEM-01": {
+          "title": "Quantity Semantics Adjudicator",
+          "status": "pending",
+          "complexity": "high",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05",
+            "NEW-MCP-SAMPLING"
+          ],
+          "note": "Phase 3 Batch 10 (SEM track P1). LLM-first quantity/entity alignment + deterministic unit/schema guards. Source: semantic-understanding heuristics audit."
+        },
+        "NEW-SEM-02": {
+          "title": "Evidence/Claim Semantic Grading V2",
+          "status": "pending",
+          "complexity": "high",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05",
+            "NEW-MCP-SAMPLING"
+          ],
+          "note": "Phase 3 Batch 11 (SEM track P1, gate G3). LLM-first claim extraction + evidence-level + stance with strict schema + fail-closed for gates."
+        },
+        "NEW-SEM-03": {
+          "title": "LLM-First Stance Engine",
+          "status": "pending",
+          "complexity": "high",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05",
+            "NEW-MCP-SAMPLING"
+          ],
+          "note": "Phase 3 Batch 12 (SEM track P1, gate G4). Regex prefilter/signals only; LLM stance adjudication via MCP sampling + calibrated abstention."
+        },
+        "NEW-SEM-04": {
+          "title": "Theoretical Conflict Reasoner",
+          "status": "pending",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05",
+            "NEW-MCP-SAMPLING"
+          ],
+          "note": "Phase 3 Batch 12 (SEM track P2). Contradiction adjudication with rationale + 'not comparable' handling; deterministic stats only post-alignment."
+        },
+        "NEW-SEM-05": {
+          "title": "Hybrid Paper/Review/Content Classifier",
+          "status": "pending",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05",
+            "NEW-MCP-SAMPLING"
+          ],
+          "note": "Phase 3 Batch 13 (SEM track P2). Replace giant keyword catalogs with metadata priors + LLM adjudication; centralize classifiers to avoid drift."
+        },
+        "NEW-SEM-06": {
+          "title": "Evidence Retrieval Upgrade (Quality-First Default)",
+          "status": "pending",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05"
+          ],
+          "note": "Phase 3 Batch 10 (SEM track P1). Semantic retrieval + rerank as default; lexical only as fallback. No MCP sampling needed (embedding/rerank path)."
+        },
+        "NEW-SEM-07": {
+          "title": "Structured Gate Semantics (No Prose Parsing as SoT)",
+          "status": "pending",
+          "complexity": "high",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05",
+            "RT-01"
+          ],
+          "note": "Phase 3 Batch 9 (SEM track P0). Three-phase migration: dual-output → JSON SoT → remove prose parsing. Regression tests proving format drift cannot change pass/fail."
+        },
+        "NEW-SEM-08": {
+          "title": "Semantic Packet Curation for Review/Writer",
+          "status": "pending",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05",
+            "NEW-SKILL-WRITING"
+          ],
+          "note": "Phase 3 Batch 15 (SEM track P2-P3, Python-side). LLM-based relevance/diagnostic section selection + semantic tagging with deterministic output schema."
+        },
+        "NEW-SEM-09": {
+          "title": "Deep Analysis Section Role Classifier",
+          "status": "pending",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05",
+            "NEW-MCP-SAMPLING"
+          ],
+          "note": "Phase 3 Batch 13 (SEM track P2). Replace heading keyword inference with role labeling over heading+content; eval via section-role labeled set."
+        },
+        "NEW-SEM-10": {
+          "title": "Topic/Method Grouping Semanticizer",
+          "status": "pending",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05"
+          ],
+          "note": "Phase 3 Batch 14 (SEM track P2-P3). Move from top-keyword + fixed thresholds to semantic topic/method clustering + adaptive significance scoring. No MCP sampling (embedding/Python-side path)."
+        },
+        "NEW-SEM-11": {
+          "title": "Key Equation Semantic Importance",
+          "status": "pending",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05",
+            "NEW-MCP-SAMPLING"
+          ],
+          "note": "Phase 3 Batch 16 (SEM track P3). Catalog hits are hints; context-aware ranking via LLM. Eval via labeled key-equation top-k accuracy."
+        },
+        "NEW-SEM-12": {
+          "title": "Paper Version / Provenance Matcher",
+          "status": "pending",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05"
+          ],
+          "note": "Phase 3 Batch 16 (SEM track P3, gate G5). Conference→journal / version matching via semantic matching; reuses SEM-05 unified classifier for review detection."
+        },
+        "NEW-SEM-13": {
+          "title": "Synthesis Challenge Extractor",
+          "status": "pending",
+          "complexity": "low",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05"
+          ],
+          "note": "Phase 3 Batch 14 (SEM track P2-P3). Extract methodological challenges with structured taxonomy + confidence; eval via missed-challenge audit set."
         }
       }
     },

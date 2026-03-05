@@ -1,14 +1,15 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.0-draft (NEW-OPENALEX-01 追加 Phase 3)
+> **版本**: 1.9.0-draft (NEW-OPENALEX-01 + NEW-SEM-01~13 追加 Phase 3)
 > **日期**: 2026-03-04
 > **基线**: v1.8.0-draft
-> **重构项总数**: 138 项 (119 前序 + 18 新增 + 1 cut)
+> **重构项总数**: 152 项 (139 既有 + 13 新增: NEW-SEM-01~13)
 > **编排**: Claude Opus 4.6
 >
 > **v1.9.0 Changelog**:
 > - 追加 NEW-OPENALEX-01: openalex-mcp standalone MCP (Phase 3, 在 NEW-SKILL-WRITING + NEW-CONN-05 之前实施)
 > - 设计 v4 已完成 Claude + Codex + Gemini 三模型两轮审阅收敛
+> - 追加 NEW-SEM-01~13: 语义理解质量轨 (Phase 3 Batch 8~16, 10 batches; Codex gpt-5.2 + GLM-5 审核收敛; 见 `meta/docs/semantic-understanding-heuristics-audit-2026-03-04.md`)
 >
 > **v1.8.0 Changelog**:
 > - Scope audit 三模型收敛结论落地: H-01 简化, H-04/H-15a 冻结, H-17/M-22 deferred, NEW-R09 cut
@@ -109,6 +110,7 @@ Phase 3 (扩展性 + 计算连通):
   ├─ NEW-OPENALEX-01 openalex-mcp standalone MCP (~1700 LOC)
   ├─ NEW-SKILL-01 lean4-verify skill (~200 LOC)
   ├─ NEW-RT-05 Eval framework (~500 LOC)
+  ├─ NEW-SEM-01~13 语义理解质量轨 (Batch 8~16, semantic heuristics → LLM-first; 审核: Codex gpt-5.2 + GLM-5 收敛)
   ├─ M-22 GateSpec 通用抽象 (deferred from P1)
   ├─ M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17, L-08
   ├─ NEW-06, NEW-R11, NEW-R12
@@ -2073,7 +2075,7 @@ paper/
 - [ ] `run_lean4.sh --project <path>` 可执行 Lean4 验证
 - [ ] `status.json` 包含 PASS/FAIL + proved theorems
 
-### NEW-RT-05: Eval Framework (Phase 3)
+### NEW-RT-05: Eval Framework ✅ Phase 3 Batch 8
 
 > **来源**: Scope Audit 三模型收敛 — 欠工程化 Gap #6 (Eval)
 
@@ -2082,9 +2084,15 @@ paper/
 
 **内容**: Agent-level 端到端评估框架，扩展现有 `tests/eval/`。
 
+> **完成情况 (2026-03-04)**:
+> - 新增 `src/eval/schema.ts`, `metrics.ts`, `runner.ts`, `baseline.ts`, `index.ts`
+> - 新增 demo eval set (`demo_retrieval_eval.json`, 10 cases) + baseline (`tests/eval/baselines/demo_retrieval.baseline.json`)
+> - 现有 eval 测试全部迁移为 `EvalSetSchema + runEvalSet` 模式
+> - review-swarm 双模型收敛：Opus = CONVERGED，OpenCode(kimi-for-coding/k2p5) = CONVERGED（0 blocking）
+
 **验收**:
-- [ ] 可定义评估场景并自动运行
-- [ ] 评估结果可追踪到 Span
+- [x] 可定义评估场景并自动运行
+- [x] 评估结果可追踪到 Span
 
 ### NEW-OPENALEX-01: openalex-mcp — 学术知识图谱 MCP server ✅ Phase 3 Batch 6 ★infra
 
@@ -2128,9 +2136,65 @@ paper/
 - [x] `hep-mcp` 聚合 `openalex-mcp` 工具，`maturity: experimental`
 - [x] `pnpm -r test` 通过（identifiers / schemas / pagination / paramMapping / rateLimiter / batchRouting 覆盖，95/95）
 
+### Phase 3 Batch 8~16: 语义理解质量轨 (NEW-SEM-01~13) ★quality
+
+> **来源**: `meta/docs/semantic-understanding-heuristics-audit-2026-03-04.md` (2026-03-04)
+> **审核**: Codex gpt-5.2 + GLM-5 两轮收敛 (R1 NEEDS_REVISION → R2 PASS)
+>
+> **动机**: 多处 “semantic understanding” 目前由 enum/regex/keyword 启发式充当语义判定权威，导致质量不稳定、易漂移、且难以覆盖 discourse-level 现象（否定范围/隐含假设/跨句蕴含/标题改写等）。
+>
+> **架构约束**:
+> - enum/regex 只可作为 **prefilter/signals**，不得作为 meaning-level 判定 fallback “权威裁决”。
+> - deterministic 逻辑仅作 **post-guards / 不变量**（schema/unit/numeric bounds/policy），不替代语义判断。
+> - TS 内 LLM 调用必须走 **MCP sampling** (`ctx.createMessage`)；禁止在 MCP server 内嵌 provider SDK/client（与 NEW-MCP-SAMPLING 的约束一致）。
+>
+> **依赖**: `NEW-RT-05`（eval framework）是前置；多数 TS 消费者还依赖 `NEW-MCP-SAMPLING` 的 plumbing。
+>
+> **统一验收模板（质量优先）**:
+> 1) 明确输入/输出 schema + 严格校验；2) 固定 eval set（n≥50–200，含 hard cases）+ baseline；3) 指标与目标（例如 P@k/R@k、错误率、abstention/fallback rate）；4) 明确失败策略（timeout/low-confidence）与 gate consumer 的 **fail-closed** 行为；5) 记录版本/提示词/模型配置以便回归。
+>
+> **质量 gate checkpoints**:
+> - **G1**: NEW-RT-05 eval framework 可用 + 至少 1 个 demo eval set → 所有 SEM 项可启动
+> - **G2**: SEM-07 JSON SoT 迁移完成 + 格式漂移回归测试通过 → gate consumers 可信赖
+> - **G3**: SEM-01 quantity eval 达到 target delta（wrong-merge/false-split 显著下降）→ SEM-02, SEM-03 eval set 可标注
+> - **G4**: SEM-02 claim→evidence→stance schema 稳定 + eval 达标 → SEM-03 复用 stance schema
+> - **G5**: SEM-05 unified classifier 完成 → SEM-12 复用 review detection
+
+**实施 batch 拆分（按审计 P0→P3 优先级 + review-swarm 收敛约定 1~3 items/batch）**:
+
+| Batch | Items | 优先级 | 复杂度 | Gate | Rationale |
+|-------|-------|--------|--------|------|-----------|
+| 8 | NEW-RT-05 ✅ | P0 | medium | G1 ✅ | Eval framework 基础设施。无此项则无法度量 baseline、验证改进。 |
+| 9 | NEW-SEM-07 | P0 | high | G1 | 结构化 gate 语义。三阶段迁移: (1) dual-output → (2) JSON SoT → (3) 移除 prose 解析。含回归测试。Python-side (skills/ gates)。 |
+| 10 | NEW-SEM-01 + NEW-SEM-06 | P1 | high + medium | G1 | 核心 duo: quantity adjudicator + evidence retrieval。SEM-01 修复最关键语义缺陷 (Critical)。SEM-06 升级 evidence ranking（embedding/rerank，无需 MCP sampling）。 |
+| 11 | NEW-SEM-02 | P1 | high | G3 | Evidence/Claim Semantic Grading V2。**前置**: SEM-01 eval 达标。定义 claim→evidence→stance 权威 schema。 |
+| 12 | NEW-SEM-03 + NEW-SEM-04 | P1+P2 | high + medium | G4 | Stance engine + theoretical conflict reasoner。均涉及 entailment/contradiction adjudication。SEM-03 复用 SEM-02 stance schema。 |
+| 13 | NEW-SEM-05 + NEW-SEM-09 | P2 | medium + medium | G1 | Hybrid classifier + section role classifier。独立模块。SEM-05 统一分类器完成后供 SEM-12 复用。 |
+| 14 | NEW-SEM-10 + NEW-SEM-13 | P2-P3 | medium + low | G1 | Topic/method grouping + challenge extractor。相关 synthesis/analysis 子系统。 |
+| 15 | NEW-SEM-08 | P2-P3 | medium | G1 | Semantic packet curation。Python-side（skills/research-team + writer）。单独 batch 避免跨语言上下文切换。 |
+| 16 | NEW-SEM-11 + NEW-SEM-12 | P3 | medium + medium | G5 | Equation importance + provenance matcher。TS-side。SEM-12 复用 SEM-05 unified classifier。 |
+
+| ID | 标题 | 主要修改位置（逻辑组件路径） | 复杂度 | 依赖 | Batch | 验收重点 |
+|---|---|---|---|---|---|---|
+| NEW-SEM-01 | Quantity Semantics Adjudicator | `hep-mcp/src/core/hep/measurements.ts` + extractor/conflict | high | NEW-RT-05, NEW-MCP-SAMPLING | 10 | quantity 对齐：wrong-merge/false-split 显著下降 |
+| NEW-SEM-02 | Evidence/Claim Semantic Grading V2 | `hep-mcp/src/tools/research/evidenceGrading.ts` | high | NEW-RT-05, NEW-MCP-SAMPLING, G3 | 11 | negation/hedging 反转错误消失；claim→evidence→stance 评测达标 |
+| NEW-SEM-03 | LLM-First Stance Engine | `hep-mcp/src/tools/research/stance/*` | high | NEW-RT-05, NEW-MCP-SAMPLING, G4 | 12 | scoped negation + multi-citation stance 集合误差率下降；fallback rate 可控 |
+| NEW-SEM-04 | Theoretical Conflict Reasoner | `hep-mcp/src/tools/research/theoreticalConflicts.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 12 | hard conflict 需可审计 rationale；”not comparable” 处理覆盖 |
+| NEW-SEM-05 | Hybrid Paper/Review/Content Classifier | `hep-mcp/src/tools/research/reviewClassifier.ts` / `paperClassifier.ts` / `criticalQuestions.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 13 | terminology drift 下鲁棒性提升；逻辑去重（单一权威分类器） |
+| NEW-SEM-06 | Evidence Retrieval Upgrade | `hep-mcp/src/core/evidence.ts` / `core/writing/evidence.ts` / `evidenceSemantic.ts` | medium | NEW-RT-05 | 10 | claim→evidence 相关性基准 P@k/R@k 提升；citation/support 单独评测 |
+| NEW-SEM-07 | Structured Gate Semantics | `skills/research-team/.../check_*_convergence.py` + writer gates | high | NEW-RT-05, RT-01 | 9 | gate 仅以 JSON schema 为 SoT；格式漂移不影响 pass/fail（回归测试） |
+| NEW-SEM-08 | Semantic Packet Curation | `skills/research-team/.../build_*packet.py` + writer distill/learn | medium | NEW-RT-05, NEW-SKILL-WRITING | 15 | “missed critical section” 集合召回率提升；可审计输出 |
+| NEW-SEM-09 | Deep Analysis Section Role Classifier | `hep-mcp/src/tools/research/deepAnalyze.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 13 | section role 标注 P/R 达标（不依赖 heading 关键词） |
+| NEW-SEM-10 | Topic/Method Grouping Semanticizer | `hep-mcp/src/tools/research/analyzePapers.ts` + `synthesis/grouping.ts` | medium | NEW-RT-05 | 14 | 聚类稳定性/一致性提升；固定语料回归可重复 |
+| NEW-SEM-11 | Key Equation Semantic Importance | `hep-mcp/src/tools/research/latex/keyEquationIdentifier.ts` + `equationTypeSignals.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 16 | top-k 命中率提升；catalog 仅作 hints |
+| NEW-SEM-12 | Paper Version / Provenance Matcher | `hep-mcp/src/tools/research/traceToOriginal.ts` + review detection reuse | medium | NEW-RT-05, G5 | 16 | matched-pairs precision/recall 达标；”不确定”路径明确 |
+| NEW-SEM-13 | Synthesis Challenge Extractor | `hep-mcp/src/tools/research/synthesis/narrative.ts` | low | NEW-RT-05 | 14 | challenge 提取漏检率下降；taxonomy 覆盖 hard cases |
+
+**原 Batch 8 (M-04 + M-07 + NEW-SKILL-01) → Batch 17**: schema fidelity 测试在 SEM 改造完成后更有意义。
+
 ### Phase 3 验收总检查点
 
-- [ ] 全部 22 项修复通过各自测试 (原 19 + NEW-MCP-SAMPLING + NEW-SKILL-WRITING + NEW-OPENALEX-01)
+- [ ] 全部 36 项修复通过各自测试（v1.9.0 原 22 + NEW-RT-05 + NEW-SEM-01~13）
 - [ ] Schema 扩展性测试通过（`x-*` 字段不破坏验证）
 - [ ] 日志无 secrets 泄露
 - [ ] ERR-01/SYNC-03/ART-03 CI 验证从 grep 升级为 AST-based lint（TS: ESLint custom rule; Python: ast 模块）
