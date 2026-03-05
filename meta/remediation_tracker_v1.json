@@ -1203,14 +1203,15 @@
         },
         "NEW-SEM-07": {
           "title": "Structured Gate Semantics (No Prose Parsing as SoT)",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
           "assignee": null,
           "depends_on": [
             "NEW-RT-05",
             "RT-01"
           ],
-          "note": "Phase 3 Batch 9 (SEM track P0). Three-phase migration: dual-output → JSON SoT → remove prose parsing. Regression tests proving format drift cannot change pass/fail."
+          "note": "Phase 3 Batch 9 completed (2026-03-05): added convergence_gate_result_v1 schema + shared validator/emitter, migrated team/draft convergence gates to JSON SoT with fail-closed parse_error, switched run_team_cycle/run_draft_cycle to structured status control, added drift regression tests (72 passed), review-swarm (Opus + K2p5) R1 CONVERGED.",
+          "completed_at": "2026-03-05"
         },
         "NEW-SEM-08": {
           "title": "Semantic Packet Curation for Review/Writer",

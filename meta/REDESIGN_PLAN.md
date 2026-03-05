@@ -2155,7 +2155,7 @@ paper/
 >
 > **质量 gate checkpoints**:
 > - **G1**: NEW-RT-05 eval framework 可用 + 至少 1 个 demo eval set → 所有 SEM 项可启动
-> - **G2**: SEM-07 JSON SoT 迁移完成 + 格式漂移回归测试通过 → gate consumers 可信赖
+> - **G2 ✅**: SEM-07 JSON SoT 迁移完成 + 格式漂移回归测试通过 → gate consumers 可信赖
 > - **G3**: SEM-01 quantity eval 达到 target delta（wrong-merge/false-split 显著下降）→ SEM-02, SEM-03 eval set 可标注
 > - **G4**: SEM-02 claim→evidence→stance schema 稳定 + eval 达标 → SEM-03 复用 stance schema
 > - **G5**: SEM-05 unified classifier 完成 → SEM-12 复用 review detection
@@ -2165,7 +2165,7 @@ paper/
 | Batch | Items | 优先级 | 复杂度 | Gate | Rationale |
 |-------|-------|--------|--------|------|-----------|
 | 8 | NEW-RT-05 ✅ | P0 | medium | G1 ✅ | Eval framework 基础设施。无此项则无法度量 baseline、验证改进。 |
-| 9 | NEW-SEM-07 | P0 | high | G1 | 结构化 gate 语义。三阶段迁移: (1) dual-output → (2) JSON SoT → (3) 移除 prose 解析。含回归测试。Python-side (skills/ gates)。 |
+| 9 | NEW-SEM-07 ✅ | P0 | high | G2 ✅ | 结构化 gate 语义。三阶段迁移: (1) dual-output → (2) JSON SoT → (3) 移除 prose 解析。含回归测试。Python-side (skills/ gates)。 |
 | 10 | NEW-SEM-01 + NEW-SEM-06 | P1 | high + medium | G1 | 核心 duo: quantity adjudicator + evidence retrieval。SEM-01 修复最关键语义缺陷 (Critical)。SEM-06 升级 evidence ranking（embedding/rerank，无需 MCP sampling）。 |
 | 11 | NEW-SEM-02 | P1 | high | G3 | Evidence/Claim Semantic Grading V2。**前置**: SEM-01 eval 达标。定义 claim→evidence→stance 权威 schema。 |
 | 12 | NEW-SEM-03 + NEW-SEM-04 | P1+P2 | high + medium | G4 | Stance engine + theoretical conflict reasoner。均涉及 entailment/contradiction adjudication。SEM-03 复用 SEM-02 stance schema。 |
@@ -2182,7 +2182,7 @@ paper/
 | NEW-SEM-04 | Theoretical Conflict Reasoner | `hep-mcp/src/tools/research/theoreticalConflicts.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 12 | hard conflict 需可审计 rationale；”not comparable” 处理覆盖 |
 | NEW-SEM-05 | Hybrid Paper/Review/Content Classifier | `hep-mcp/src/tools/research/reviewClassifier.ts` / `paperClassifier.ts` / `criticalQuestions.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 13 | terminology drift 下鲁棒性提升；逻辑去重（单一权威分类器） |
 | NEW-SEM-06 | Evidence Retrieval Upgrade | `hep-mcp/src/core/evidence.ts` / `core/writing/evidence.ts` / `evidenceSemantic.ts` | medium | NEW-RT-05 | 10 | claim→evidence 相关性基准 P@k/R@k 提升；citation/support 单独评测 |
-| NEW-SEM-07 | Structured Gate Semantics | `skills/research-team/.../check_*_convergence.py` + writer gates | high | NEW-RT-05, RT-01 | 9 | gate 仅以 JSON schema 为 SoT；格式漂移不影响 pass/fail（回归测试） |
+| NEW-SEM-07 ✅ | Structured Gate Semantics | `skills/research-team/.../check_*_convergence.py` + writer gates | high | NEW-RT-05, RT-01 | 9 | gate 仅以 JSON schema 为 SoT；格式漂移不影响 pass/fail（回归测试） |
 | NEW-SEM-08 | Semantic Packet Curation | `skills/research-team/.../build_*packet.py` + writer distill/learn | medium | NEW-RT-05, NEW-SKILL-WRITING | 15 | “missed critical section” 集合召回率提升；可审计输出 |
 | NEW-SEM-09 | Deep Analysis Section Role Classifier | `hep-mcp/src/tools/research/deepAnalyze.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 13 | section role 标注 P/R 达标（不依赖 heading 关键词） |
 | NEW-SEM-10 | Topic/Method Grouping Semanticizer | `hep-mcp/src/tools/research/analyzePapers.ts` + `synthesis/grouping.ts` | medium | NEW-RT-05 | 14 | 聚类稳定性/一致性提升；固定语料回归可重复 |
