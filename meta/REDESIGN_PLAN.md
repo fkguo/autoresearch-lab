@@ -1,10 +1,23 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.0-draft (NEW-OPENALEX-01 + NEW-SEM-01~13 追加 Phase 3)
-> **日期**: 2026-03-04
-> **基线**: v1.8.0-draft
-> **重构项总数**: 152 项 (139 既有 + 13 新增: NEW-SEM-01~13)
+> **版本**: 1.9.2-draft (v1.9.1 + single-user research loop precursor)
+> **日期**: 2026-03-06
+> **基线**: v1.9.1-draft
+> **重构项总数**: 160 项 (152 既有 + 8 新增: NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e, NEW-LOOP-01)
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.2 Changelog**:
+> - 明确近中期主产品为“单研究者研究系统”，将非线性 research loop 而非 Agent-arXiv 社区作为 monorepo 主干
+> - 新增 `NEW-LOOP-01`: Single-User Research Loop Runtime（Phase 3 precursor），作为 `EVO-01/02/03` 的前置基座
+> - `UX-06` 阶段枚举明确降格为 UX 导航标签，不再暗示执行内核必须线性
+> - `EVO-17` / REP 定位重申为后期 evolution/publication layer，不反向约束近中期单研究者 loop 内核
+>
+> **v1.9.1 Changelog**:
+> - 基于 `meta/docs/sota-monorepo-architecture-2026-03-06.md` 追加 7 个 SOTA follow-up 项，避免将 Batch 10 的 `NEW-SEM-06` 误表述为终态架构
+> - `NEW-RT-01` 保持完成态；新增 `NEW-RT-06` (orchestrator-plane routing) + `NEW-RT-07` (host-side MCP sampling routing)，不回写历史
+> - 新增 `NEW-DISC-01` federated scholar discovery shared library 路线；首个 deliverable = shared paper identifiers 增加 `openalex_id`
+> - `NEW-SEM-06` 重释为 `SEM-06a` baseline，并新增 `NEW-SEM-06-INFRA`, `NEW-SEM-06b`, `NEW-SEM-06d`, `NEW-SEM-06e` 后续路线
+> - 架构预审: Opus + Kimi K2.5 (OpenCode) 双审核通过（两者均 `CONVERGED_WITH_AMENDMENTS`，0 blocking），已吸收 dependency / REP clarification amendments
 >
 > **v1.9.0 Changelog**:
 > - 追加 NEW-OPENALEX-01: openalex-mcp standalone MCP (Phase 3, 在 NEW-SKILL-WRITING + NEW-CONN-05 之前实施)
@@ -103,7 +116,7 @@ Phase 2B (Pipeline 连通 + 深度集成):
   ├─ UX-07 ✅, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅
   ├─ NEW-R05~R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl ✅
   │
-Phase 3 (扩展性 + 计算连通):
+Phase 3 (扩展性 + 计算连通 + 单研究者研究循环前置):
   ├─ NEW-05a Stage 3 续: idea-engine TS 重写完成
   ├─ NEW-COMP-02 W_compute MCP 实现 (~500 LOC)
   ├─ NEW-CONN-05 Cross-validation → Pipeline feedback (~100 LOC)
@@ -111,6 +124,7 @@ Phase 3 (扩展性 + 计算连通):
   ├─ NEW-SKILL-01 lean4-verify skill (~200 LOC)
   ├─ NEW-RT-05 Eval framework (~500 LOC)
   ├─ NEW-SEM-01~13 语义理解质量轨 (Batch 8~16, semantic heuristics → LLM-first; 审核: Codex gpt-5.2 + GLM-5 收敛)
+  ├─ NEW-LOOP-01 单研究者非线性研究循环前置运行时 (~400-900 LOC design+runtime)
   ├─ M-22 GateSpec 通用抽象 (deferred from P1)
   ├─ M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17, L-08
   ├─ NEW-06, NEW-R11, NEW-R12
@@ -122,7 +136,7 @@ Phase 4 (长期演进):
   │
 Phase 5 (社区化与端到端闭环):
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (Pipeline A 退役)
-  ├─ EVO-01~03 idea→compute→writing 循环 (依赖: UX-02, UX-04, NEW-R15-impl, NEW-COMP-01, NEW-IDEA-01)
+  ├─ EVO-01~03 idea→compute→writing 循环 (依赖: UX-02, UX-04, NEW-R15-impl, NEW-COMP-01, NEW-IDEA-01, NEW-LOOP-01)
   ├─ EVO-04~EVO-21
   │
 Pipeline A/B 统一时间线:
@@ -227,7 +241,7 @@ autoresearch/                    # private monorepo (personal GitHub)
 |---|---|
 | `packages/orchestrator/` | (新 TS package) 最小编排骨架: StateManager, LedgerWriter, McpClient, ApprovalGate |
 | `packages/orchestrator/src/mcp-client.ts` | TypeScript MCP stdio client (替代 Python 版 mcp_stdio_client.py) |
-| `packages/orchestrator/src/state-machine.ts` | 工作流状态机 (W1→W2→W3→W_compute) |
+| `packages/orchestrator/src/state-machine.ts` | 研究循环编排内核（阶段枚举仅作 UX labels；执行走 event/task graph 而非固定 W1→W2→W3→W_compute） |
 | `packages/idea-engine/` | (新 TS package，阶段 3) idea-core 的 TS 重写: 搜索引擎、operator 接口、domain pack、评估维度、HEPAR 编排 |
 | `packages/idea-engine/src/operators.ts` | SearchOperator 接口 + HEP operator 实现 (anomaly abduction, symmetry, limit explorer) |
 | `packages/idea-engine/src/store.ts` | 文件级 JSON 存储 + proper-lockfile 并发控制 |
@@ -883,6 +897,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 **阶段枚举**: 选题(idea) → 文献(literature) → 推导+计算(derivation) → 写作(writing) → 审稿修订(revision)
 
+**定位说明 (v1.9.2)**: 这些阶段是会话引导用的 UX 标签，不是执行内核的强状态机；用户和 Agent 在研究过程中可合法回跳、分叉、并行推进（例如 compute→literature、review→evidence search、new finding→idea revision）。
+
 **不是代码实现**——是 Agent 行为规范文档，类似 AGENTS.md 但面向用户交互层。
 
 **依赖**: 无
@@ -1426,6 +1442,8 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [x] per-run 工具调用串行化 (lane queue)
 - [x] approval gate 注入: 遇到 gate 时暂停等待批准
 
+**后续 (SOTA 架构 2026-03-06)**: `NEW-RT-01` 保持 done；后续以 `NEW-RT-06` / `NEW-RT-07` 叠加 provider-agnostic routing，不 retroactively 重写此项。
+
 ### NEW-RT-02: MCP StdioClient Reconnect ✅ Batch 4B (Phase 2 early)
 
 > **来源**: Scope Audit 三模型收敛 — 欠工程化 Gap #1 (Retry + Reconnect)
@@ -1785,7 +1803,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 ## Phase 3: 扩展性与治理 (P3)
 
-> **目标**: Schema 扩展性、凭据管理、网络治理、技能隔离
+> **目标**: Schema 扩展性、凭据管理、网络治理、技能隔离 + SOTA retrieval/discovery/runtime follow-ups
 > **前置**: Phase 2 全部完成
 > **并行度**: 全部可并行
 
@@ -2166,7 +2184,7 @@ paper/
 |-------|-------|--------|--------|------|-----------|
 | 8 | NEW-RT-05 ✅ | P0 | medium | G1 ✅ | Eval framework 基础设施。无此项则无法度量 baseline、验证改进。 |
 | 9 | NEW-SEM-07 ✅ | P0 | high | G2 ✅ | 结构化 gate 语义。三阶段迁移: (1) dual-output → (2) JSON SoT → (3) 移除 prose 解析。含回归测试。Python-side (skills/ gates)。 |
-| 10 | NEW-SEM-01 + NEW-SEM-06 | P1 | high + medium | G1 | 核心 duo: quantity adjudicator + evidence retrieval。SEM-01 修复最关键语义缺陷 (Critical)。SEM-06 升级 evidence ranking（embedding/rerank，无需 MCP sampling）。 |
+| 10 | NEW-SEM-01 + NEW-SEM-06a | P1 | high + medium | G1 | 核心 duo: quantity adjudicator + evidence retrieval baseline。SEM-01 修复最关键语义缺陷 (Critical)。`NEW-SEM-06` 在 Batch 10 交付的是可评测 baseline（semantic-first retrieval + deterministic rerank），不是终态 SOTA 检索架构。 |
 | 11 | NEW-SEM-02 | P1 | high | G3 | Evidence/Claim Semantic Grading V2。**前置**: SEM-01 eval 达标。定义 claim→evidence→stance 权威 schema。 |
 | 12 | NEW-SEM-03 + NEW-SEM-04 | P1+P2 | high + medium | G4 | Stance engine + theoretical conflict reasoner。均涉及 entailment/contradiction adjudication。SEM-03 复用 SEM-02 stance schema。 |
 | 13 | NEW-SEM-05 + NEW-SEM-09 | P2 | medium + medium | G1 | Hybrid classifier + section role classifier。独立模块。SEM-05 统一分类器完成后供 SEM-12 复用。 |
@@ -2181,7 +2199,7 @@ paper/
 | NEW-SEM-03 | LLM-First Stance Engine | `hep-mcp/src/tools/research/stance/*` | high | NEW-RT-05, NEW-MCP-SAMPLING, G4 | 12 | scoped negation + multi-citation stance 集合误差率下降；fallback rate 可控 |
 | NEW-SEM-04 | Theoretical Conflict Reasoner | `hep-mcp/src/tools/research/theoreticalConflicts.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 12 | hard conflict 需可审计 rationale；”not comparable” 处理覆盖 |
 | NEW-SEM-05 | Hybrid Paper/Review/Content Classifier | `hep-mcp/src/tools/research/reviewClassifier.ts` / `paperClassifier.ts` / `criticalQuestions.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 13 | terminology drift 下鲁棒性提升；逻辑去重（单一权威分类器） |
-| NEW-SEM-06 | Evidence Retrieval Upgrade | `hep-mcp/src/core/evidence.ts` / `core/writing/evidence.ts` / `evidenceSemantic.ts` | medium | NEW-RT-05 | 10 | claim→evidence 相关性基准 P@k/R@k 提升；citation/support 单独评测 |
+| NEW-SEM-06 | Evidence Retrieval Upgrade (SEM-06a baseline) | `hep-mcp/src/core/evidence.ts` / `core/writing/evidence.ts` / `evidenceSemantic.ts` | medium | NEW-RT-05 | 10 | claim→evidence 相关性基准 P@k/R@k 提升；citation/support 单独评测；semantic-first retrieval + deterministic rerank 成为后续 SOTA 路线的 baseline |
 | NEW-SEM-07 ✅ | Structured Gate Semantics | `skills/research-team/.../check_*_convergence.py` + writer gates | high | NEW-RT-05, RT-01 | 9 | gate 仅以 JSON schema 为 SoT；格式漂移不影响 pass/fail（回归测试） |
 | NEW-SEM-08 | Semantic Packet Curation | `skills/research-team/.../build_*packet.py` + writer distill/learn | medium | NEW-RT-05, NEW-SKILL-WRITING | 15 | “missed critical section” 集合召回率提升；可审计输出 |
 | NEW-SEM-09 | Deep Analysis Section Role Classifier | `hep-mcp/src/tools/research/deepAnalyze.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 13 | section role 标注 P/R 达标（不依赖 heading 关键词） |
@@ -2190,11 +2208,132 @@ paper/
 | NEW-SEM-12 | Paper Version / Provenance Matcher | `hep-mcp/src/tools/research/traceToOriginal.ts` + review detection reuse | medium | NEW-RT-05, G5 | 16 | matched-pairs precision/recall 达标；”不确定”路径明确 |
 | NEW-SEM-13 | Synthesis Challenge Extractor | `hep-mcp/src/tools/research/synthesis/narrative.ts` | low | NEW-RT-05 | 14 | challenge 提取漏检率下降；taxonomy 覆盖 hard cases |
 
+### Phase 3 SOTA 检索/发现/单研究者研究循环后续队列 (Batch 11+ 建议排期)
+
+> **来源**: `meta/docs/sota-monorepo-architecture-2026-03-06.md`（v1.9.2 追加 single-user loop clarification；Opus + Kimi K2.5 / OpenCode 双审核通过，0 blocking，clarifications integrated）
+> **原则**: 不重写已完成的 `NEW-RT-01` / `NEW-SEM-06`; 将其视为基线，在其上叠加后续架构项。
+> **排期原则**: 保持既有 Batch 11–16 语义质量轨不变；新增项走并行 infra/retrieval/loop lane，避免把当前 SEM 批次全部重排。
+
+| ID | 标题 | 主要修改位置（逻辑组件路径） | 复杂度 | 依赖 | 验收重点 |
+|---|---|---|---|---|---|
+| NEW-RT-06 | Provider-Agnostic Orchestrator Routing | `packages/orchestrator/src/agent-runner.ts` + routing config | medium | NEW-RT-01 | `AgentRunner` 提取 `ChatBackend`/backend factory；JSON route key 生效；lane queue / approval gate / tracing 不回退 |
+| NEW-RT-07 | MCP Sampling Host Routing Registry | orchestrator MCP host / sampling caller | medium | NEW-MCP-SAMPLING | MCP host 依据 `module/tool/prompt_version/risk_level/cost_class` 路由；MCP server 仅发 metadata，不自选模型 |
+| NEW-DISC-01 | Federated Scholar Discovery | `packages/shared/src/discovery/`（必要时后续提升为 `packages/scholar-broker/`） | high | NEW-OPENALEX-01 | `INSPIRE + OpenAlex + arXiv` federated planning/dedup/canonicalization；shared identifiers 增加 `openalex_id`；query-plan / dedup / search-log artifacts 就绪 |
+| NEW-LOOP-01 | Single-User Research Loop Runtime | `packages/orchestrator/src/research-loop.ts` + workspace/task graph types | high | NEW-WF-01, UX-06, NEW-RT-06 | 研究执行内核从阶段线性流转为 event/task graph；interactive/autonomous 共用 substrate；成为 `EVO-01/02/03` 前置 |
+| NEW-SEM-06-INFRA | Retrieval Backbone Substrate Decision | shared retrieval infra + eval harness | medium | NEW-RT-05 | 锁定 embedding/index substrate；明确 hosted vs local、vector store、late-interaction path；以 `hashing_fnv1a32` 为基线出具 eval protocol |
+| NEW-SEM-06b | Hybrid Candidate Generation + Strong Reranker | `hep-mcp/src/core/evidence.ts` / `evidenceSemantic.ts` / broker adapters | high | NEW-RT-05, NEW-DISC-01, NEW-SEM-06-INFRA | hybrid recall + strong reranker 在 canonicalized docs 上显著优于 `SEM-06a`；不再 hard-fork provider-local identities |
+| NEW-SEM-06d | Triggered Query Reformulation + QPP | retrieval query planner + hard-case policy | medium | NEW-SEM-06b | 仅在 low-recall / high-ambiguity 场景触发 reformulation；hard subset 指标提升且成本受控 |
+| NEW-SEM-06e | Structure-Aware Evidence Localization | locator pipeline (`page/chunk/table/figure/equation/citation`) | high | NEW-SEM-06b | 长文档 page/chunk/table/figure/equation/citation-context 召回率达标；成为 `agent-arxiv` 检索依赖特性的前置 |
+
+| Window | 建议项 | 说明 |
+|---|---|---|
+| Batch 11（parallel lane） | `NEW-DISC-01` kickoff + `NEW-RT-06` | schema-first / routing-first，低耦合且能尽早解除后续阻塞 |
+| Batch 12（parallel lane） | `NEW-SEM-06-INFRA` | 先做 substrate decision，再允许真实 SOTA retrieval implementation |
+| Batch 13–14（parallel lane） | `NEW-RT-07` + `NEW-DISC-01` closeout | `NEW-RT-07` 不应阻塞既有 SEM lane；`NEW-DISC-01` 必须在 `NEW-SEM-06b` 前完成 canonical identity + capability schema + dedup/eval，并应尽量先于或重叠 `NEW-LOOP-01` 落地，但不作为其 runtime scaffolding 的硬阻塞 |
+| Batch 15–16（parallel lane） | `NEW-LOOP-01` | 在 routing / workflow 基础稳定后，明确单研究者非线性 research loop substrate，而不必等到 Phase 5 才第一次出现真实 loop semantics；虽然它是产品主干关键项，但排在此处是为了让 loop runtime 落地时不只是 stub |
+| Batch 17 | `NEW-SEM-06b` | 在 `NEW-DISC-01` + `NEW-SEM-06-INFRA` 完成后进入真正 hybrid recall / strong reranker |
+| Batch 18 | `NEW-SEM-06d` | 在强 backbone 上叠加 triggered reformulation / QPP，而不是拿它补洞 |
+| Batch 19 | `NEW-SEM-06e` | 结构化 evidence localization 作为 `agent-arxiv` 检索扩展前置 |
+
+**关键依赖图**:
+
+```text
+NEW-OPENALEX-01 -> NEW-DISC-01 -> NEW-SEM-06b -> { NEW-SEM-06d, NEW-SEM-06e }
+NEW-RT-05 -> NEW-SEM-06-INFRA -> NEW-SEM-06b
+NEW-WF-01 ----+
+UX-06 --------+-> NEW-LOOP-01 -> { EVO-01, EVO-02, EVO-03 }
+NEW-RT-06 ----+
+NEW-RT-01 -> NEW-RT-06
+NEW-MCP-SAMPLING -> NEW-RT-07
+```
+
+> **注**: `UX-06` 已在 Phase 1 完成；`NEW-LOOP-01` 对它的依赖仅表示复用既有阶段标签 taxonomy 作为 UX hints，而不是等待新的线性 stage engine。
+
+**可选后续**: `NEW-SEM-06f`（multimodal scientific retrieval）仅在 `06e` 达标后再排期。
+
+#### `NEW-DISC-01` 子任务拆分（Batch 11 kickoff → Batch 13/14 closeout）
+
+**Batch 11 kickoff scope**:
+1. **D1 — Shared identifier foundation**
+   - 在 `packages/shared/src/types/identifiers.ts` / `packages/shared/src/types/paper.ts` 为 `PaperIdentifiersSchema` / `PaperSummarySchema` 增加 `openalex_id?: string`（可选 `semantic_scholar_id?: string`）。
+   - 更新 shared tests / exports，保证所有既有 paper schema 消费者继续通过。
+2. **D2 — Provider capability schema**
+   - 在 `packages/shared/` 定义统一 Zod capability schema（如 `supports_semantic`, `supports_citation_graph`, `supports_fulltext`, `supports_source_download`, `supports_oa_content`）。
+   - `hep-mcp` / `arxiv-mcp` / `openalex-mcp` 仅负责映射声明，不各自发明 capability 结构。
+3. **D3 — Discovery core scaffold**
+   - 在 `packages/shared/src/discovery/` 建立最小可用骨架：query intent enum/schema、provider descriptor、canonical candidate 类型、planner interface。
+   - 明确这是 in-process shared library，而非新 MCP server。
+
+**Batch 13–14 closeout scope**:
+4. **D4 — Canonicalization / dedup / search-log artifacts**
+   - 产出 canonical paper object、query-plan artifact、cross-provider dedup artifact、append-only search log。
+   - 明确 uncertain match 路径与 provenance 字段。
+5. **D5 — Broker-integrated eval slices**
+   - 增加 provider recall/precision、canonicalization、dedup、known-item retrieval fixtures；把 broker-level eval 接到 `NEW-RT-05` 的统一 eval plane。
+
+**`NEW-DISC-01` 验收清单**:
+- [ ] `openalex_id` 进入 shared paper identifiers / summary schema，shared tests 通过
+- [ ] provider capability schema 在 `packages/shared/` 成为唯一 SoT，provider adapter 仅做映射
+- [ ] `packages/shared/src/discovery/` 存在可编译的 discovery scaffold（intent / provider descriptor / planner contract / canonical candidate）
+- [ ] canonical paper / query-plan / dedup / search-log artifacts 有明确 schema 与写入路径
+- [ ] broker-level eval slices 覆盖 recall / canonicalization / dedup，且可接入 `NEW-RT-05`
+- [ ] 关闭项条件：`NEW-SEM-06b` 所需 canonical identity / provider capability / dedup 基础全部就绪
+
+#### `NEW-RT-06` 子任务拆分（建议在 Batch 11 完成）
+
+1. **R1 — `ChatBackend` interface**
+   - 新增 provider-agnostic chat backend 抽象，归一化 `createMessage` 输入/输出类型；保留与当前 AgentRunner 兼容的消息结构。
+2. **R2 — Anthropic backend adapter**
+   - 将现有 lazy `@anthropic-ai/sdk` 路径迁移到独立 backend adapter/factory；SDK 依赖不再驻留在 `AgentRunner` 本体。
+3. **R3 — Routing registry schema + loader**
+   - 增加 JSON-configured orchestrator-plane routing schema / loader；`model` 从 provider-specific assumption 改为 route key / backend selector。
+   - 配置缺失、非法 route、未知 backend 必须 fail-closed。
+4. **R4 — AgentRunner migration**
+   - `AgentRunner` 接收 backend/factory 注入，继续保留 lane queue / approval gate / tracing / MCP dispatch。
+   - `_messagesCreate` seam 继续保留用于测试。
+5. **R5 — Regression tests + docs**
+   - 扩展 orchestrator tests：默认 route、自定义 route、missing route fail-closed、lane queue/approval/tracing 不回退。
+
+**`NEW-RT-06` 验收清单**:
+- [ ] `AgentRunner` 不再直接 lazy import `@anthropic-ai/sdk`；provider SDK 仅存在于 backend adapter
+- [ ] `ChatBackend` / backend factory 抽象存在，且默认 Anthropic 路径行为不回退
+- [ ] routing registry 有 schema 校验、默认 route、per-feature / per-use-case route key 解析
+- [ ] 配置错误 / 未知 route / 未知 backend fail-closed，不静默回退到错误 provider
+- [ ] `packages/orchestrator/tests/agent-runner.test.ts` 覆盖 route resolution / fail-closed / existing lane queue & approval behaviors
+- [ ] `pnpm --filter @autoresearch/orchestrator test` + `pnpm --filter @autoresearch/orchestrator build` 通过
+
+#### `NEW-LOOP-01` 子任务拆分（建议在 Batch 15–16 完成）
+
+1. **L1 — Workspace graph types**
+   - 在 `packages/orchestrator/src/` 定义 `ResearchWorkspace` / `ResearchNode` / `ResearchEdge` / `ResearchTask` 等类型，覆盖 question、idea、evidence_set、compute_attempt、finding、draft_section、review_issue、decision。
+   - 明确 artifact / evidence / provenance 如何挂接到 workspace graph。
+2. **L2 — Event / task graph runtime**
+   - 新增 `research-loop.ts`（或等价模块）管理 event-driven transitions，而不是固定阶段跳转。
+   - 支持从 compute failure / review issue / contradiction / new evidence 合法回跳到 discovery / idea revision / writing update。
+3. **L3 — UX stage labels as hints only**
+   - `idea/literature/derivation/writing/revision` 继续保留给会话引导和 UI 展示，但不作为互斥 machine state。
+   - 运行时记录 `current_focus` / `active_tasks`，而不是唯一阶段。
+4. **L4 — Dual mode on one substrate**
+   - interactive 模式：用户批准或指定下一步；autonomous 模式：按 policy / budget / approvals 自动继续。
+   - 两者共享同一 workspace / task graph / event log。
+5. **L5 — Phase 5 handoff contract**
+   - 为 `EVO-01/02/03` 定义接入点：idea→compute、compute→idea、result→writing/review 不再各自发明 loop substrate。
+   - 至少落下 `EVO-01` compute handoff 与 `EVO-02` feedback handoff 的 typed interface stubs，并各自具备 1 条 integration smoke test。
+
+**`NEW-LOOP-01` 验收清单**:
+- [ ] 运行时存在显式 `ResearchWorkspace` / task graph / event log 抽象，而不是只能依赖阶段枚举推导状态
+- [ ] 合法回跳路径被建模并可测试：`compute -> literature`, `compute -> idea`, `review -> evidence_search`, `finding -> draft_update`
+- [ ] interactive / autonomous 两种模式共享同一 substrate，仅 policy 不同
+- [ ] `UX-06` 阶段标签仍可用于会话引导，但不再被执行内核当成互斥状态
+- [ ] `EVO-01/02/03` 的依赖说明改为在 `NEW-LOOP-01` 之上接入 compute/feedback/writing automation
+- [ ] `EVO-01` compute handoff 与 `EVO-02` feedback handoff 至少各有 1 个 typed interface stub + integration smoke test
+- [ ] 至少有一条端到端 smoke path 能展示“文献 → idea → compute → 回跳文献/idea → writing/review”非线性路径
+
 **原 Batch 8 (M-04 + M-07 + NEW-SKILL-01) → Batch 17**: schema fidelity 测试在 SEM 改造完成后更有意义。
 
 ### Phase 3 验收总检查点
 
-- [ ] 全部 36 项修复通过各自测试（v1.9.0 原 22 + NEW-RT-05 + NEW-SEM-01~13）
+- [ ] 全部 44 项修复通过各自测试（v1.9.0 原 22 + NEW-RT-05 + NEW-SEM-01~13 + 8 个 SOTA / loop follow-up）
 - [ ] Schema 扩展性测试通过（`x-*` 字段不破坏验证）
 - [ ] 日志无 secrets 泄露
 - [ ] ERR-01/SYNC-03/ART-03 CI 验证从 grep 升级为 AST-based lint（TS: ESLint custom rule; Python: ast 模块）
@@ -2392,10 +2531,11 @@ paper/
 > **目标**: 实现 idea→理论计算→论文端到端自动闭环，建立多 Agent 研究社区基础设施
 > **前置**: Phase 4 全部完成 + idea-core Phase 2 (BFTS + Elo) 就绪
 > **路径说明**: 本 Phase 中 `idea-core/src/idea_core/` 路径在执行时已迁移为 `packages/idea-engine/src/` (TypeScript)，Python 路径仅为逻辑对应参考。
+> **前置重释 (v1.9.2)**: 真正的研究循环语义不再等到 Phase 5 才第一次出现；Phase 3 的 `NEW-LOOP-01` 先建立单研究者非线性 research loop substrate，`EVO-01/02/03` 在其上接入 compute / feedback / writing automation。
 
 ### EVO-01: idea→理论计算自动执行闭环
 
-> **依赖追加 (v1.8.0)**: UX-02 (computation contract), UX-04 (workflow schema), NEW-R15-impl (orch_run_*), NEW-COMP-01 (compute MCP 安全设计)
+> **依赖追加 (v1.9.2)**: UX-02 (computation contract), UX-04 (workflow schema), NEW-R15-impl (orch_run_*), NEW-COMP-01 (compute MCP 安全设计), NEW-LOOP-01 (single-user loop substrate)
 
 **现状**: idea-core 输出 IdeaCard (自然语言)，C2 method_design 生成方法规格，但无法自动翻译为可执行的计算任务。hep-calc 可驱动 FeynCalc/FeynArts/FormCalc，但需要人类编写调用代码。
 
@@ -2722,7 +2862,9 @@ paper/
 > **详细设计 (2026-02-21)**: `docs/track-a-evo17-rep-sdk-design.md` (Track A 详设文档, ~2000 行)
 > **设计对标**: `@modelcontextprotocol/sdk` — REP SDK 作为独立 npm 包发布，零 Autoresearch 内部依赖，任何 AI 研究平台可集成。
 
-**背景**: MCP 解决了"有哪些工具可用"，REP 解决"为什么这个研究策略有效、如何进化"。如同 MCP 成为 LLM 生态的标准接口层，REP 旨在成为 AI 科学研究的标准进化层。
+**背景**: MCP 解决"有哪些工具可用"，REP 解决"为什么这个研究策略有效、如何进化"。如同 MCP 成为 LLM 生态的标准接口层，REP 旨在成为 AI 科学研究的标准进化层。
+
+**定位约束 (v1.9.2)**: `EVO-17` 是 Track A / Phase 5 的 evolution/publication layer。它可复用 integrity / audit / content-addressing 设计，但**不得**反向定义近中期单研究者 research loop 的执行内核；v1 主干由 Phase 3 `NEW-LOOP-01` + orchestrator runtime 承担。
 
 **包结构** (对标 `@modelcontextprotocol/sdk`):
 
@@ -2933,13 +3075,13 @@ paper/
 | Phase | 缺陷 ID | 数量 |
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
-| **1 (统一抽象)** | H-01 ✅, H-02 ✅, H-03 ✅, H-04 ✅, H-13 ✅, H-15a ✅, H-16a ✅, H-18 ✅, H-19 ✅, M-01 ✅, M-14a ✅, M-18 ✅, M-19, H-11a ✅, NEW-01 ✅, NEW-R02 ✅, NEW-R03b, NEW-R04 ✅, UX-01, UX-05, UX-06 ✅, **NEW-CONN-01** ✅ | 22 (18 done, 4 pending; ~~NEW-R09 cut~~, H-17 deferred→P2, M-22 deferred→P3) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05 ✅, H-07 ✅, H-09 ✅, H-10 ✅, H-11b ✅, H-12 ✅, H-15b ✅, H-16b ✅, H-17 ✅, H-21 ✅, M-02 ✅, M-05 ✅, M-06 ✅, M-19 ✅, M-20 ✅, M-21 ✅, M-23 ✅, trace-jsonl ✅, NEW-02 ✅, NEW-03 ✅, NEW-04 ✅, NEW-R05 ✅, NEW-R06 ✅, NEW-R07 ✅, NEW-R08 ✅, NEW-R10 ✅, NEW-R14, NEW-R15-impl ✅, UX-02 ✅, UX-07 ✅, RT-02 ✅, RT-03 ✅, NEW-VIZ-01 ✅, **NEW-RT-01 ✅, NEW-RT-02 ✅, NEW-RT-03 ✅, NEW-RT-04 ✅, NEW-CONN-02 ✅, NEW-CONN-03 ✅, NEW-CONN-04 ✅, NEW-IDEA-01 ✅, NEW-COMP-01 ✅, NEW-WF-01 ✅, NEW-ARXIV-01 ✅, NEW-HEPDATA-01 ✅, NEW-05a Stage 3 (start)** | 45 (44 done, 1 pending) |
-| **3 (扩展性 + 计算连通)** | M-03, M-04, M-07~M-10, M-12, M-13, M-15~M-17, M-22, L-08, NEW-06, NEW-R11, NEW-R12, UX-03, UX-04, RT-01, RT-04, **NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete)** | 24 |
-| **4 (长期演进)** | L-01~L-07, NEW-07 | 8 |
-| **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 |
-| **跨 Phase (伞)** | NEW-R01 | 1 |
-| **CUT** | NEW-R09 | 1 |
-| **总计** | | **137** (119 原 + 17 新增 + 1 cut) — 74 done |
+| **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06 | 23 (19 done, 4 pending) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-19/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05~R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-ARXIV-01, NEW-HEPDATA-01, NEW-05a Stage 3 (start) | 44 (25 done, 19 pending) |
+| **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e, NEW-LOOP-01 | 49 (16 done, 33 pending) |
+| **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (0 done, 8 pending) |
+| **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 (0 done, 22 pending) |
+| **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
+| **CUT** | NEW-R09 | 1（bookkeeping only; excluded from total） |
+| **总计** | **Phase 0–5 remediation items only** | **160** (152 既有 + 8 新增) — **74 done** |
 
-> **Note**: v1.8.0 变更: 新增 15 项 (NEW-CONN-01~05, NEW-IDEA-01, NEW-COMP-01/02, NEW-WF-01, NEW-SKILL-01, NEW-RT-01~05)。修改 13 项 (H-01 简化, H-04 冻结, H-15a 冻结, H-17 deferred, M-22 deferred, NEW-R09 cut, NEW-05a re-scoped, UX-02 升级, UX-04 扩展, EVO-01/02/03 依赖追加, NEW-WF-01 entry points, NEW-COMP-01 ingest tool)。来源: 三模型 scope audit 收敛 + 双模型 Pipeline 连通性审计 R4 收敛 + CLI-First Dual-Mode 架构收敛。
+> **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 与 `NEW-R09` 作为 bookkeeping rows 单列展示但不计入 160。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up 仍按 `NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e` 排期推进。

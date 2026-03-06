@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "plan_version": "1.9.0-draft",
-  "updated_at": "2026-03-04",
-  "note": "v1.9.0-draft: v1.8.0 + NEW-OPENALEX-01 + NEW-SEM-01~13 追加 Phase 3 (Batch 8~16 SEM track, Codex+GLM-5 审核收敛). 152 items.",
+  "plan_version": "1.9.2-draft",
+  "updated_at": "2026-03-06T07:44:27Z",
+  "note": "v1.9.2-draft: v1.9.1 + single-user nonlinear research-loop clarification. Added NEW-LOOP-01 as a Phase 3 precursor so the near-term product is a single-user research system (interactive or autonomous) rather than a stage-linear demo flow. Agent-arXiv and REP remain later outer layers. Existing SOTA follow-up queue (NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e) remains in place. Architecture update dual-reviewed by Opus + Kimi K2.5 (both CONVERGED_WITH_AMENDMENTS, 0 blocking); dependency and REP-scope clarifications integrated. 160 items.",
   "phases": {
     "0": {
       "name": "止血",
@@ -380,7 +380,7 @@
           "depends_on": [],
           "source": "user-stories-ux-gaps",
           "completed_at": "2026-02-25",
-          "note": "Batch 4B: meta/protocols/session_protocol_v1.md + skills/hepar/SKILL.md reference. 5-stage pipeline: idea→literature→derivation→writing→revision."
+          "note": "Batch 4B: meta/protocols/session_protocol_v1.md + skills/hepar/SKILL.md reference. The 5 stages (idea→literature→derivation→writing→revision) are UX navigation labels only, not the execution kernel; runtime may legally backtrack/branch (e.g. compute→literature, review→evidence search)."
         },
         "NEW-CONN-01": {
           "title": "Discovery next_actions hints",
@@ -1125,6 +1125,57 @@
           "depends_on": [],
           "note": "~2976 LOC. Phase 3 Batch 6. R1→R5 Codex+Kimi convergence. 95 tests. packages/openalex-mcp/ standalone MCP + hep-mcp aggregation (maturity: experimental)."
         },
+        "NEW-DISC-01": {
+          "title": "Federated Scholar Discovery",
+          "status": "in_progress",
+          "complexity": "high",
+          "assignee": "gpt-5-codex",
+          "depends_on": [
+            "NEW-OPENALEX-01"
+          ],
+          "source": "sota-monorepo-architecture-2026-03-06",
+          "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
+          "note": "Phase 3 Batch 11 kickoff in progress (2026-03-06): D1/D2/D3 completed via shared `openalex_id` support, shared discovery capability/query-planning scaffold in `packages/shared/src/discovery/`, and provider capability mappings in `openalex-mcp`, `arxiv-mcp`, and `hep-mcp`. This batch intentionally stays library-first: no discovery MCP server, no canonicalization/dedup/search-log closeout, and no broker-level eval closeout yet. D4/D5 remain scheduled for Batch 13–14 before `NEW-SEM-06b`. Acceptance so far: `pnpm --filter @autoresearch/shared test`, `pnpm --filter @autoresearch/shared build`, plus provider builds needed for workspace consumers (`pnpm --filter @autoresearch/openalex-mcp build`, `pnpm --filter @autoresearch/arxiv-mcp build`). Batch 11 kickoff implementation was also reviewed in the same dual-review pass (0 blocking); no scope changes were required. Code commit: `299ff0d`."
+        },
+        "NEW-LOOP-01": {
+          "title": "Single-User Research Loop Runtime",
+          "status": "pending",
+          "complexity": "high",
+          "assignee": null,
+          "depends_on": [
+            "NEW-WF-01",
+            "UX-06",
+            "NEW-RT-06"
+          ],
+          "source": "sota-monorepo-architecture-2026-03-06",
+          "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
+          "note": "Phase 3 architecture precursor. Establish the near-term execution kernel as a nonlinear single-user research loop: ResearchWorkspace/project graph + event/task graph runtime + shared interactive/autonomous substrate. Stage labels (idea/literature/derivation/writing/revision) reuse the already-landed UX-06 taxonomy as UX hints only. Suggested window: Batch 15-16 parallel lane before EVO-01/02/03; discovery closeout should ideally overlap but is not a hard blocker for runtime scaffolding."
+        },
+        "NEW-RT-06": {
+          "title": "Provider-Agnostic Orchestrator Routing",
+          "status": "done",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-01"
+          ],
+          "source": "sota-monorepo-architecture-2026-03-06",
+          "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
+          "note": "Phase 3 Batch 11 completed (2026-03-06): closed orchestrator-plane routing only. Extracted `ChatBackend` + Anthropic adapter + backend factory from `AgentRunner`, added JSON-validated routing registry/loader with default single-route preservation and fail-closed handling for unknown routes / invalid config / unknown backends, and kept lane queue / approval gate / tracing / MCP dispatch / `_messagesCreate` regression coverage intact. `NEW-RT-07` remains the separate host-side MCP sampling routing item and was not pulled into this batch. Acceptance: `pnpm --filter @autoresearch/orchestrator test`, `pnpm --filter @autoresearch/orchestrator build`. No git commit created in this run (policy: no implicit commits). Formal implementation review (Opus + OpenCode kimi-for-coding/k2p5) converged on 2026-03-06 with 0 blocking; amendment integrated: shared default max-token constant corrected to 8192 while keeping larger per-route overrides possible. Code commit: `299ff0d`.",
+          "completed_at": "2026-03-06"
+        },
+        "NEW-RT-07": {
+          "title": "MCP Sampling Host Routing Registry",
+          "status": "pending",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-MCP-SAMPLING"
+          ],
+          "source": "sota-monorepo-architecture-2026-03-06",
+          "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
+          "note": "Phase 3 SOTA follow-up. Host-side routing for ctx.createMessage consumers; MCP servers emit stable metadata (module/tool/prompt_version/risk_level/cost_class) but never self-select models. Suggested window: Batch 13-14 parallel lane once routing schema stabilizes; not a critical-path blocker for existing Batch 11-16 SEM items."
+        },
         "NEW-SKILL-WRITING": {
           "status": "done",
           "assignee": null,
@@ -1138,25 +1189,27 @@
         },
         "NEW-SEM-01": {
           "title": "Quantity Semantics Adjudicator",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
           "assignee": null,
           "depends_on": [
             "NEW-RT-05",
             "NEW-MCP-SAMPLING"
           ],
-          "note": "Phase 3 Batch 10 (SEM track P1). LLM-first quantity/entity alignment + deterministic unit/schema guards. Source: semantic-understanding heuristics audit."
+          "note": "Phase 3 Batch 10 completed (2026-03-05): added SEM-01 quantity semantics modules (LLM-first via MCP sampling ctx.createMessage + deterministic unit/schema guards + conservative fallback) and integrated semantic grouping in compareMeasurements/conflictDetector/criticalResearch. Shipped eval+locked-holdout fixtures + fixed-timestamp baseline + numeric targets; acceptance: pnpm hep-mcp test:eval/test + pnpm -r build. Dual review (Opus + K2.5) PASS, 0 blocking; artifacts in .review/sem-batch10-2026-03-05/. No git commit created in this run (policy: no implicit commits).",
+          "completed_at": "2026-03-05"
         },
         "NEW-SEM-02": {
           "title": "Evidence/Claim Semantic Grading V2",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
           "assignee": null,
           "depends_on": [
             "NEW-RT-05",
             "NEW-MCP-SAMPLING"
           ],
-          "note": "Phase 3 Batch 11 (SEM track P1, gate G3). LLM-first claim extraction + evidence-level + stance with strict schema + fail-closed for gates."
+          "note": "Phase 3 Batch 11 completed (2026-03-06): replaced legacy evidence grading with a structured claim→evidence→stance semantic SoT. Added LLM-first claim extraction + evidence-claim assessment modules via MCP sampling/ctx.createMessage, kept deterministic logic as guard/fallback only, and integrated the new grading flow into criticalResearch evidence mode without pulling host-side routing work forward. Shipped eval + holdout fixtures + locked baseline (`sem_02_evidence_claim_grading`), while preserving legacy output compatibility for downstream callers. Acceptance: `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp build`. No git commit created in this run (policy: no implicit commits). Formal implementation review (Opus + OpenCode kimi-for-coding/k2p5) converged on 2026-03-06 with 0 blocking; amendments integrated: sigma parser guardrails, claim-extraction cache clarification, baseline note, and targeted regressions. Code commit: `299ff0d`.",
+          "completed_at": "2026-03-06"
         },
         "NEW-SEM-03": {
           "title": "LLM-First Stance Engine",
@@ -1192,14 +1245,65 @@
           "note": "Phase 3 Batch 13 (SEM track P2). Replace giant keyword catalogs with metadata priors + LLM adjudication; centralize classifiers to avoid drift."
         },
         "NEW-SEM-06": {
-          "title": "Evidence Retrieval Upgrade (Quality-First Default)",
+          "title": "Evidence Retrieval Upgrade (SEM-06a baseline)",
+          "status": "done",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05"
+          ],
+          "note": "Phase 3 Batch 10 completed (2026-03-05): semantic-first evidence retrieval + deterministic rerank baseline by default (lexical fallback only on policy triggers), with observable fallback artifacts and stable hit fields for downstream SEM-02/03. This is the SEM-06a baseline, not the final SOTA retrieval architecture. Follow-up queue: NEW-SEM-06-INFRA, NEW-SEM-06b, NEW-SEM-06d, NEW-SEM-06e. Dual review (Opus + K2.5) PASS, 0 blocking; artifacts in .review/sem-batch10-2026-03-05/.",
+          "completed_at": "2026-03-05"
+        },
+        "NEW-SEM-06-INFRA": {
+          "title": "Retrieval Backbone Substrate Decision",
           "status": "pending",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "NEW-RT-05"
           ],
-          "note": "Phase 3 Batch 10 (SEM track P1). Semantic retrieval + rerank as default; lexical only as fallback. No MCP sampling needed (embedding/rerank path)."
+          "source": "sota-monorepo-architecture-2026-03-06",
+          "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
+          "note": "Phase 3 SOTA follow-up. Lock embedding/index substrate before SEM-06b: hosted vs local embeddings, vector store choice, late-interaction path, artifact/cache format, and eval protocol measured against the current hashing_fnv1a32 baseline. Suggested window: Batch 12 parallel lane."
+        },
+        "NEW-SEM-06b": {
+          "title": "Hybrid Candidate Generation + Strong Reranker",
+          "status": "pending",
+          "complexity": "high",
+          "assignee": null,
+          "depends_on": [
+            "NEW-RT-05",
+            "NEW-DISC-01",
+            "NEW-SEM-06-INFRA"
+          ],
+          "source": "sota-monorepo-architecture-2026-03-06",
+          "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
+          "note": "Phase 3 SOTA follow-up. Hybrid recall + strong reranker cascade over canonicalized documents; must outperform SEM-06a on locked-holdout P@k/R@k/MRR/nDCG and avoid provider-local identity forks. Suggested window: Batch 17 after NEW-DISC-01 + NEW-SEM-06-INFRA close."
+        },
+        "NEW-SEM-06d": {
+          "title": "Triggered Query Reformulation + QPP",
+          "status": "pending",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-SEM-06b"
+          ],
+          "source": "sota-monorepo-architecture-2026-03-06",
+          "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
+          "note": "Phase 3 SOTA follow-up. Query reformulation and query performance prediction only for hard/low-recall cases; requires trigger policy, cost telemetry, and hard-subset eval. Suggested window: Batch 18."
+        },
+        "NEW-SEM-06e": {
+          "title": "Structure-Aware Evidence Localization",
+          "status": "pending",
+          "complexity": "high",
+          "assignee": null,
+          "depends_on": [
+            "NEW-SEM-06b"
+          ],
+          "source": "sota-monorepo-architecture-2026-03-06",
+          "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
+          "note": "Phase 3 SOTA follow-up. Promote retrieval from document/chunk only to page/chunk/table/figure/equation/citation-context localization; this becomes the retrieval prerequisite for search-heavy agent-arxiv features. Suggested window: Batch 19, before search-heavy agent-arxiv retrieval work."
         },
         "NEW-SEM-07": {
           "title": "Structured Gate Semantics (No Prose Parsing as SoT)",
@@ -1355,8 +1459,10 @@
             "UX-02",
             "UX-04",
             "NEW-R15-impl",
-            "NEW-COMP-01"
-          ]
+            "NEW-COMP-01",
+            "NEW-LOOP-01"
+          ],
+          "note": "Builds on NEW-LOOP-01 single-user loop substrate; idea→compute execution plugs into the shared workspace/task graph instead of inventing a separate loop runtime."
         },
         "EVO-02": {
           "title": "计算结果→idea 反馈循环",
@@ -1364,8 +1470,10 @@
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
-            "EVO-01"
-          ]
+            "EVO-01",
+            "NEW-LOOP-01"
+          ],
+          "note": "Builds on NEW-LOOP-01 single-user loop substrate; compute results flow back into idea scoring/pruning via the shared workspace/task graph."
         },
         "EVO-03": {
           "title": "结果→writing evidence 自动映射 + 审稿修订循环",
@@ -1374,9 +1482,10 @@
           "assignee": null,
           "depends_on": [
             "EVO-01",
-            "NEW-IDEA-01"
+            "NEW-IDEA-01",
+            "NEW-LOOP-01"
           ],
-          "note": "scope 扩展 (2026-02-22): 增加 review→revise 自动循环 (GAP-05), 依赖 UX-03/UX-04"
+          "note": "Builds on NEW-LOOP-01 single-user loop substrate; scope 扩展 (2026-02-22): 增加 review→revise 自动循环 (GAP-05), 依赖 UX-03/UX-04."
         },
         "EVO-04": {
           "title": "Agent 注册表 + A2A Agent Card",
@@ -1513,12 +1622,12 @@
             "H-18",
             "NEW-07"
           ],
-          "design_doc": "docs/track-a-evo17-rep-sdk-design.md",
+          "design_doc": "meta/docs/track-a-evo17-rep-sdk-design.md",
           "schemas": [
-            "schemas/research_strategy_v1.schema.json",
-            "schemas/research_outcome_v1.schema.json",
-            "schemas/research_event_v1.schema.json",
-            "schemas/rep_envelope_v1.schema.json"
+            "meta/schemas/research_strategy_v1.schema.json",
+            "meta/schemas/research_outcome_v1.schema.json",
+            "meta/schemas/research_event_v1.schema.json",
+            "meta/schemas/rep_envelope_v1.schema.json"
           ]
         },
         "EVO-18": {
