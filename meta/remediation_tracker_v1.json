@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.2-draft",
-  "updated_at": "2026-03-06T07:44:27Z",
+  "updated_at": "2026-03-06T09:55:00Z",
   "note": "v1.9.2-draft: v1.9.1 + single-user nonlinear research-loop clarification. Added NEW-LOOP-01 as a Phase 3 precursor so the near-term product is a single-user research system (interactive or autonomous) rather than a stage-linear demo flow. Agent-arXiv and REP remain later outer layers. Existing SOTA follow-up queue (NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e) remains in place. Architecture update dual-reviewed by Opus + Kimi K2.5 (both CONVERGED_WITH_AMENDMENTS, 0 blocking); dependency and REP-scope clarifications integrated. 160 items.",
   "phases": {
     "0": {
@@ -1213,25 +1213,27 @@
         },
         "NEW-SEM-03": {
           "title": "LLM-First Stance Engine",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
           "assignee": null,
           "depends_on": [
             "NEW-RT-05",
             "NEW-MCP-SAMPLING"
           ],
-          "note": "Phase 3 Batch 12 (SEM track P1, gate G4). Regex prefilter/signals only; LLM stance adjudication via MCP sampling + calibrated abstention."
+          "note": "Phase 3 Batch 12 completed (2026-03-06): upgraded Batch 11 claim→evidence→stance SoT with bundle-level MCP-sampling-first stance adjudication via `packages/hep-mcp/src/core/semantics/claimBundleSampling.ts`, `packages/hep-mcp/src/core/semantics/claimBundleAdjudicator.ts`, and `packages/hep-mcp/src/core/semantics/evidenceClaimGrading.ts`. Reused the existing stance/reason schema (no fork), covered scoped negation / hedge / mixed bundles / same-topic-different-claim, and made abstention+fallback observable in eval/provenance. Acceptance: `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp build`. Formal implementation review (Opus + OpenCode kimi-for-coding/k2p5) converged on 2026-03-06 with 0 blocking; integrated low-risk amendments for shared `EdgeRelation` guard reuse and redundant theoretical-conflict JSON parse cleanup. Deferred refactor-only follow-ups: shared `ClaimAssessmentContext` / JSON payload parser dedup. No git commit created in this run (policy: no implicit commits).",
+          "completed_at": "2026-03-06"
         },
         "NEW-SEM-04": {
           "title": "Theoretical Conflict Reasoner",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "NEW-RT-05",
             "NEW-MCP-SAMPLING"
           ],
-          "note": "Phase 3 Batch 12 (SEM track P2). Contradiction adjudication with rationale + 'not comparable' handling; deterministic stats only post-alignment."
+          "note": "Phase 3 Batch 12 completed (2026-03-06): landed LLM-first theoretical conflict adjudication with structured rationale in `packages/hep-mcp/src/tools/research/theoreticalConflict/adjudication.ts`, `packages/hep-mcp/src/tools/research/theoreticalConflict/prompts.ts`, and `packages/hep-mcp/src/tools/research/theoreticalConflicts.ts`. Prompt `v2` now requires auditable rationale fields and preserves an explicit `adjudication_category: \"not_comparable\"` for `different_scope` cases while keeping legacy relation compatibility for downstream callers. Acceptance: `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp build`. Formal implementation review (Opus + OpenCode kimi-for-coding/k2p5) converged on 2026-03-06 with 0 blocking; integrated low-risk cleanup for shared edge-relation guard reuse and redundant JSON parsing removal. No git commit created in this run (policy: no implicit commits).",
+          "completed_at": "2026-03-06"
         },
         "NEW-SEM-05": {
           "title": "Hybrid Paper/Review/Content Classifier",
@@ -1257,7 +1259,7 @@
         },
         "NEW-SEM-06-INFRA": {
           "title": "Retrieval Backbone Substrate Decision",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
@@ -1265,7 +1267,8 @@
           ],
           "source": "sota-monorepo-architecture-2026-03-06",
           "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
-          "note": "Phase 3 SOTA follow-up. Lock embedding/index substrate before SEM-06b: hosted vs local embeddings, vector store choice, late-interaction path, artifact/cache format, and eval protocol measured against the current hashing_fnv1a32 baseline. Suggested window: Batch 12 parallel lane."
+          "note": "Phase 3 Batch 12 completed (2026-03-06): froze the retrieval substrate/eval decision in `packages/hep-mcp/src/core/evidenceRetrievalSubstrate.ts` and exposed the runtime snapshot via `packages/hep-mcp/src/core/evidenceSemantic.ts`, with shared comparison helpers in `packages/hep-mcp/src/eval/metrics.ts`. Locked baseline to `SEM-06a` / `hashing_fnv1a32`, recorded the `NEW-DISC-01` dependency, and fixed the comparison method to `absolute_delta_and_relative_gain` for later Batch 17 handoff. `NEW-SEM-06b` was NOT started in this batch; late-interaction / strong-reranker paths remain planned-only. Acceptance: `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp build`. Formal implementation review (Opus + OpenCode kimi-for-coding/k2p5) converged on 2026-03-06 with 0 blocking. No git commit created in this run (policy: no implicit commits).",
+          "completed_at": "2026-03-06"
         },
         "NEW-SEM-06b": {
           "title": "Hybrid Candidate Generation + Strong Reranker",
