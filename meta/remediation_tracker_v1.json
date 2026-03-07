@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.2-draft",
-  "updated_at": "2026-03-06T09:55:00Z",
+  "updated_at": "2026-03-07T00:40:00+08:00",
   "note": "v1.9.2-draft: v1.9.1 + single-user nonlinear research-loop clarification. Added NEW-LOOP-01 as a Phase 3 precursor so the near-term product is a single-user research system (interactive or autonomous) rather than a stage-linear demo flow. Agent-arXiv and REP remain later outer layers. Existing SOTA follow-up queue (NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e) remains in place. Architecture update dual-reviewed by Opus + Kimi K2.5 (both CONVERGED_WITH_AMENDMENTS, 0 blocking); dependency and REP-scope clarifications integrated. 160 items.",
   "phases": {
     "0": {
@@ -1237,14 +1237,15 @@
         },
         "NEW-SEM-05": {
           "title": "Hybrid Paper/Review/Content Classifier",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "NEW-RT-05",
             "NEW-MCP-SAMPLING"
           ],
-          "note": "Phase 3 Batch 13 (SEM track P2). Replace giant keyword catalogs with metadata priors + LLM adjudication; centralize classifiers to avoid drift."
+          "note": "Phase 3 Batch 13 completed (2026-03-06): landed the LLM-first single-authority paper/review/content semantic SoT in `packages/hep-mcp/src/core/semantics/paperSemanticClassifier.ts` with shared priors/sampling/types in `paperSemanticPriors.ts`, `paperSemanticSampling.ts`, and `paperSemanticTypes.ts`. `paperClassifier.ts`, `reviewClassifier.ts`, and `criticalQuestions.ts` now delegate to the shared classifier instead of maintaining parallel authority; metadata priors remain hints/fallback diagnostics only, and MCP sampling is threaded through the critical/deep research callers. Stable `NEW-SEM-12` reuse anchor: `classifyUnifiedPaperSemantics` + `UnifiedPaperClassification` in `packages/hep-mcp/src/core/semantics/`. Locked eval plane: `tests/eval/evalSem05UnifiedClassifier.test.ts`, fixtures under `tests/eval/fixtures/sem05/`, baseline `tests/eval/baselines/sem05_unified_classifier.baseline.json`. Acceptance: `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp build`. Formal implementation review (Opus + OpenCode kimi-for-coding/k2p5) converged on 2026-03-06 with 0 blocking; adopted low-risk amendments: `synthesizeReview.ts` now forwards `_mcp` into internal critical-analysis calls with regression `tests/research/synthesizeReview.test.ts`, and `docs/ARCHITECTURE.md` now indexes the new semantics modules. Deferred non-blocking amendments: shared `parseJsonPayload` extraction, fallback logging/provenance enrichment, baseline-process README, and deterministic `referenceYear` injection for priors. `NEW-RT-07`, `NEW-DISC-01` D4/D5, and `NEW-SEM-06b` were not started. No git commit created in this run (policy: no implicit commits).",
+          "completed_at": "2026-03-06"
         },
         "NEW-SEM-06": {
           "title": "Evidence Retrieval Upgrade (SEM-06a baseline)",
@@ -1333,24 +1334,26 @@
         },
         "NEW-SEM-09": {
           "title": "Deep Analysis Section Role Classifier",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "NEW-RT-05",
             "NEW-MCP-SAMPLING"
           ],
-          "note": "Phase 3 Batch 13 (SEM track P2). Replace heading keyword inference with role labeling over heading+content; eval via section-role labeled set."
+          "note": "Phase 3 Batch 13 completed (2026-03-06): replaced heading-keyword section inference with LLM-first section-role semantic labeling in `packages/hep-mcp/src/core/semantics/sectionRoleClassifier.ts` plus shared prompt/type modules `sectionRoleSampling.ts` and `sectionRoleTypes.ts`. `deepAnalyze.ts` now uses semantic role labels and maps them back to the legacy output slots while preserving combined roles plus explicit `other` / `uncertain` paths. Fallback scoring now uses heading+content cues rather than heading authority alone, and the critical synthesize path explicitly threads `_mcp` through `synthesizeReview.ts` with regression coverage in `tests/research/synthesizeReview.test.ts`. Locked eval plane: `tests/eval/evalSem09SectionRoleClassifier.test.ts`, fixtures under `tests/eval/fixtures/sem09/`, baseline `tests/eval/baselines/sem09_section_role_classifier.baseline.json`. Acceptance: `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp build`. Formal implementation review (Opus + OpenCode kimi-for-coding/k2p5) converged on 2026-03-06 with 0 blocking; adopted low-risk amendment: `docs/ARCHITECTURE.md` now indexes the new core semantics modules. Deferred non-blocking amendments: shared sampling JSON utility extraction, additional fallback telemetry, and baseline-process documentation. `NEW-RT-07`, `NEW-DISC-01` D4/D5, and `NEW-SEM-06b` were not started. No git commit created in this run (policy: no implicit commits).",
+          "completed_at": "2026-03-06"
         },
         "NEW-SEM-10": {
           "title": "Topic/Method Grouping Semanticizer",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "NEW-RT-05"
           ],
-          "note": "Phase 3 Batch 14 (SEM track P2-P3). Move from top-keyword + fixed thresholds to semantic topic/method clustering + adaptive significance scoring. No MCP sampling (embedding/Python-side path)."
+          "note": "Phase 3 Batch 14 completed (2026-03-07): replaced keyword-heavy topic extraction and drifting methodology grouping with shared semantic authority in `packages/hep-mcp/src/tools/research/synthesis/collectionSemanticLexicon.ts` and `packages/hep-mcp/src/tools/research/synthesis/collectionSemanticGrouping.ts`. `analyzePapers.ts::extractTopics` plus `grouping.ts::{groupByMethodology,groupForComparison}` now consume the same semantic grouping result while preserving the legacy `CollectionAnalysis.topics` outward shape. Locked eval plane: `tests/eval/evalSem10TopicMethodGrouping.test.ts`, fixtures under `tests/eval/fixtures/sem10/`, baseline `tests/eval/baselines/sem10_topic_method_grouping.baseline.json`. Acceptance: `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm -r build`. Formal implementation review (Opus + OpenCode kimi-for-coding/k2p5) converged on 2026-03-07 with 0 blocking; adopted low-risk amendments: removed orphaned `tfidf` barrel export, added explicit locked-baseline guards in eval tests, and normalized the `eft` alias. Formal self-review also passed with 0 blocking. Deferred non-blocking amendment: keep `tfidf.ts` file itself for now to avoid unrelated churn; only its stale export surface was removed. `NEW-RT-07`, `NEW-DISC-01` D4/D5, `NEW-LOOP-01`, and `NEW-SEM-06b` were not started. Implementation commit: `7bd21bc19cf9dadabb7bed19d7882b4c8cc93f35`.",
+          "completed_at": "2026-03-07"
         },
         "NEW-SEM-11": {
           "title": "Key Equation Semantic Importance",
@@ -1375,13 +1378,14 @@
         },
         "NEW-SEM-13": {
           "title": "Synthesis Challenge Extractor",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
           "assignee": null,
           "depends_on": [
             "NEW-RT-05"
           ],
-          "note": "Phase 3 Batch 14 (SEM track P2-P3). Extract methodological challenges with structured taxonomy + confidence; eval via missed-challenge audit set."
+          "note": "Phase 3 Batch 14 completed (2026-03-07): replaced narrative-level includes-based challenge detection with structured challenge authority in `packages/hep-mcp/src/tools/research/synthesis/challengeLexicon.ts` and `packages/hep-mcp/src/tools/research/synthesis/challengeExtraction.ts`. `narrative.ts::generateMethodologyChallenges` now renders the extractor output rather than owning challenge semantics. The extractor consumes both paper text and critical-analysis signals (`integrated_assessment.key_concerns`, `recommendations`, `questions.red_flags`) and preserves explicit `detected | no_challenge_detected | uncertain` statuses. Locked eval plane: `tests/eval/evalSem13ChallengeExtractor.test.ts`, fixtures under `tests/eval/fixtures/sem13/`, baseline `tests/eval/baselines/sem13_challenge_extractor.baseline.json`. Acceptance: `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm -r build`. Formal implementation review (Opus + OpenCode kimi-for-coding/k2p5) converged on 2026-03-07 with 0 blocking; no additional blocking issues were found in self-review. Adopted amendments are shared with `NEW-SEM-10`; no batch-external scope was started. Implementation commit: `7bd21bc19cf9dadabb7bed19d7882b4c8cc93f35`.",
+          "completed_at": "2026-03-07"
         }
       }
     },
