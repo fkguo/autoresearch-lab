@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.2-draft",
-  "updated_at": "2026-03-07T17:20:00+08:00",
+  "updated_at": "2026-03-07T20:34:00+08:00",
   "note": "v1.9.2-draft: v1.9.1 + single-user nonlinear research-loop clarification. Added NEW-LOOP-01 as a Phase 3 precursor so the near-term product is a single-user research system (interactive or autonomous) rather than a stage-linear demo flow. Agent-arXiv and REP remain later outer layers. Existing SOTA follow-up queue (NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e) remains in place. Architecture update dual-reviewed by Opus + Kimi K2.5 (both CONVERGED_WITH_AMENDMENTS, 0 blocking); dependency and REP-scope clarifications integrated. 160 items.",
   "phases": {
     "0": {
@@ -1168,15 +1168,16 @@
         },
         "NEW-RT-07": {
           "title": "MCP Sampling Host Routing Registry",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "NEW-MCP-SAMPLING"
           ],
           "source": "sota-monorepo-architecture-2026-03-06",
           "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
-          "note": "Phase 3 SOTA follow-up. Host-side routing for ctx.createMessage consumers; MCP servers emit stable metadata (module/tool/prompt_version/risk_level/cost_class) but never self-select models. Suggested window: Batch 13-14 parallel lane once routing schema stabilizes; not a critical-path blocker for existing Batch 11-16 SEM items."
+          "note": "Standalone host-side sampling routing closeout completed (2026-03-07). Landed Plane-2 MCP sampling routing authority in orchestrator via `packages/orchestrator/src/mcp-client.ts`, `mcp-jsonrpc.ts`, `mcp-server-request-handler.ts`, `sampling-handler.ts`, and `routing/sampling-{types,schema,loader}.ts`; added the shared stable metadata contract in `packages/shared/src/sampling-metadata.ts`; and aligned hep-mcp sampling consumers through `packages/hep-mcp/src/core/sampling-metadata.ts` plus the claim extraction / evidence grading / bundle adjudication / quantity adjudication / theoretical conflicts callsites. Behavior is fail-closed for malformed metadata / unknown routes / unknown backends, and route resolution + fallback attempts are auditable through structured ledger events. Acceptance passed: `pnpm --filter @autoresearch/shared test`, `pnpm --filter @autoresearch/shared build`, `pnpm --filter @autoresearch/orchestrator test`, `pnpm --filter @autoresearch/orchestrator build`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm lint`, `pnpm -r test`, `pnpm -r build`. GitNexus post-change gate: `npx gitnexus analyze --force` + `detect_changes` reported low risk; `context`/`impact` spot checks on `McpClient`, `extractClaimsFromAbstract`, `gradeClaimAgainstEvidenceBundle`, and `performTheoreticalConflicts` showed expected callers/callees with no unexpected upstream blast radius. Formal implementation review with fixed reviewers `Opus` + `OpenCode(kimi-for-coding/k2p5)` converged in one round with 0 blocking; formal self-review also passed with 0 blocking. Negative-path hardening was completed before the final closeout commit. Deferred non-blocking amendments are limited to future metadata size/redaction hardening. No `NEW-DISC-01` D4/D5, `NEW-LOOP-01`, `NEW-SEM-06b/d/e`, or `EVO-13` work was started. Implementation commit: `0d1b37a`.",
+          "completed_at": "2026-03-07"
         },
         "NEW-SKILL-WRITING": {
           "status": "done",
