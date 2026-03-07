@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.2-draft",
-  "updated_at": "2026-03-07T00:40:00+08:00",
+  "updated_at": "2026-03-07T17:20:00+08:00",
   "note": "v1.9.2-draft: v1.9.1 + single-user nonlinear research-loop clarification. Added NEW-LOOP-01 as a Phase 3 precursor so the near-term product is a single-user research system (interactive or autonomous) rather than a stage-linear demo flow. Agent-arXiv and REP remain later outer layers. Existing SOTA follow-up queue (NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e) remains in place. Architecture update dual-reviewed by Opus + Kimi K2.5 (both CONVERGED_WITH_AMENDMENTS, 0 blocking); dependency and REP-scope clarifications integrated. 160 items.",
   "phases": {
     "0": {
@@ -854,14 +854,15 @@
           "note": "~200 LOC design."
         },
         "NEW-WF-01": {
-          "status": "pending",
-          "assignee": null,
+          "status": "done",
+          "assignee": "gpt-5-codex",
           "title": "Research Workflow Schema",
           "complexity": "low",
           "depends_on": [
             "UX-04"
           ],
-          "note": "~100 LOC schema."
+          "note": "Batch 10 implementation landed in commit c63697d: research_workflow_v1.schema.json + workflow templates (review/original_research/reproduction). Retro-closeout on 2026-03-07 resolved tracker drift by adding packages/hep-mcp/tests/core/researchWorkflowSchema.test.ts, which locks draft-2020 schema validation, the three shipped templates, all four entry-point variants, and graph-reference integrity. Acceptance: `pnpm --filter @autoresearch/hep-mcp test -- tests/core/researchWorkflowSchema.test.ts` passes. As of final NEW-LOOP-01 closeout rerun, broader workspace gates `pnpm -r test` and `pnpm -r build` also pass in this loop01 worktree, so the prerequisite is now fully consistent with the current acceptance baseline.",
+          "completed_at": "2026-03-07"
         },
         "H-17": {
           "title": "运行时兼容性握手",
@@ -1139,9 +1140,9 @@
         },
         "NEW-LOOP-01": {
           "title": "Single-User Research Loop Runtime",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "NEW-WF-01",
             "UX-06",
@@ -1149,7 +1150,8 @@
           ],
           "source": "sota-monorepo-architecture-2026-03-06",
           "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
-          "note": "Phase 3 architecture precursor. Establish the near-term execution kernel as a nonlinear single-user research loop: ResearchWorkspace/project graph + event/task graph runtime + shared interactive/autonomous substrate. Stage labels (idea/literature/derivation/writing/revision) reuse the already-landed UX-06 taxonomy as UX hints only. Suggested window: Batch 15-16 parallel lane before EVO-01/02/03; discovery closeout should ideally overlap but is not a hard blocker for runtime scaffolding."
+          "note": "Phase 3 Batch 15-16 completed (2026-03-07): landed the single-user / single-project research-loop substrate under `packages/orchestrator/src/research-loop/` with `ResearchWorkspace` / `ResearchNode` / `ResearchEdge` / `ResearchTask` / `ResearchEvent` / `ResearchCheckpoint` / `LoopIntervention` abstractions, `ResearchLoopRuntime`, policy-shared interactive/autonomous modes, explicit backtrack semantics (`compute -> literature|idea`, `review -> evidence_search`, `finding -> draft_update`), typed compute/feedback/literature/review/writing handoff seams, and delegated-task injection via `appendDelegatedTask(...)`. `packages/orchestrator/src/index.ts` now re-exports the substrate, and test-first coverage is locked by `packages/orchestrator/tests/research-loop-{types,runtime,smoke}.test.ts`; prerequisite `NEW-WF-01` tracker drift was closed in the same run via `packages/hep-mcp/tests/core/researchWorkflowSchema.test.ts`. Acceptance: `pnpm --filter @autoresearch/hep-mcp test -- tests/core/researchWorkflowSchema.test.ts`, `pnpm --filter @autoresearch/orchestrator test`, `pnpm --filter @autoresearch/orchestrator build`, `pnpm -r test`, and `pnpm -r build` all pass. GitNexus post-change gate: `npx gitnexus analyze --force` + `detect_changes` reported low risk / 0 affected indexed processes; graph coverage remained limited to tracked `packages/orchestrator/src/index.ts`, so final review also used direct source inspection for the newly added unstaged `research-loop/*` files. Formal implementation review with fixed reviewers `Opus` + `OpenCode(kimi-for-coding/k2p5)` converged in two rounds (R1 `CONVERGED_WITH_AMENDMENTS`, 0 blocking; low-risk contract amendments integrated; R2 `CONVERGED`, 0 blocking). Formal self-review also passed with 0 blocking. No `NEW-RT-07`, `NEW-DISC-01` D4/D5, `NEW-SEM-06b/d/e`, or `EVO-13` work was started. No git commit created in this run (policy: no implicit commits).",
+          "completed_at": "2026-03-07"
         },
         "NEW-RT-06": {
           "title": "Provider-Agnostic Orchestrator Routing",
