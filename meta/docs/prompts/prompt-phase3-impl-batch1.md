@@ -3,6 +3,9 @@
 > **作用**: 本文件是 Phase 3 首批实施提示词。Phase 2 完成 44/45（仅 NEW-R14 被 NEW-06 阻塞），
 > 转入 Phase 3: 扩展性与治理。
 
+> **通用硬门禁继承**: 本 prompt 默认继承 `meta/docs/prompts/IMPLEMENTATION_PROMPT_CHECKLIST.md`；若本文件与 checklist 同时覆盖同一主题，以更严格者为准。
+
+
 ## 前置状态
 
 - **Phase 2**: 44/45 done（NEW-R14 被 Phase 3 NEW-06 阻塞，不影响启动 Phase 3）

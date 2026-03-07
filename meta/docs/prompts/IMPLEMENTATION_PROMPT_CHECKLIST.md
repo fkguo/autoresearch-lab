@@ -43,7 +43,7 @@
 3. prompt 中必须列出本批 acceptance commands。
 4. 对 shared schema / type / contract 变更，必须补跑相邻 package 的 test/build。
 
-## 5. Review-Swarm / Self-Review 门禁
+## 5. Review-Swarm 门禁
 
 实现 prompt 默认必须包含正式 `review-swarm` 收尾，且审核必须深入而非蜻蜓点水。至少要求 reviewer：
 
@@ -59,26 +59,14 @@
 - 任一 reviewer 有 blocking issue，就必须修正并重跑下一轮。
 - 低风险 amendments 应优先吸收；deferred 项必须记录原因。
 
-### 5.2 自审 (`self-review`) 门禁
-
-外部 `review-swarm` 收敛后，当前执行 agent 仍必须再做一轮正式自审，至少覆盖：
-
-1. 实现代码本身与关键调用链 / 下游 surface。
-2. GitNexus post-change 证据（`detect_changes`，必要时 `impact` / `context`）。
-3. tests、eval fixtures、baselines、holdout gate 是否真的守住新行为。
-4. scope discipline 与 adopted / deferred amendments 是否记录完整。
-
-自审若发现 blocking issue，必须先修复再进入完成态；不得以“外部双审已通过”为由跳过。
-
 ## 6. 完成态与版本控制门禁
 
 只有在以下条件全部满足后，实施项才可视为完成：
 
 1. acceptance commands 全部通过；
 2. `review-swarm` 已收敛且双审 `0 blocking`；
-3. `self-review` 已完成且无未处理 blocking issue；
-4. tracker / `.serena/memories/architecture-decisions.md` / `AGENTS.md` 已同步；
-5. review amendments 与 deferred 原因已记录。
+3. tracker / `.serena/memories/architecture-decisions.md` / `AGENTS.md` 已同步；
+4. review amendments 与 deferred 原因已记录。
 
 `git commit` / `git push` 规则：
 
@@ -92,6 +80,5 @@
 1. `GitNexus`：实施前 freshness check + 审核前 conditional refresh
 2. `总验收命令`：列出 eval/test/build gates
 3. `Review-Swarm`：写明 mandatory reviewers、深审要求、收敛标准
-4. `Self-Review`：写明 agent 自审也是 mandatory gate，且需绑定代码 / GitNexus / eval / scope 证据
-5. `交付后必须同步`：tracker / memory / AGENTS / amendments / deferred
-6. `版本控制门禁`：说明 commit/push 只有在收敛后且已获授权时才允许
+4. `交付后必须同步`：tracker / memory / AGENTS / amendments / deferred
+5. `版本控制门禁`：说明 commit/push 只有在收敛后且已获授权时才允许

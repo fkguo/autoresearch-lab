@@ -8,6 +8,9 @@
 >
 > **前置设计讨论**: `meta/docs/prompts/prompt-phase3-design-batch4.md`（改动 1-4 分析与范围决策）
 
+> **通用硬门禁继承**: 本 prompt 默认继承 `meta/docs/prompts/IMPLEMENTATION_PROMPT_CHECKLIST.md`；若本文件与 checklist 同时覆盖同一主题，以更严格者为准。
+
+
 ## 启动前同步
 
 在开始实现前，先对齐当前状态（以仓库现状为准）：

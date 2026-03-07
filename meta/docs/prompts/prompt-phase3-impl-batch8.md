@@ -5,6 +5,9 @@
 >
 > **SOTA 原则（适用于本 batch 及后续所有 SEM track batch）**: 实现前**必须联网调研**当前最新的最佳实践、框架、算法。若发现成熟的外部框架/库能提升质量，可以引入或借鉴，不应预设"自建"。决策依据和调研结论记录在实现过程中。参见 `CLAUDE.md` §SOTA 原则。
 
+> **通用硬门禁继承**: 本 prompt 默认继承 `meta/docs/prompts/IMPLEMENTATION_PROMPT_CHECKLIST.md`；若本文件与 checklist 同时覆盖同一主题，以更严格者为准。
+
+
 ## 范围
 
 本批次实现 1 个 Phase 3 item：

@@ -6,6 +6,9 @@
 
 ---
 
+> **通用硬门禁继承**: 本 prompt 默认继承 `meta/docs/prompts/IMPLEMENTATION_PROMPT_CHECKLIST.md`；若本文件与 checklist 同时覆盖同一主题，以更严格者为准。
+
+
 ## 范围
 
 本批次实现 2 个 Phase 3 item：

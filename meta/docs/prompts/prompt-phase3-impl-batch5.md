@@ -8,6 +8,9 @@
 >
 > **Batch 4 收敛记录**: R1-R5 共修复 19 BLOCKING findings（Codex 全程参与，Gemini R1-R2 有效、R3-R5 因速率限制缺席）
 
+> **通用硬门禁继承**: 本 prompt 默认继承 `meta/docs/prompts/IMPLEMENTATION_PROMPT_CHECKLIST.md`；若本文件与 checklist 同时覆盖同一主题，以更严格者为准。
+
+
 ## 启动前同步
 
 在开始实现前，先对齐当前状态（以仓库现状为准）：

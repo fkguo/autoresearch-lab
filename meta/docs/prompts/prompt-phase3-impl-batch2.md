@@ -3,6 +3,9 @@
 > **作用**: 本文件是 Phase 3 Batch 2 的实施提示词。上一轮 NEW-06 Batch 3 已收敛通过，
 > 本批次聚焦 Phase 3 的结构化重构与跨组件契约落地。
 
+> **通用硬门禁继承**: 本 prompt 默认继承 `meta/docs/prompts/IMPLEMENTATION_PROMPT_CHECKLIST.md`；若本文件与 checklist 同时覆盖同一主题，以更严格者为准。
+
+
 ## 启动前同步
 
 在开始实现前，先更新 `meta/REDESIGN_PLAN.md` 的完成状态（按本次已收敛结果）：

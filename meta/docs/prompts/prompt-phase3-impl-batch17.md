@@ -3,6 +3,9 @@
 > **原 Batch 8，因 SEM track (Batch 8~16) 插入而重编号为 Batch 17。**
 > **前置条件**: Phase 3 SEM track (Batch 8~16) 完成，或至少 SEM-01 (Batch 10) 完成后 M-04 schema fidelity 测试才有意义。
 
+> **通用硬门禁继承**: 本 prompt 默认继承 `meta/docs/prompts/IMPLEMENTATION_PROMPT_CHECKLIST.md`；若本文件与 checklist 同时覆盖同一主题，以更严格者为准。
+
+
 ## 范围
 
 本批次实现三个 Phase 3 item：
@@ -240,9 +243,9 @@ bash scripts/bin/run_lean4.sh --project /path/to/lean4-project --out status.json
 ## 交付与 Review 流程
 
 1. 实现完成后运行相关测试确认通过
-2. 提交至 `main` 并推送
-3. 创建 review packet 并执行 `review-swarm`
-4. 按 CLAUDE.md §多模型收敛检查 迭代至收敛
+2. 创建 review packet 并执行正式 `review-swarm`
+3. 按收敛规则迭代至双审 `0 blocking` 收敛
+4. **仅在当前任务已获人类明确授权时**，于审核收敛后再执行 `git commit` / `git push`
 
 ### 收敛后必须执行（每次 batch 交付的标准结束步骤）
 
@@ -258,10 +261,10 @@ bash scripts/bin/run_lean4.sh --project /path/to/lean4-project --out status.json
    写入格式（CLAUDE.md §跨 Session 知识保留）：
    ```markdown
    ## [YYYY-MM-DD] 类别: 简短标题
-   **上下文**: Phase 3 Batch 8
+   **上下文**: Phase 3 Batch 17
    **发现**: 具体结论
    **影响**: 对后续工作的指导意义
    **关联项**: M-04 / M-07 / NEW-SKILL-01
    ```
 
-8. **生成 `prompt-phase3-impl-batch9.md`**（按 `meta/docs/prompts/` 命名约定）
+8. **生成下一批 prompt**（按当时最新 Phase 3 排期与 `meta/docs/prompts/` 命名约定），不得再默认写死为 `prompt-phase3-impl-batch9.md`

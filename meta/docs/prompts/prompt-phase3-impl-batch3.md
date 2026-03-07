@@ -3,6 +3,9 @@
 > **作用**: 本文件是 Phase 3 Batch 3 的实施提示词。Batch 2（NEW-R11 + NEW-R12）已收敛并落地，
 > 本批次聚焦 Phase 3 的用户工作流能力补齐：论文版本追踪（UX-03）与结构化编排（UX-04）。
 
+> **通用硬门禁继承**: 本 prompt 默认继承 `meta/docs/prompts/IMPLEMENTATION_PROMPT_CHECKLIST.md`；若本文件与 checklist 同时覆盖同一主题，以更严格者为准。
+
+
 ## 启动前同步
 
 在开始实现前，先对齐当前状态（以仓库现状为准）：
