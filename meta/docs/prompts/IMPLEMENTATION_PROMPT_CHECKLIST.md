@@ -79,6 +79,7 @@
 3. `self-review` 已完成且无未处理 blocking issue；
 4. tracker / `.serena/memories/architecture-decisions.md` / `AGENTS.md` 已同步；
 5. review amendments 与 deferred 原因已记录。
+6. 完成汇报已给出**条件化的下一批建议**：必须基于本批 closeout 的实际结果，说明推荐的下一个 prompt / batch 是什么、为什么是它、以及为什么不是相邻但当前不该启动的 lane。
 
 `git commit` / `git push` 规则：
 
