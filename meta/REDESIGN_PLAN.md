@@ -2235,7 +2235,7 @@ paper/
 | Batch 18 | `NEW-SEM-06d` | 在强 backbone 上叠加 triggered reformulation / QPP，而不是拿它补洞 |
 | Batch 19 | `NEW-SEM-06e` | 结构化 evidence localization 作为 `agent-arxiv` 检索扩展前置 |
 
-> **Closeout update (2026-03-07)**: `NEW-RT-07` 已通过 standalone implementation prompt 完成；host-side MCP sampling routing registry、typed metadata contract、以及 auditable fallback/fail-closed path 已落地。Acceptance（`pnpm --filter @autoresearch/orchestrator test/build`, `pnpm --filter @autoresearch/hep-mcp test/build`, `pnpm --filter @autoresearch/shared test/build`, `pnpm lint`, `pnpm -r test/build`）全绿；正式 `review-swarm`（`Opus` + `OpenCode(kimi-for-coding/k2p5)`）与 `self-review` 均 0 blocking。`NEW-DISC-01` D4/D5 与 `NEW-SEM-06b/d/e` 仍待后续 retrieval/discovery lane。
+> **Closeout update (2026-03-07)**: `NEW-RT-07` 已通过 standalone implementation prompt 完成；host-side MCP sampling routing registry、typed metadata contract、以及 auditable fallback/fail-closed path 已落地。Acceptance（`pnpm --filter @autoresearch/orchestrator test/build`, `pnpm --filter @autoresearch/hep-mcp test/build`, `pnpm --filter @autoresearch/shared test/build`, `pnpm lint`, `pnpm -r test/build`）全绿；正式 `review-swarm`（`Opus` + `OpenCode(kimi-for-coding/k2p5)`）与 `self-review` 均 0 blocking。`NEW-DISC-01` 也已通过 standalone implementation prompt 完成 D4/D5 closeout：shared canonical paper / query-plan / dedup / search-log authority + broker consumer + deterministic eval fixtures / baseline / holdout 已落地，全部 acceptance commands 全绿，正式 `review-swarm`（`Opus` + `OpenCode(kimi-for-coding/k2p5)`）在 R2 收敛到 0 blocking，agent `self-review` 0 blocking；retrieval/discovery lane 现继续推进 `NEW-SEM-06b/d/e`。
 
 **关键依赖图**:
 
@@ -2274,12 +2274,12 @@ NEW-MCP-SAMPLING -> NEW-RT-07
    - 增加 provider recall/precision、canonicalization、dedup、known-item retrieval fixtures；把 broker-level eval 接到 `NEW-RT-05` 的统一 eval plane。
 
 **`NEW-DISC-01` 验收清单**:
-- [ ] `openalex_id` 进入 shared paper identifiers / summary schema，shared tests 通过
-- [ ] provider capability schema 在 `packages/shared/` 成为唯一 SoT，provider adapter 仅做映射
-- [ ] `packages/shared/src/discovery/` 存在可编译的 discovery scaffold（intent / provider descriptor / planner contract / canonical candidate）
-- [ ] canonical paper / query-plan / dedup / search-log artifacts 有明确 schema 与写入路径
-- [ ] broker-level eval slices 覆盖 recall / canonicalization / dedup，且可接入 `NEW-RT-05`
-- [ ] 关闭项条件：`NEW-SEM-06b` 所需 canonical identity / provider capability / dedup 基础全部就绪
+- [x] `openalex_id` 进入 shared paper identifiers / summary schema，shared tests 通过
+- [x] provider capability schema 在 `packages/shared/` 成为唯一 SoT，provider adapter 仅做映射
+- [x] `packages/shared/src/discovery/` 存在可编译的 discovery scaffold（intent / provider descriptor / planner contract / canonical candidate）
+- [x] canonical paper / query-plan / dedup / search-log artifacts 有明确 schema 与写入路径
+- [x] broker-level eval slices 覆盖 recall / canonicalization / dedup，且可接入 `NEW-RT-05`
+- [x] 关闭项条件：`NEW-SEM-06b` 所需 canonical identity / provider capability / dedup 基础全部就绪
 
 #### `NEW-RT-06` 子任务拆分（建议在 Batch 11 完成）
 
