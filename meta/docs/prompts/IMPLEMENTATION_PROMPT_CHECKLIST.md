@@ -13,6 +13,16 @@
 4. 相关架构 / memory 文档
 5. 目标代码与相邻测试
 
+### 1.1 SOTA preflight 产出与归档
+
+若该实现任务要求做 SOTA / benchmark / best-practice preflight，则默认遵循 **archive-first**：
+
+1. canonical copy 默认落到稳定本地 archive，而不是只留在当前 `worktree` 的 `.tmp/`；推荐路径：`~/.autoresearch-lab-dev/sota-preflight/<YYYY-MM-DD>/<item-id>/preflight.md`。
+2. 当前 `worktree` 下可保留便捷副本 / 指针（例如 `.tmp/<item-id>-sota-preflight.md`），但它不是唯一保留位置。
+3. archive 至少应包含：`preflight.md`、`summary.md`、`manifest.json`（或等价元数据）；需记录 prompt 路径、批次 / item、关键来源、以及已提炼到哪些 checked-in SSOT。
+4. `~/.autoresearch-lab-dev` 下的 archive 属于本地长期参考，不是治理 SSOT；真正约束后续实现的稳定结论仍必须同步到 `.serena/memories/architecture-decisions.md` 或其他已跟踪文档。
+5. batch prompt 应显式写出 archive canonical path，以及当前 `worktree` 副本 / 指针路径。
+
 ## 2. GitNexus 生命周期要求
 
 ### 2.1 实施前
@@ -80,8 +90,9 @@
 2. `review-swarm` 已收敛且三审 `0 blocking`；
 3. `self-review` 已完成且无未处理 blocking issue；
 4. tracker / `.serena/memories/architecture-decisions.md` / `AGENTS.md` 已同步；
-5. review amendments 与 deferred 原因已记录，且仍有后续价值的 deferred 项已同步到持久 SSOT。
-6. 完成汇报已给出**条件化的下一批建议**：必须基于本批 closeout 的实际结果，说明推荐的下一个 prompt / batch 是什么、为什么是它、以及为什么不是相邻但当前不该启动的 lane。
+5. 若本批包含 SOTA preflight，则 canonical archive 已落到稳定本地目录（默认 `~/.autoresearch-lab-dev/sota-preflight/...`），且 worktree 清理前已确认可回溯；
+6. review amendments 与 deferred 原因已记录，且仍有后续价值的 deferred 项已同步到持久 SSOT。
+7. 完成汇报已给出**条件化的下一批建议**：必须基于本批 closeout 的实际结果，说明推荐的下一个 prompt / batch 是什么、为什么是它、以及为什么不是相邻但当前不该启动的 lane。
 
 `git commit` / `git push` 规则：
 
@@ -98,3 +109,4 @@
 4. `Self-Review`：写明 agent 自审也是 mandatory gate，且需绑定代码 / GitNexus / eval / scope 证据
 5. `交付后必须同步`：tracker / memory / AGENTS / amendments / deferred
 6. `版本控制门禁`：说明 commit/push 只有在收敛后且已获授权时才允许
+7. `SOTA preflight / archive`：写明 canonical archive path（默认 `~/.autoresearch-lab-dev/sota-preflight/...`）以及当前 `worktree` 副本 / 指针路径
