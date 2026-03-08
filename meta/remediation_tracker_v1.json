@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.2-draft",
-  "updated_at": "2026-03-07T20:34:00+08:00",
+  "updated_at": "2026-03-07T23:59:00+08:00",
   "note": "v1.9.2-draft: v1.9.1 + single-user nonlinear research-loop clarification. Added NEW-LOOP-01 as a Phase 3 precursor so the near-term product is a single-user research system (interactive or autonomous) rather than a stage-linear demo flow. Agent-arXiv and REP remain later outer layers. Existing SOTA follow-up queue (NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e) remains in place. Architecture update dual-reviewed by Opus + Kimi K2.5 (both CONVERGED_WITH_AMENDMENTS, 0 blocking); dependency and REP-scope clarifications integrated. 160 items.",
   "phases": {
     "0": {
@@ -1128,7 +1128,7 @@
         },
         "NEW-DISC-01": {
           "title": "Federated Scholar Discovery",
-          "status": "in_progress",
+          "status": "done",
           "complexity": "high",
           "assignee": "gpt-5-codex",
           "depends_on": [
@@ -1136,7 +1136,8 @@
           ],
           "source": "sota-monorepo-architecture-2026-03-06",
           "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
-          "note": "Phase 3 Batch 11 kickoff in progress (2026-03-06): D1/D2/D3 completed via shared `openalex_id` support, shared discovery capability/query-planning scaffold in `packages/shared/src/discovery/`, and provider capability mappings in `openalex-mcp`, `arxiv-mcp`, and `hep-mcp`. This batch intentionally stays library-first: no discovery MCP server, no canonicalization/dedup/search-log closeout, and no broker-level eval closeout yet. D4/D5 remain scheduled for Batch 13–14 before `NEW-SEM-06b`. Acceptance so far: `pnpm --filter @autoresearch/shared test`, `pnpm --filter @autoresearch/shared build`, plus provider builds needed for workspace consumers (`pnpm --filter @autoresearch/openalex-mcp build`, `pnpm --filter @autoresearch/arxiv-mcp build`). Batch 11 kickoff implementation was also reviewed in the same dual-review pass (0 blocking); no scope changes were required. Code commit: `299ff0d`."
+          "note": "Standalone closeout completed (2026-03-07): D4/D5 delivered via shared discovery authority (`packages/shared/src/discovery/{canonical-paper,query-plan,dedup-artifact,search-log,canonicalize,normalization,planner}.ts`) plus broker consumer `packages/hep-mcp/src/tools/research/federatedDiscovery.ts`. Canonicalization is exact-ID-first and fail-closed; title/author/year similarity only yields uncertain-match state, provenance remains first-class via `source_candidates` / `match_reasons` / `provider_sources`, and the append-only search-log contract is written under `HEP_DATA_DIR/cache/discovery/`. D5 broker eval landed through `packages/hep-mcp/tests/eval/evalDisc01BrokerCloseout.test.ts` with deterministic fixtures, locked baseline, and holdout verification (`EVAL_INCLUDE_HOLDOUT=1`). Acceptance commands from the standalone prompt were run to green twice on the final state. Formal `review-swarm` converged in R2 with `Opus` + `OpenCode(kimi-for-coding/k2p5)` at 0 blocking, and agent `self-review` also passed with 0 blocking. No implementation commit was created because the user did not authorize `git commit`.",
+          "completed_at": "2026-03-07"
         },
         "NEW-LOOP-01": {
           "title": "Single-User Research Loop Runtime",
