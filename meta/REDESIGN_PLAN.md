@@ -119,17 +119,17 @@ Phase 2B (Pipeline 连通 + 深度集成):
 Phase 3 (扩展性 + 计算连通 + 单研究者研究循环前置):
   ├─ NEW-05a Stage 3 续: idea-engine TS 重写完成
   ├─ NEW-COMP-02 W_compute MCP 实现 (~500 LOC)
-  ├─ NEW-CONN-05 Cross-validation → Pipeline feedback (~100 LOC)
-  ├─ NEW-OPENALEX-01 openalex-mcp standalone MCP (~1700 LOC)
+  ├─ NEW-CONN-05 Cross-validation → Pipeline feedback (~100 LOC) ✅
+  ├─ NEW-OPENALEX-01 openalex-mcp standalone MCP (~1700 LOC) ✅
   ├─ NEW-SKILL-01 lean4-verify skill (~200 LOC)
-  ├─ NEW-RT-05 Eval framework (~500 LOC)
-  ├─ NEW-SEM-01~13 语义理解质量轨 (Batch 8~16, semantic heuristics → LLM-first; 审核: Codex gpt-5.2 + GLM-5 收敛)
-  ├─ NEW-LOOP-01 单研究者非线性研究循环前置运行时 (~400-900 LOC design+runtime)
+  ├─ NEW-RT-05 Eval framework (~500 LOC) ✅
+  ├─ NEW-SEM-01~13 语义理解质量轨（已完成: 01/02/03/04/05/06/06-INFRA/06b/06d/06e/06f/07/09/10/13；待完成: 08/11/12）
+  ├─ NEW-LOOP-01 单研究者非线性研究循环前置运行时 (~400-900 LOC design+runtime) ✅
   ├─ M-22 GateSpec 通用抽象 (deferred from P1)
   ├─ M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17, L-08
-  ├─ NEW-06, NEW-R11, NEW-R12
-  ├─ UX-03, UX-04 (workflow schema)
-  ├─ RT-01, RT-04
+  ├─ NEW-06, NEW-R11, NEW-R12 ✅
+  ├─ UX-03 ✅, UX-04 ✅ (workflow schema)
+  ├─ RT-01 ✅, RT-04 ✅
   │
 Phase 4 (长期演进):
   ├─ L-01~L-07, NEW-07 (A2A)
@@ -2226,6 +2226,7 @@ paper/
 | NEW-SEM-06b | Hybrid Candidate Generation + Strong Reranker | `hep-mcp/src/core/evidence.ts` / `evidenceSemantic.ts` / broker adapters | high | NEW-RT-05, NEW-DISC-01, NEW-SEM-06-INFRA | hybrid recall + strong reranker 在 canonicalized docs 上显著优于 `SEM-06a`；不再 hard-fork provider-local identities |
 | NEW-SEM-06d | Triggered Query Reformulation + QPP | retrieval query planner + hard-case policy | medium | NEW-SEM-06b | 仅在 low-recall / high-ambiguity 场景触发 reformulation；hard subset 指标提升且成本受控 |
 | NEW-SEM-06e | Structure-Aware Evidence Localization | locator pipeline (`page/chunk/table/figure/equation/citation`) | high | NEW-SEM-06b | 长文档 page/chunk/table/figure/equation/citation-context 召回率达标；成为 `agent-arxiv` 检索依赖特性的前置 |
+| NEW-SEM-06f | Bounded Multimodal Scientific Retrieval | multimodal page-native fusion on top of semantic + localization backbone | medium | NEW-SEM-06e | 仅在 capability-gated page/figure/table/equation query 上融合 visual candidates；保持 text-first / disabled / unsupported / abstained fail-closed 语义 |
 
 | Window | 建议项 | 说明 |
 |---|---|---|
@@ -2236,17 +2237,19 @@ paper/
 | Batch 17 | `NEW-SEM-06b` | 在 `NEW-DISC-01` + `NEW-SEM-06-INFRA` 完成后进入真正 hybrid recall / strong reranker |
 | Batch 18 | `NEW-SEM-06d` | 在强 backbone 上叠加 triggered reformulation / QPP，而不是拿它补洞 |
 | Batch 19 | `NEW-SEM-06e`（已于 2026-03-08 standalone closeout） | 结构化 evidence localization 已成为 `agent-arxiv` 检索扩展前置门槛；shared typed locator contract、LaTeX+PDF semantic localization 与 failure-path eval 已收口 |
+| Standalone（2026-03-08） | `NEW-SEM-06f`（已 closeout） | 在 `NEW-SEM-06e` localization backbone 之上以 bounded multimodal/page-native fusion 收束 multimodal retrieval；不重开 discovery substrate / runtime scope |
 
-> **Closeout update (2026-03-07)**: `NEW-RT-07` 已通过 standalone implementation prompt 完成；host-side MCP sampling routing registry、typed metadata contract、以及 auditable fallback/fail-closed path 已落地。Acceptance（`pnpm --filter @autoresearch/orchestrator test/build`, `pnpm --filter @autoresearch/hep-mcp test/build`, `pnpm --filter @autoresearch/shared test/build`, `pnpm lint`, `pnpm -r test/build`）全绿；正式 `review-swarm`（`Opus` + `OpenCode(kimi-for-coding/k2p5)`）与 `self-review` 均 0 blocking。`NEW-DISC-01` 也已通过 standalone implementation prompt 完成 D4/D5 closeout：shared canonical paper / query-plan / dedup / search-log authority + broker consumer + deterministic eval fixtures / baseline / holdout 已落地，全部 acceptance commands 全绿，正式 `review-swarm`（`Opus` + `OpenCode(kimi-for-coding/k2p5)`）在 R2 收敛到 0 blocking，agent `self-review` 0 blocking；retrieval/discovery lane 现继续推进 `NEW-SEM-06b/d/e`。
+> **Closeout update (2026-03-07)**: `NEW-RT-07` 已通过 standalone implementation prompt 完成；host-side MCP sampling routing registry、typed metadata contract、以及 auditable fallback/fail-closed path 已落地。Acceptance（`pnpm --filter @autoresearch/orchestrator test/build`, `pnpm --filter @autoresearch/hep-mcp test/build`, `pnpm --filter @autoresearch/shared test/build`, `pnpm lint`, `pnpm -r test/build`）全绿；正式 `review-swarm`（`Opus` + `OpenCode(kimi-for-coding/k2p5)`）与 `self-review` 均 0 blocking。`NEW-DISC-01` 也已通过 standalone implementation prompt 完成 D4/D5 closeout：shared canonical paper / query-plan / dedup / search-log authority + broker consumer + deterministic eval fixtures / baseline / holdout 已落地，全部 acceptance commands 全绿，正式 `review-swarm`（`Opus` + `OpenCode(kimi-for-coding/k2p5)`）在 R2 收敛到 0 blocking，agent `self-review` 0 blocking；implementation commit `f233e77`，PR `#3` 已合并到 `main`（merge commit `2dbb97a`）；retrieval/discovery lane 现继续推进 `NEW-SEM-06b/d/e`。
 
 > **Closeout update (2026-03-08)**: `NEW-SEM-06d` 已通过 standalone implementation prompt 完成；triggered query reformulation + QPP 现作为 `NEW-SEM-06b` canonical-paper retrieval backbone 之上的 auditable planner layer 落地。shared discovery authority 已补齐 `provider-result-counts` + `query-reformulation-artifact` contract，`packages/hep-mcp/src/tools/research/federatedDiscovery.ts` 执行 probe → QPP → optional reformulation → optional second retrieval round → rerank，并将 fail-closed 决策写入 append-only search-log telemetry。Acceptance（`pnpm --filter @autoresearch/shared test/build`, `pnpm --filter @autoresearch/openalex-mcp test/build`, `pnpm --filter @autoresearch/arxiv-mcp test/build`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp build`, `EVAL_INCLUDE_HOLDOUT=1 pnpm --filter @autoresearch/hep-mcp test -- tests/eval/evalSem06dTriggeredReformulation.test.ts`, `pnpm lint`, `pnpm -r test/build`）全绿；正式外部审核在 `Opus` + `OpenCode(kimi-for-coding/k2p5)` 上收敛为 0 blocking，`Gemini-3.1-Pro-Preview` 因本地 agentic reviewer 不可用经用户明确批准 fallback；agent `self-review` 0 blocking。实现已提交于 `1b6be54`，后续 tracker/hash 同步提交于 `834d799`，PR `#4` 已合并到 `main`（merge commit `e9e96f2`）；retrieval/discovery lane 现进入 Batch 19 `NEW-SEM-06e`。
 
-> **Closeout update (2026-03-08)**: `NEW-SEM-06e` 已通过 standalone implementation prompt 完成；structure-aware evidence localization 现作为 `NEW-SEM-06b/d` retrieval backbone 之上的 typed within-document localization layer 落地，而未重开 discovery substrate / runtime scope。shared authority 已补齐 `EvidenceLocalization{Unit,Status,Surface,CrossSurfaceStatus,ReasonCode,Hit,Telemetry,Artifact}` contract，`packages/hep-mcp/src/core/evidenceSemantic.ts` 现合并 LaTeX + PDF writing-evidence surfaces，记录 hit-level localization metadata，并保持 fail-closed `localized` / `fallback_available` / `unavailable` / `abstained` 语义。`packages/hep-mcp/src/core/evidence-localization/` 现通过 named policy constants + paper-aware PDF support filtering 实现 exact-unit 优先与 cross-surface reconcile；eval authority 锁定于 `tests/eval/evalSem06eStructureAwareLocalization.test.ts`（baseline + holdout）与 `tests/eval/evalSem06eFailureModes.test.ts`（unavailable path）。Acceptance（`pnpm --filter @autoresearch/shared test/build`, `pnpm --filter @autoresearch/openalex-mcp test/build`, `pnpm --filter @autoresearch/arxiv-mcp test/build`, `pnpm --filter @autoresearch/hep-mcp test -- tests/research/latex/locator.test.ts`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm lint`, `pnpm -r test`, `pnpm -r build`）全绿，且已补专项 holdout / failure-path 重跑。GitNexus post-change evidence：`npx gitnexus analyze` up to date，`detect_changes` 主要落在 `queryProjectEvidenceSemantic`，`context(queryProjectEvidenceSemantic)` 与 intended semantic-query call graph 一致，upstream `impact(queryProjectEvidenceSemantic)` 为 LOW。正式外部三审 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)` 0 blocking（`CONVERGED` / `CONVERGED_WITH_AMENDMENTS`），adopted amendments 已同批吸收：named scoring constants、`paper_id`-aware PDF support filtering、typed reason-code union、telemetry 语义澄清、以及 end-to-end unavailable-path coverage；agent `self-review` 0 blocking。因用户未授权，本轮未创建 implementation commit；retrieval/discovery lane 现完成 Batch 19 `NEW-SEM-06e`，后续仅在其之上评估 `NEW-SEM-06f` / search-heavy `agent-arxiv` work。
+> **Closeout update (2026-03-08)**: `NEW-SEM-06e` 已通过 standalone implementation prompt 完成；structure-aware evidence localization 现作为 `NEW-SEM-06b/d` retrieval backbone 之上的 typed within-document localization layer 落地，而未重开 discovery substrate / runtime scope。shared authority 已补齐 `EvidenceLocalization{Unit,Status,Surface,CrossSurfaceStatus,ReasonCode,Hit,Telemetry,Artifact}` contract，`packages/hep-mcp/src/core/evidenceSemantic.ts` 现合并 LaTeX + PDF writing-evidence surfaces，记录 hit-level localization metadata，并保持 fail-closed `localized` / `fallback_available` / `unavailable` / `abstained` 语义。`packages/hep-mcp/src/core/evidence-localization/` 现通过 named policy constants + paper-aware PDF support filtering 实现 exact-unit 优先与 cross-surface reconcile；eval authority 锁定于 `tests/eval/evalSem06eStructureAwareLocalization.test.ts`（baseline + holdout）与 `tests/eval/evalSem06eFailureModes.test.ts`（unavailable path）。Acceptance（`pnpm --filter @autoresearch/shared test/build`, `pnpm --filter @autoresearch/openalex-mcp test/build`, `pnpm --filter @autoresearch/arxiv-mcp test/build`, `pnpm --filter @autoresearch/hep-mcp test -- tests/research/latex/locator.test.ts`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm lint`, `pnpm -r test`, `pnpm -r build`）全绿，且已补专项 holdout / failure-path 重跑。GitNexus post-change evidence：`npx gitnexus analyze` up to date，`detect_changes` 主要落在 `queryProjectEvidenceSemantic`，`context(queryProjectEvidenceSemantic)` 与 intended semantic-query call graph 一致，upstream `impact(queryProjectEvidenceSemantic)` 为 LOW。正式外部三审 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)` 0 blocking（`CONVERGED` / `CONVERGED_WITH_AMENDMENTS`），adopted amendments 已同批吸收：named scoring constants、`paper_id`-aware PDF support filtering、typed reason-code union、telemetry 语义澄清、以及 end-to-end unavailable-path coverage；agent `self-review` 0 blocking。实现已提交于 `2d0b6e0`，PR `#5` 已合并到 `main`（merge commit `230ec3f`）；其后已在该 localization backbone 之上完成 `NEW-SEM-06f` closeout，后续仅在其之上评估更高层 retrieval/product lane。
 
 **关键依赖图**:
 
 ```text
 NEW-OPENALEX-01 -> NEW-DISC-01 -> NEW-SEM-06b -> { NEW-SEM-06d, NEW-SEM-06e }
+NEW-SEM-06e -> NEW-SEM-06f
 NEW-RT-05 -> NEW-SEM-06-INFRA -> NEW-SEM-06b
 NEW-WF-01 ----+
 UX-06 --------+-> NEW-LOOP-01 -> { EVO-01, EVO-02, EVO-03 }
@@ -2257,7 +2260,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 > **注**: `UX-06` 已在 Phase 1 完成；`NEW-LOOP-01` 对它的依赖仅表示复用既有阶段标签 taxonomy 作为 UX hints，而不是等待新的线性 stage engine。
 
-> **Closeout update (2026-03-08)**: `NEW-SEM-06f` 已通过 standalone implementation prompt 完成；multimodal scientific retrieval 现以 **bounded page-native fusion** 的形式落地在现有 semantic retrieval + `NEW-SEM-06e` localization backbone 之上，而未重开 discovery substrate / parser / runtime scope。shared authority 新增 `packages/shared/src/discovery/evidence-multimodal.ts`（typed `applied` / `skipped` / `unsupported` / `disabled` / `abstained` artifact + telemetry），hep-mcp 通过 `packages/hep-mcp/src/core/evidence-multimodal/{policy,fusion}.ts` 对 page/figure/table/equation query 执行 capability-gated visual-candidate fusion，并只对显式 promoted candidates 注入 `preferred_unit`，避免把所有 `pdf_region` 全局重释为结构化 unit。`queryProjectEvidenceSemantic` 现将 multimodal artifact 与既有 semantic/localization artifacts 一并落盘，保持 text-first `skipped`、env-disabled `disabled`、visual-unavailable `unsupported`、以及 ambiguous `abstained` fail-closed 语义。Eval authority 锁定于 `tests/eval/evalSem06fMultimodalScientificRetrieval.test.ts`（baseline + holdout）及配套 `sem06fEval{Support,Harness}.ts`、fixtures/baseline，并辅以 `tests/core/pdfEvidence.test.ts` 与 `tests/research/evidenceLocalization.test.ts` 单测覆盖 visual metadata / preferred-unit routing。Acceptance（`pnpm --filter @autoresearch/shared test/build`, `pnpm --filter @autoresearch/openalex-mcp test/build`, `pnpm --filter @autoresearch/arxiv-mcp test/build`, `pnpm --filter @autoresearch/hep-mcp test -- tests/core/pdfEvidence.test.ts`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp test:eval`, `EVAL_INCLUDE_HOLDOUT=1 pnpm --filter @autoresearch/hep-mcp test -- tests/eval/evalSem06fMultimodalScientificRetrieval.test.ts`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm lint`, `pnpm -r test`, `pnpm -r build`）全绿。GitNexus post-change evidence：`npx gitnexus analyze` up to date，`detect_changes` 在 repo `autoresearch-lab-sem06f` 上为 LOW，`context(queryProjectEvidenceSemantic)` 仍指向既有 semantic-query call graph，upstream `impact(queryProjectEvidenceSemantic)` 为 LOW。正式外部三审 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)` 0 blocking（全部 `CONVERGED`）；唯一 non-blocking amendment（导出/单测 `parseEnabledFlag`）因已被 disabled-path eval 覆盖且会无谓扩大内部 API surface，被本轮 `declined/closed`。agent `self-review` 0 blocking；因用户未授权，本轮未创建 implementation commit。
+> **Closeout update (2026-03-08)**: `NEW-SEM-06f` 已通过 standalone implementation prompt 完成；multimodal scientific retrieval 现以 **bounded page-native fusion** 的形式落地在现有 semantic retrieval + `NEW-SEM-06e` localization backbone 之上，而未重开 discovery substrate / parser / runtime scope。shared authority 新增 `packages/shared/src/discovery/evidence-multimodal.ts`（typed `applied` / `skipped` / `unsupported` / `disabled` / `abstained` artifact + telemetry），hep-mcp 通过 `packages/hep-mcp/src/core/evidence-multimodal/{policy,fusion}.ts` 对 page/figure/table/equation query 执行 capability-gated visual-candidate fusion，并只对显式 promoted candidates 注入 `preferred_unit`，避免把所有 `pdf_region` 全局重释为结构化 unit。`queryProjectEvidenceSemantic` 现将 multimodal artifact 与既有 semantic/localization artifacts 一并落盘，保持 text-first `skipped`、env-disabled `disabled`、visual-unavailable `unsupported`、以及 ambiguous `abstained` fail-closed 语义。Eval authority 锁定于 `tests/eval/evalSem06fMultimodalScientificRetrieval.test.ts`（baseline + holdout）及配套 `sem06fEval{Support,Harness}.ts`、fixtures/baseline，并辅以 `tests/core/pdfEvidence.test.ts` 与 `tests/research/evidenceLocalization.test.ts` 单测覆盖 visual metadata / preferred-unit routing。Acceptance（`pnpm --filter @autoresearch/shared test/build`, `pnpm --filter @autoresearch/openalex-mcp test/build`, `pnpm --filter @autoresearch/arxiv-mcp test/build`, `pnpm --filter @autoresearch/hep-mcp test -- tests/core/pdfEvidence.test.ts`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp test:eval`, `EVAL_INCLUDE_HOLDOUT=1 pnpm --filter @autoresearch/hep-mcp test -- tests/eval/evalSem06fMultimodalScientificRetrieval.test.ts`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm lint`, `pnpm -r test`, `pnpm -r build`）全绿。GitNexus post-change evidence：`npx gitnexus analyze` up to date，`detect_changes` 在 repo `autoresearch-lab-sem06f` 上为 LOW，`context(queryProjectEvidenceSemantic)` 仍指向既有 semantic-query call graph，upstream `impact(queryProjectEvidenceSemantic)` 为 LOW。正式外部三审 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)` 0 blocking（全部 `CONVERGED`）；唯一 non-blocking amendment（导出/单测 `parseEnabledFlag`）因已被 disabled-path eval 覆盖且会无谓扩大内部 API surface，被本轮 `declined/closed`。agent `self-review` 0 blocking；实现已提交于 `cc79c47` 并位于 `main`。
 
 **后续边界**: `NEW-SEM-06f` 已完成 closeout；后续不应继续把 multimodal lane 扩大成新 substrate，而应回到更高层的 retrieval/product lane 决策（例如是否值得在未来 prompt 中继续推进更重的 search/runtime work）。
 
@@ -2331,13 +2334,13 @@ NEW-MCP-SAMPLING -> NEW-RT-07
    - 至少落下 `EVO-01` compute handoff 与 `EVO-02` feedback handoff 的 typed interface stubs，并各自具备 1 条 integration smoke test。
 
 **`NEW-LOOP-01` 验收清单**:
-- [ ] 运行时存在显式 `ResearchWorkspace` / task graph / event log 抽象，而不是只能依赖阶段枚举推导状态
-- [ ] 合法回跳路径被建模并可测试：`compute -> literature`, `compute -> idea`, `review -> evidence_search`, `finding -> draft_update`
-- [ ] interactive / autonomous 两种模式共享同一 substrate，仅 policy 不同
-- [ ] `UX-06` 阶段标签仍可用于会话引导，但不再被执行内核当成互斥状态
-- [ ] `EVO-01/02/03` 的依赖说明改为在 `NEW-LOOP-01` 之上接入 compute/feedback/writing automation
-- [ ] `EVO-01` compute handoff 与 `EVO-02` feedback handoff 至少各有 1 个 typed interface stub + integration smoke test
-- [ ] 至少有一条端到端 smoke path 能展示“文献 → idea → compute → 回跳文献/idea → writing/review”非线性路径
+- [x] 运行时存在显式 `ResearchWorkspace` / task graph / event log 抽象，而不是只能依赖阶段枚举推导状态
+- [x] 合法回跳路径被建模并可测试：`compute -> literature`, `compute -> idea`, `review -> evidence_search`, `finding -> draft_update`
+- [x] interactive / autonomous 两种模式共享同一 substrate，仅 policy 不同
+- [x] `UX-06` 阶段标签仍可用于会话引导，但不再被执行内核当成互斥状态
+- [x] `EVO-01/02/03` 的依赖说明改为在 `NEW-LOOP-01` 之上接入 compute/feedback/writing automation
+- [x] `EVO-01` compute handoff 与 `EVO-02` feedback handoff 至少各有 1 个 typed interface stub + integration smoke test
+- [x] 至少有一条端到端 smoke path 能展示“文献 → idea → compute → 回跳文献/idea → writing/review”非线性路径
 
 **原 Batch 8 (M-04 + M-07 + NEW-SKILL-01) → Batch 17**: schema fidelity 测试在 SEM 改造完成后更有意义。
 
@@ -3092,13 +3095,13 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | Phase | 缺陷 ID | 数量 |
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
-| **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06 | 23 (19 done, 4 pending) |
+| **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06 | 23 (19 done, 3 pending, 1 cut) |
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-19/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05~R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-ARXIV-01, NEW-HEPDATA-01, NEW-05a Stage 3 (start) | 44 (26 done, 18 pending) |
-| **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e, NEW-LOOP-01 | 49 (27 done, 22 pending) |
+| **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 50 (32 done, 18 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (0 done, 8 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (0 done, 22 pending) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (0 done, 14 pending, 8 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09 | 1（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **160** (152 既有 + 8 新增) — **86 done** |
+| **总计** | **Phase 0–5 remediation items only** | **160** (152 既有 + 8 新增) — **91 done** |
 
-> **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 与 `NEW-R09` 作为 bookkeeping rows 单列展示但不计入 160。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up 仍按 `NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e` 排期推进。
+> **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 与 `NEW-R09` 作为 bookkeeping rows 单列展示但不计入 160。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）现已完成 closeout，Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
