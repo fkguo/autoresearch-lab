@@ -45,7 +45,7 @@
 
 ## 5. Review-Swarm / Self-Review 门禁
 
-实现 prompt 默认必须包含正式 `review-swarm` 收尾，且审核必须深入而非蜻蜓点水。至少要求 reviewer：
+实现 prompt 默认必须包含正式 `review-swarm` 收尾，且审核必须深入而非蜻蜓点水。默认 reviewer 固定为 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)`；若其中任一模型本地不可用，必须记录失败原因并由人类明确确认 fallback reviewer。至少要求 reviewer：
 
 1. 检查实现代码本身，而非只看 diff 摘要。
 2. 检查调用链、关键 execution flows、下游消费者。
@@ -55,9 +55,11 @@
 
 ### 收敛判定
 
-- 只有当双审都达到 `CONVERGED` / `CONVERGED_WITH_AMENDMENTS`，且 `blocking_issues = 0` 时，才算审核收敛。
+- 只有当三审都达到 `CONVERGED` / `CONVERGED_WITH_AMENDMENTS`，且 `blocking_issues = 0` 时，才算审核收敛。
 - 任一 reviewer 有 blocking issue，就必须修正并重跑下一轮。
-- 低风险 amendments 应优先吸收；deferred 项必须记录原因。
+- 凡当前 batch 直接相关、高价值、低风险、可独立验证且不依赖后续 phase / lane 的 amendments，默认必须本轮吸收；不得仅因 `non-blocking` 就顺延。
+- deferred 仅允许用于 lane 外工作、依赖后续 phase / lane（或当前 batch 之外的后续工作）、pre-existing unrelated debt、需要人类架构裁决、或修复风险明显大于收益的项；仅仍有后续价值的 deferred 项必须记录原因，并同步到持久 SSOT（至少 `meta/remediation_tracker_v1.json` 条目或 checked-in 的后续 prompt 文件），临时 chat prompt、review/self-review 输出与 scratch notes 不算 SSOT。
+- 低价值或已判定不值得跟进的 non-blocking amendments 应记录为 declined/closed，而非 deferred；不得把所有 nit 机械推进 backlog。
 
 ### 5.2 自审 (`self-review`) 门禁
 
@@ -68,17 +70,17 @@
 3. tests、eval fixtures、baselines、holdout gate 是否真的守住新行为。
 4. scope discipline 与 adopted / deferred amendments 是否记录完整。
 
-自审若发现 blocking issue，必须先修复再进入完成态；不得以“外部双审已通过”为由跳过。
+自审若发现 blocking issue，必须先修复再进入完成态；不得以“外部三审已通过”为由跳过。
 
 ## 6. 完成态与版本控制门禁
 
 只有在以下条件全部满足后，实施项才可视为完成：
 
 1. acceptance commands 全部通过；
-2. `review-swarm` 已收敛且双审 `0 blocking`；
+2. `review-swarm` 已收敛且三审 `0 blocking`；
 3. `self-review` 已完成且无未处理 blocking issue；
 4. tracker / `.serena/memories/architecture-decisions.md` / `AGENTS.md` 已同步；
-5. review amendments 与 deferred 原因已记录。
+5. review amendments 与 deferred 原因已记录，且仍有后续价值的 deferred 项已同步到持久 SSOT。
 6. 完成汇报已给出**条件化的下一批建议**：必须基于本批 closeout 的实际结果，说明推荐的下一个 prompt / batch 是什么、为什么是它、以及为什么不是相邻但当前不该启动的 lane。
 
 `git commit` / `git push` 规则：
@@ -92,7 +94,7 @@
 
 1. `GitNexus`：实施前 freshness check + 审核前 conditional refresh
 2. `总验收命令`：列出 eval/test/build gates
-3. `Review-Swarm`：写明 mandatory reviewers、深审要求、收敛标准
+3. `Review-Swarm`：写明 mandatory reviewers（默认 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)`）、深审要求、收敛标准
 4. `Self-Review`：写明 agent 自审也是 mandatory gate，且需绑定代码 / GitNexus / eval / scope 证据
 5. `交付后必须同步`：tracker / memory / AGENTS / amendments / deferred
 6. `版本控制门禁`：说明 commit/push 只有在收敛后且已获授权时才允许

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.2-draft",
-  "updated_at": "2026-03-07T23:59:00+08:00",
+  "updated_at": "2026-03-08T00:00:00Z",
   "note": "v1.9.2-draft: v1.9.1 + single-user nonlinear research-loop clarification. Added NEW-LOOP-01 as a Phase 3 precursor so the near-term product is a single-user research system (interactive or autonomous) rather than a stage-linear demo flow. Agent-arXiv and REP remain later outer layers. Existing SOTA follow-up queue (NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e) remains in place. Architecture update dual-reviewed by Opus + Kimi K2.5 (both CONVERGED_WITH_AMENDMENTS, 0 blocking); dependency and REP-scope clarifications integrated. 160 items.",
   "phases": {
     "0": {
@@ -1277,7 +1277,7 @@
         },
         "NEW-SEM-06b": {
           "title": "Hybrid Candidate Generation + Strong Reranker",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
           "assignee": null,
           "depends_on": [
@@ -1287,7 +1287,7 @@
           ],
           "source": "sota-monorepo-architecture-2026-03-06",
           "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
-          "note": "Phase 3 SOTA follow-up. Hybrid recall + strong reranker cascade over canonicalized documents; must outperform SEM-06a on locked-holdout P@k/R@k/MRR/nDCG and avoid provider-local identity forks. Suggested window: Batch 17 after NEW-DISC-01 + NEW-SEM-06-INFRA close."
+          "note": "Phase 3 Batch 17 completed (2026-03-08): landed hybrid candidate generation + strong reranker on top of the NEW-DISC-01 canonical paper substrate. Shared discovery authority now includes explicit candidate-channel / candidate-generation / rerank artifacts; hep-mcp discovery now writes audited `candidate_generation` + `rerank` artifacts under `HEP_DATA_DIR/cache/discovery/`, runs exact-ID-first + keyword + optional provider-native semantic candidate generation, and applies a bounded canonical-paper reranker with explicit `applied` / `unavailable` / `insufficient_candidates` states. Locked eval plane: `tests/eval/evalSem06bHybridDiscovery.test.ts` + fixtures/baseline/holdout, plus unit coverage in `tests/research/{providerExecutors,paperReranker,federatedDiscovery}.test.ts`. Acceptance passed: `pnpm --filter @autoresearch/shared test/build`, `pnpm --filter @autoresearch/openalex-mcp test/build`, `pnpm --filter @autoresearch/arxiv-mcp test/build`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm lint`, `pnpm -r test`, `pnpm -r build`; dedicated SEM-06b holdout also passed under `EVAL_INCLUDE_HOLDOUT=1`. Formal review-swarm with fixed reviewers `Opus` + `OpenCode(kimi-for-coding/k2p5)` converged in R1 with 0 blocking (`CONVERGED_WITH_AMENDMENTS` from both); formal self-review also passed with 0 blocking. Deferred non-blocking amendments: broader holdout expansion, documentation-only comments for rerank weights/status, and out-of-scope cleanup around generic precision/error-channel semantics. No implementation commit was created because the user did not authorize `git commit`."
         },
         "NEW-SEM-06d": {
           "title": "Triggered Query Reformulation + QPP",
@@ -1299,7 +1299,7 @@
           ],
           "source": "sota-monorepo-architecture-2026-03-06",
           "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
-          "note": "Phase 3 SOTA follow-up. Query reformulation and query performance prediction only for hard/low-recall cases; requires trigger policy, cost telemetry, and hard-subset eval. Suggested window: Batch 18."
+          "note": "Phase 3 SOTA follow-up. Query reformulation and query performance prediction only for hard/low-recall cases; requires trigger policy, cost telemetry, and hard-subset eval. Suggested window: Batch 18. Standalone implementation prompt drafted at `meta/docs/prompts/prompt-phase3-impl-new-sem06d.md` on 2026-03-08 after NEW-SEM-06b closeout."
         },
         "NEW-SEM-06e": {
           "title": "Structure-Aware Evidence Localization",
@@ -1311,7 +1311,7 @@
           ],
           "source": "sota-monorepo-architecture-2026-03-06",
           "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
-          "note": "Phase 3 SOTA follow-up. Promote retrieval from document/chunk only to page/chunk/table/figure/equation/citation-context localization; this becomes the retrieval prerequisite for search-heavy agent-arxiv features. Suggested window: Batch 19, before search-heavy agent-arxiv retrieval work."
+          "note": "Phase 3 SOTA follow-up. Promote retrieval from document/chunk only to page/chunk/table/figure/equation/citation-context localization; this becomes the retrieval prerequisite for search-heavy agent-arxiv features. Suggested window: Batch 19, after NEW-SEM-06d validates trigger policy / cost telemetry / hard-subset uplift."
         },
         "NEW-SEM-07": {
           "title": "Structured Gate Semantics (No Prose Parsing as SoT)",
@@ -1389,7 +1389,7 @@
             "NEW-RT-05"
           ],
           "note": "Phase 3 Batch 14 completed (2026-03-07): replaced narrative-level includes-based challenge detection with structured challenge authority in `packages/hep-mcp/src/tools/research/synthesis/challengeLexicon.ts` and `packages/hep-mcp/src/tools/research/synthesis/challengeExtraction.ts`. `narrative.ts::generateMethodologyChallenges` now renders the extractor output rather than owning challenge semantics. The extractor consumes both paper text and critical-analysis signals (`integrated_assessment.key_concerns`, `recommendations`, `questions.red_flags`) and preserves explicit `detected | no_challenge_detected | uncertain` statuses. Locked eval plane: `tests/eval/evalSem13ChallengeExtractor.test.ts`, fixtures under `tests/eval/fixtures/sem13/`, baseline `tests/eval/baselines/sem13_challenge_extractor.baseline.json`. Acceptance: `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm -r build`. Formal implementation review (Opus + OpenCode kimi-for-coding/k2p5) converged on 2026-03-07 with 0 blocking; no additional blocking issues were found in self-review. Adopted amendments are shared with `NEW-SEM-10`; no batch-external scope was started. Implementation commit: `7bd21bc19cf9dadabb7bed19d7882b4c8cc93f35`.",
-          "completed_at": "2026-03-07"
+          "completed_at": "2026-03-08"
         }
       }
     },
