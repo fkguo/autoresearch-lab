@@ -1291,15 +1291,15 @@
         },
         "NEW-SEM-06d": {
           "title": "Triggered Query Reformulation + QPP",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "NEW-SEM-06b"
           ],
           "source": "sota-monorepo-architecture-2026-03-06",
           "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
-          "note": "Phase 3 SOTA follow-up. Query reformulation and query performance prediction only for hard/low-recall cases; requires trigger policy, cost telemetry, and hard-subset eval. Suggested window: Batch 18. Standalone implementation prompt drafted at `meta/docs/prompts/prompt-phase3-impl-new-sem06d.md` on 2026-03-08 after NEW-SEM-06b closeout."
+          "note": "Phase 3 Batch 18 completed (2026-03-08): landed triggered query reformulation + QPP as an auditable planner layer on top of the NEW-SEM-06b canonical-paper retrieval backbone. Shared discovery authority now includes `provider-result-counts` + `query-reformulation-artifact` contracts, and hep-mcp discovery executes probe -> QPP -> optional reformulation -> optional second retrieval round -> rerank with fail-closed fallback and append-only search-log telemetry. Locked eval plane: `packages/hep-mcp/tests/eval/evalSem06dTriggeredReformulation.test.ts` with fixtures/baseline/holdout covering exact-ID no-trigger, easy no-trigger, hard author-year uplift, acronym-trigger holdout, QPP unavailable, budget exhausted, invalid reformulation, and abstained reformulation failure paths. Acceptance passed: `pnpm --filter @autoresearch/shared test/build`, `pnpm --filter @autoresearch/openalex-mcp test/build`, `pnpm --filter @autoresearch/arxiv-mcp test/build`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp build`, `EVAL_INCLUDE_HOLDOUT=1 pnpm --filter @autoresearch/hep-mcp test -- tests/eval/evalSem06dTriggeredReformulation.test.ts`, `pnpm lint`, `pnpm -r test`, `pnpm -r build`; adopted-amendment revalidation also passed (`federatedDiscovery.test.ts`, SEM-06d holdout, `hep-mcp test:eval`, `hep-mcp build`). GitNexus post-change evidence: `detect_changes` risk LOW, `context(runFederatedDiscovery)` stayed on the intended discovery/test surface, and upstream `impact(runFederatedDiscovery)` stayed LOW. Formal external review converged with `Opus` + `OpenCode(kimi-for-coding/k2p5)` at 0 blocking; the initial `Gemini-3.1-Pro-Preview` review-swarm attempt hung in local agentic mode and the user explicitly approved fallback to dual-review closeout on 2026-03-08. Adopted non-blocking amendments: shared query normalization in `federatedDiscovery.ts`, simplified `no_trigger_correct`, and added explicit abstain holdout coverage. Formal self-review passed with 0 blocking. Implementation commit: `1b6be54c9fd63d697b85613052619b8f620df7f8`."
         },
         "NEW-SEM-06e": {
           "title": "Structure-Aware Evidence Localization",
