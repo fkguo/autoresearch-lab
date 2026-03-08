@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.2-draft",
-  "updated_at": "2026-03-08T00:00:00Z",
+  "updated_at": "2026-03-08T15:28:00+08:00",
   "note": "v1.9.2-draft: v1.9.1 + single-user nonlinear research-loop clarification. Added NEW-LOOP-01 as a Phase 3 precursor so the near-term product is a single-user research system (interactive or autonomous) rather than a stage-linear demo flow. Agent-arXiv and REP remain later outer layers. Existing SOTA follow-up queue (NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e) remains in place. Architecture update dual-reviewed by Opus + Kimi K2.5 (both CONVERGED_WITH_AMENDMENTS, 0 blocking); dependency and REP-scope clarifications integrated. 160 items.",
   "phases": {
     "0": {
@@ -1303,7 +1303,7 @@
         },
         "NEW-SEM-06e": {
           "title": "Structure-Aware Evidence Localization",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
           "assignee": null,
           "depends_on": [
@@ -1311,7 +1311,8 @@
           ],
           "source": "sota-monorepo-architecture-2026-03-06",
           "design_doc": "meta/docs/sota-monorepo-architecture-2026-03-06.md",
-          "note": "Phase 3 SOTA follow-up. Promote retrieval from document/chunk only to page/chunk/table/figure/equation/citation-context localization; this becomes the retrieval prerequisite for search-heavy agent-arxiv features. Suggested window: Batch 19, after NEW-SEM-06d validates trigger policy / cost telemetry / hard-subset uplift."
+          "note": "Phase 3 Batch 19 completed (2026-03-08): landed structure-aware evidence localization on top of the NEW-SEM-06b/d retrieval backbone without reopening discovery substrate scope. Shared authority now includes typed localization unit/status/surface/cross-surface/reason-code/telemetry contracts in `packages/shared/src/discovery/evidence-localization.ts`; hep-mcp semantic evidence query now merges LaTeX + PDF writing-evidence surfaces, records typed localization metadata on hits, prefers exact requested units over coarse fallbacks, and keeps fail-closed `localized` / `fallback_available` / `unavailable` / `abstained` semantics. Cross-surface reconciliation is paper-aware (`paper_id` filtered when available), scoring thresholds are named policy constants, and end-to-end failure-path coverage now includes unavailable-without-PDF-page surface in addition to baseline + holdout evals. Locked eval plane: `packages/hep-mcp/tests/eval/evalSem06eStructureAwareLocalization.test.ts`, `packages/hep-mcp/tests/eval/evalSem06eFailureModes.test.ts`, fixtures `sem06e_structure_aware_localization_{eval,holdout}.json`, baseline `tests/eval/baselines/sem06e_structure_aware_localization.baseline.json`, and unit coverage `tests/research/evidenceLocalization.test.ts`. Acceptance passed: `pnpm --filter @autoresearch/shared test/build`, `pnpm --filter @autoresearch/openalex-mcp test/build`, `pnpm --filter @autoresearch/arxiv-mcp test/build`, `pnpm --filter @autoresearch/hep-mcp test -- tests/research/latex/locator.test.ts`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm lint`, `pnpm -r test`, `pnpm -r build`, plus targeted SEM-06e revalidation/holdout after adopted amendments. GitNexus post-change evidence: `npx gitnexus analyze` up to date, `detect_changes` highlighted `queryProjectEvidenceSemantic`, `context(queryProjectEvidenceSemantic)` matched the intended projectCore entrypoint + semantic-query dependencies, and upstream `impact(queryProjectEvidenceSemantic)` stayed LOW. Formal external review via `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)` returned 0 blocking (`CONVERGED` / `CONVERGED_WITH_AMENDMENTS`); adopted low-risk amendments: named localization constants, `paper_id`-aware PDF support filtering, typed reason-code union, telemetry semantic clarification, and end-to-end unavailable-path coverage. Formal self-review passed with 0 blocking. No implementation commit was created because the user did not authorize `git commit`.",
+          "completed_at": "2026-03-08"
         },
         "NEW-SEM-07": {
           "title": "Structured Gate Semantics (No Prose Parsing as SoT)",
