@@ -134,7 +134,9 @@ Phase 3 (扩展性 + 计算连通 + 单研究者研究循环前置):
 Phase 4 (长期演进):
   ├─ L-01~L-07, NEW-07 (A2A)
   │
-Phase 5 (社区化与端到端闭环):
+Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
+  ├─ P5A: 单用户 / 单项目端到端闭环 + 统一执行收束 (`EVO-01/02/03/06/07/09/10/11/12/13/14`)
+  ├─ P5B: 社区 / 发布 / 跨实例 / 研究进化外层 (`EVO-04/05/08/15/16/17/18/19/20/21`)
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (Pipeline A 退役)
   ├─ EVO-01~03 idea→compute→writing 循环 (依赖: UX-02, UX-04, NEW-R15-impl, NEW-COMP-01, NEW-IDEA-01, NEW-LOOP-01)
   ├─ EVO-04~EVO-21
@@ -2255,7 +2257,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 > **注**: `UX-06` 已在 Phase 1 完成；`NEW-LOOP-01` 对它的依赖仅表示复用既有阶段标签 taxonomy 作为 UX hints，而不是等待新的线性 stage engine。
 
-**可选后续**: `NEW-SEM-06f`（multimodal scientific retrieval）仅在 `06e` 达标后再排期。
+> **Closeout update (2026-03-08)**: `NEW-SEM-06f` 已通过 standalone implementation prompt 完成；multimodal scientific retrieval 现以 **bounded page-native fusion** 的形式落地在现有 semantic retrieval + `NEW-SEM-06e` localization backbone 之上，而未重开 discovery substrate / parser / runtime scope。shared authority 新增 `packages/shared/src/discovery/evidence-multimodal.ts`（typed `applied` / `skipped` / `unsupported` / `disabled` / `abstained` artifact + telemetry），hep-mcp 通过 `packages/hep-mcp/src/core/evidence-multimodal/{policy,fusion}.ts` 对 page/figure/table/equation query 执行 capability-gated visual-candidate fusion，并只对显式 promoted candidates 注入 `preferred_unit`，避免把所有 `pdf_region` 全局重释为结构化 unit。`queryProjectEvidenceSemantic` 现将 multimodal artifact 与既有 semantic/localization artifacts 一并落盘，保持 text-first `skipped`、env-disabled `disabled`、visual-unavailable `unsupported`、以及 ambiguous `abstained` fail-closed 语义。Eval authority 锁定于 `tests/eval/evalSem06fMultimodalScientificRetrieval.test.ts`（baseline + holdout）及配套 `sem06fEval{Support,Harness}.ts`、fixtures/baseline，并辅以 `tests/core/pdfEvidence.test.ts` 与 `tests/research/evidenceLocalization.test.ts` 单测覆盖 visual metadata / preferred-unit routing。Acceptance（`pnpm --filter @autoresearch/shared test/build`, `pnpm --filter @autoresearch/openalex-mcp test/build`, `pnpm --filter @autoresearch/arxiv-mcp test/build`, `pnpm --filter @autoresearch/hep-mcp test -- tests/core/pdfEvidence.test.ts`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp test:eval`, `EVAL_INCLUDE_HOLDOUT=1 pnpm --filter @autoresearch/hep-mcp test -- tests/eval/evalSem06fMultimodalScientificRetrieval.test.ts`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm lint`, `pnpm -r test`, `pnpm -r build`）全绿。GitNexus post-change evidence：`npx gitnexus analyze` up to date，`detect_changes` 在 repo `autoresearch-lab-sem06f` 上为 LOW，`context(queryProjectEvidenceSemantic)` 仍指向既有 semantic-query call graph，upstream `impact(queryProjectEvidenceSemantic)` 为 LOW。正式外部三审 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)` 0 blocking（全部 `CONVERGED`）；唯一 non-blocking amendment（导出/单测 `parseEnabledFlag`）因已被 disabled-path eval 覆盖且会无谓扩大内部 API surface，被本轮 `declined/closed`。agent `self-review` 0 blocking；因用户未授权，本轮未创建 implementation commit。
+
+**后续边界**: `NEW-SEM-06f` 已完成 closeout；后续不应继续把 multimodal lane 扩大成新 substrate，而应回到更高层的 retrieval/product lane 决策（例如是否值得在未来 prompt 中继续推进更重的 search/runtime work）。
 
 #### `NEW-DISC-01` 子任务拆分（Batch 11 kickoff → Batch 13/14 closeout）
 
@@ -2532,12 +2536,17 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 ---
 
-## Phase 5: 社区化与端到端闭环 (P5)
+## Phase 5: 端到端闭环、统一执行与研究生态外层（P5A/P5B） (P5)
 
-> **目标**: 实现 idea→理论计算→论文端到端自动闭环，建立多 Agent 研究社区基础设施
+> **目标**: 分两条 lane 推进：`P5A` 收束单用户 / 单项目的 idea→理论计算→论文端到端闭环与统一执行；`P5B` 在其外侧扩展社区 / 发布 / 跨实例 / 研究进化基础设施。
 > **前置**: Phase 4 全部完成 + idea-core Phase 2 (BFTS + Elo) 就绪
 > **路径说明**: 本 Phase 中 `idea-core/src/idea_core/` 路径在执行时已迁移为 `packages/idea-engine/src/` (TypeScript)，Python 路径仅为逻辑对应参考。
 > **前置重释 (v1.9.2)**: 真正的研究循环语义不再等到 Phase 5 才第一次出现；Phase 3 的 `NEW-LOOP-01` 先建立单研究者非线性 research loop substrate，`EVO-01/02/03` 在其上接入 compute / feedback / writing automation。
+> **范围澄清 (2026-03-08)**: 本 Phase 不是“只有社区化”。其中 `EVO-01/02/03/13/14` 仍服务于单用户 / 单项目的端到端闭环与统一执行收束；`EVO-15+` 才进入社区 / 发布 / 研究进化外层。
+> **子 lane 划分 (2026-03-08)**:
+> - `P5A`: `EVO-01/02/03/06/07/09/10/11/12/13/14`
+> - `P5B`: `EVO-04/05/08/15/16/17/18/19/20/21`
+> - 该划分是 Phase 内部阅读 / 排期 lens，不新增 `Phase 6`，也不改变现有依赖顺序；若单项目闭环收束与社区外层建设发生取舍，默认先满足 `P5A`。
 
 ### EVO-01: idea→理论计算自动执行闭环
 
@@ -2785,6 +2794,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 **依赖**: NEW-05a (TS 编排器骨架), NEW-07 (Agent 注册表 + A2A 适配层)
 
+**2026-03-08 amendment**: 另见 `meta/docs/2026-03-08-evo13-runtime-governance-control-plane-amendment.md`。该 amendment 不改变 Phase 顺序，但要求 future `EVO-13` 显式吸收 delegation permission matrix、operator intervention vocabulary、live-status/replay control-plane view、以及 **team-local** lifecycle / health / timeout / cascade stop；相对地，**cross-run / fleet-level** 调度与 agent pool 健康仍留在 `EVO-14`。
+
 **验收**:
 - 并行 team 执行中 kill 进程后可从 checkpoint 恢复，已完成角色不重跑
 - `stage_gated` 策略: 阶段内并行 + 阶段间门禁 + 持久化均正常
@@ -2792,7 +2803,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 ### EVO-14: 跨 Run 并行调度 + Agent 生命周期
 
-**现状**: Orchestrator CLI 一次只处理一个 run。无跨 run 资源调度、无 agent 健康监控、无动态扩缩。
+**现状**: Orchestrator CLI 一次只处理一个 run。无跨 run 资源调度、无 **fleet-level** agent 健康监控、无动态扩缩。
 
 **修改内容**:
 
@@ -3085,7 +3096,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-19/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05~R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-ARXIV-01, NEW-HEPDATA-01, NEW-05a Stage 3 (start) | 44 (26 done, 18 pending) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e, NEW-LOOP-01 | 49 (27 done, 22 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (0 done, 8 pending) |
-| **5 (社区化与端到端闭环)** | EVO-01~EVO-21, EVO-12a | 22 (0 done, 22 pending) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (0 done, 22 pending) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09 | 1（bookkeeping only; excluded from total） |
 | **总计** | **Phase 0–5 remediation items only** | **160** (152 既有 + 8 新增) — **86 done** |
