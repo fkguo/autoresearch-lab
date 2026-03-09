@@ -1,9 +1,0 @@
-ROADMAP.md
-RUNBOOK.md
-SKILL.md
-assets/style/physics_discussion_logic_playbook.md
-assets/style/prl_style_corpus.md
-assets/style/discussion_logic_extractor_system_prompt.txt
-scripts/bin/research_writer_learn_discussion_logic.py
-scripts/dev/run_all_smoke_tests.sh
-scripts/dev/fixtures/inspire_fixture.json
