@@ -227,17 +227,19 @@ Task 5 (H-11a Phase 2) 是 **单组件** dispatcher 内部变更，**不需要**
 使用 `review-swarm` skill（双模型快速路径）：
 
 ```bash
-# 1. 将评审 packet 写入文件
-#    → meta/reviews/batch2-review-packet.md
+# 1. 将本轮评审 packet / system prompt 写入本地 `.review/`
+#    → .review/batch2-review-packet.md
+#    → .review/batch2-review-system.md
 
 # 2. 执行 review-swarm
 python3 skills/review-swarm/scripts/bin/run_multi_task.py \
-  --out-dir meta/reviews/batch2-R1 \
-  --system meta/reviews/batch2-system.md \
-  --prompt meta/reviews/batch2-review-packet.md
+  --out-dir .review/batch2-r1 \
+  --system .review/batch2-review-system.md \
+  --prompt .review/batch2-review-packet.md
 ```
 
 配置从 `meta/review-swarm.json` 自动加载（models: `codex/gpt-5.3-codex`, `gemini/gemini-3.1-pro-preview`）。
+`.review/` 产物保持 gitignored，不进入提交。
 
 ### 收敛判定
 

@@ -325,10 +325,11 @@ REDESIGN_PLAN.md 全量修订 + tracker 更新
 使用 `review-swarm` skill（双模型）：
 
 ```bash
+# 先将本轮 review packet / system prompt 写入本地 `.review/`
 python3 skills/review-swarm/scripts/bin/run_multi_task.py \
-  --out-dir meta/reviews/redesign-plan-update-R1 \
-  --system meta/reviews/redesign-plan-update-system.md \
-  --prompt meta/reviews/redesign-plan-update-packet.md
+  --out-dir .review/redesign-plan-update-r1 \
+  --system .review/redesign-plan-update-system.md \
+  --prompt .review/redesign-plan-update-packet.md
 ```
 
 **如果 review-swarm 遇到问题**，可回退到手动调用:
