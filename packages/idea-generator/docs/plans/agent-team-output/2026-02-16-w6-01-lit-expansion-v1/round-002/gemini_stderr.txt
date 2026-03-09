@@ -1,6 +1,0 @@
-Hook registry initialized with 0 hook entries
-Error executing tool list_directory: Error: Failed to list directory.
-Error executing tool list_directory: Error: Failed to list directory.
-Error executing tool list_directory: Error: Failed to list directory.
-Error executing tool list_directory: Error: Failed to list directory.
-Error executing tool list_directory: Error: Failed to list directory.

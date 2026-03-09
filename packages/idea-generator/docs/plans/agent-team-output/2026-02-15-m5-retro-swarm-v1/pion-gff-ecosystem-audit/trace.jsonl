@@ -1,4 +1,0 @@
-{"cmd": ["bash", "/Users/fkg/.codex/skills/claude-cli-runner/scripts/run_claude.sh", "--model", "opus", "--system-prompt-file", "/tmp/pion-gff-ecosystem-audit-system.md", "--prompt-file", "/tmp/pion-gff-ecosystem-audit-packet.md", "--out", "/private/tmp/pion-gff-ecosystem-audit-swarm/claude_output.md"], "event": "claude_start", "ts": "2026-02-15T02:43:33.355095+00:00"}
-{"event": "claude_end", "exit_code": 0, "ts": "2026-02-15T02:45:59.478858+00:00"}
-{"cmd": ["bash", "/Users/fkg/.codex/skills/gemini-cli-runner/scripts/run_gemini.sh", "--model", "gemini-3-pro-preview", "--prompt-file", "/tmp/pion-gff-ecosystem-audit-gemini.txt", "--out", "/private/tmp/pion-gff-ecosystem-audit-swarm/gemini_output.md"], "event": "gemini_start", "ts": "2026-02-15T02:45:59.479718+00:00"}
-{"event": "gemini_end", "exit_code": 0, "ts": "2026-02-15T02:46:36.400116+00:00"}

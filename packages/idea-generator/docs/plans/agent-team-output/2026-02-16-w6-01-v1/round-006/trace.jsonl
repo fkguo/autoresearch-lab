@@ -1,4 +1,0 @@
-{"event": "claude_start", "ts": "2026-02-16T02:45:19.860618+00:00", "cmd": ["claude", "--print", "--no-session-persistence", "--strict-mcp-config", "--model", "opus", "--tools", "\"\"", "--input-format", "text", "--system-prompt", "<prefix+docs/plans/system-prompt-reviewer-contract.md>", "<", "docs/reviews/bundles/2026-02-16-w6-01-review-packet-round-001.md"]}
-{"event": "claude_end", "ts": "2026-02-16T02:45:19.860618+00:00", "exit_code": 0}
-{"event": "gemini_start", "ts": "2026-02-16T02:45:19.860618+00:00", "cmd": ["gemini", "--include-directories", "/Users/fkg/Coding/Agents/Autoresearch/idea-runs", "-m", "gemini-3-pro-preview", "-o", "text", "-p", " ", "<", "docs/reviews/bundles/2026-02-16-w6-01-review-gemini-prompt-round-002.txt"]}
-{"event": "gemini_end", "ts": "2026-02-16T02:45:19.860618+00:00", "exit_code": 0}

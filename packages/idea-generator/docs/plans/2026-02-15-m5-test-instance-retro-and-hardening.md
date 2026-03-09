@@ -19,14 +19,14 @@
 ### 0.1 执行状态更新（2026-02-15）
 
 - `W5-03`：已完成并收敛（Opus + gemini-3-pro-preview 均 `READY`），工具仓库反污染 gate 与 `idea-runs` 解耦结构已落地。  
-  证据：`docs/reviews/bundles/2026-02-15-w5-03-review-convergence-v1.txt`、`docs/reviews/bundles/2026-02-15-w5-03-board-sync-complete-v1.txt`。
+  证据：`review archive (outside repo)`、`review archive (outside repo)`。
 - `W5-04`：已完成并收敛（round-002：Opus=`READY`，gemini-3-pro-preview=`READY`，`fallback_reason=null`），通用质量门禁 schemas + checklist + examples 已提交并验证通过。  
-  证据：`docs/reviews/bundles/2026-02-15-w5-04-review-convergence-v1.txt`、`docs/reviews/bundles/2026-02-15-w5-04-validate-v2.txt`、`docs/reviews/bundles/2026-02-15-w5-04-board-sync-complete-v1.txt`。
+  证据：`review archive (outside repo)`、`review archive (outside repo)`、`review archive (outside repo)`。
 - 看板状态已同步：`W5-03=Done`、`W5-04=Done`、`W5-05=In Progress`。  
-  证据：`docs/reviews/bundles/2026-02-15-w5-04-board-sync-complete-v1.txt`。
+  证据：`review archive (outside repo)`。
 - `W5-05`：已完成并收敛（round-001：Opus=`READY`，gemini-3-pro-preview=`READY`，`fallback_reason=null`），并通过 `make validate && pytest`（`105 passed`）验证。  
-  证据：`/Users/fkg/Coding/Agents/Autoresearch/idea-core/docs/reviews/bundles/2026-02-15-w5-05-review-convergence-v1.txt`、`/Users/fkg/Coding/Agents/Autoresearch/idea-core/docs/reviews/bundles/2026-02-15-w5-05-validate-and-pytest-v1.txt`、`docs/reviews/bundles/2026-02-15-w5-05-board-sync-complete-v1.txt`。
-- `W5-05` 代码实现提交：`idea-core` 已提交 `c3f8006`，将路径边界、原子写、timeout/backoff、权限事件反应式处理、replay 并发安全与 `env_whitelist` 一致性固化到运行时实现，并新增回归测试覆盖；复验证据：`/Users/fkg/Coding/Agents/Autoresearch/idea-core/docs/reviews/bundles/2026-02-15-w5-05-validate-and-pytest-v2.txt`。
+  证据：`idea-core review archive (outside repo)`、`idea-core review archive (outside repo)`、`review archive (outside repo)`。
+- `W5-05` 代码实现提交：`idea-core` 已提交 `c3f8006`，将路径边界、原子写、timeout/backoff、权限事件反应式处理、replay 并发安全与 `env_whitelist` 一致性固化到运行时实现，并新增回归测试覆盖；复验证据：`idea-core review archive (outside repo)`。
 - 推送状态：`idea-core` 与 `idea-generator` 的已完成阶段提交已 push 到 `origin/main`（后续新增提交待你确认是否继续 push）。
 
 ---
@@ -265,6 +265,6 @@
 
 ## 6. 证据指针（便于审阅追溯）
 
-- M5 工作树（只读扫描、不要合入工具仓库）：`/Users/fkg/.config/superpowers/worktrees/idea-core/m5-control-plane-v4`  
-- 归档的双模型扫描输出（Opus + Gemini）：`docs/plans/agent-team-output/2026-02-15-m5-retro-swarm-v1/`
+- M5 工作树（只读扫描、不要合入工具仓库）：`local M5 worktree (not checked in)`  
+- 归档的双模型扫描输出（Opus + Gemini）：`review metadata archived outside repo`
 - 你提供的原始问题列表：见本对话记录（将作为门禁条款的“动机输入”固化到 SSOT tracker 的 Update Log）。

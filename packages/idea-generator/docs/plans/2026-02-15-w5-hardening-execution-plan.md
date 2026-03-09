@@ -14,7 +14,7 @@
 
 **Files:**
 - Modify: `docs/plans/2026-02-12-implementation-plan-tracker.md`
-- Create: `docs/reviews/bundles/2026-02-15-w5-03-board-sync-check-v1.txt`
+- Create: external local review archive note for `2026-02-15-w5-03-board-sync-check-v1.txt` (outside repo)
 
 **Step 1: Run board/tracker sync checks**
 
@@ -33,14 +33,14 @@ Set `W5-03` to `IN_PROGRESS`, keep `W5-04/05` as `TODO`, append an Update Log li
 
 Run:
 ```bash
-git add docs/plans/2026-02-12-implementation-plan-tracker.md docs/reviews/bundles/2026-02-15-w5-03-board-sync-check-v1.txt
+git add docs/plans/2026-02-12-implementation-plan-tracker.md
 git commit -m "W5-03: start stage with tracker-board sync"
 ```
 
 ### Task 2: W5-03 Implementation (decouple + anti-pollution)
 
 **Files:**
-- Create repo tree under: `/Users/fkg/Coding/Agents/Autoresearch/idea-runs`
+- Create repo tree under: `idea-runs`
 - Modify: `idea-core/Makefile` (or equivalent validate path)
 - Create: `idea-core/scripts/check_no_test_instance_pollution.py`
 - Modify: `idea-generator/Makefile` (or equivalent validate path)
@@ -72,13 +72,13 @@ Run:
 cd idea-core && make validate && pytest
 cd idea-generator && make validate
 ```
-Expected: pass and evidence output persisted in `docs/reviews/bundles/...`.
+Expected: pass and evidence archived outside the repo.
 
 **Step 5: Dual review convergence**
 
 Generate review packet and run:
 ```bash
-python3 /Users/fkg/.codex/skills/review-swarm/scripts/bin/run_dual_task.py ... --claude-model opus --gemini-model gemini-3-pro-preview --check-review-contract --fallback-mode ask
+python3 $CODEX_HOME/skills/review-swarm/scripts/bin/run_dual_task.py ... --claude-model opus --gemini-model gemini-3-pro-preview --check-review-contract --fallback-mode ask
 ```
 Repeat minimal fixes until both `VERDICT: READY`.
 
@@ -90,7 +90,7 @@ Commit per repo with prefix `W5-03:`.
 
 **Files:**
 - Add/modify under: `idea-generator/schemas/`
-- Add docs examples/checklist under: `idea-generator/docs/plans/` or `docs/reviews/bundles/`
+- Add docs examples/checklist under: `idea-generator/docs/plans/`
 - Modify: `docs/plans/2026-02-12-implementation-plan-tracker.md`
 
 **Step 1: Define schema contracts (RED->GREEN)**

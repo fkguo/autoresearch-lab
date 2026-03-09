@@ -25,7 +25,7 @@
 
 - arXiv：`https://arxiv.org/abs/2510.08317`（v1，published 2025-10-09）
 - LaTeX 源码抓取：使用 `hep-research-mcp` 工具 `inspire_paper_source(prefer=latex, extract=true)` 下载并解包
-  - 本机路径（仅作审计，不入库）：`/Users/fkg/.hep-research-mcp/arxiv_sources/2510.08317/arxiv-2510.08317/`
+  - 本机路径（仅作审计，不入库）：`local arXiv source checkout (not checked in)`
   - `main.tex` sha256：`d4027ebba45fe450fa3e6d3d923f4758534696066d55101f975587bf9b5afdca`
   - `cite.bib` sha256：`8e77cfff16420842744ad8b23418c989fef58fe0fc4224a3749a4478c47f302a`
 - 论文 bib 中给出的开源仓库（同样建议按需克隆到 `/tmp/...` 做代码审计）：
