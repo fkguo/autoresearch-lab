@@ -1,0 +1,209 @@
+{
+  "blocked": [],
+  "candidates": [
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2005.11401",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2210.03629/source",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": true,
+      "rel_path": "references/arxiv/2210.03629/source.tar",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2303.11366",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2305.10601",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2308.03688",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2308.08155",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2310.06770",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2405.15793",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2411.01715",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2412.14470",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2503.16416",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2512.07785",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2512.15867",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/2601.14922",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv/hep-ph/9509371",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": true,
+      "rel_path": "references/arxiv/arxiv_metadata.json",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv_src/2305.13971",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv_src/2509.08535",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/arxiv_src/2510.02426",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/inspire/recid-3062816",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/inspire/recid-3090360",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": true,
+      "rel_path": "references/inspire/recid-3093880",
+      "tracked": true
+    }
+  ],
+  "kind": "safe_cleanup_manifest",
+  "schema_version": 1,
+  "summary": {
+    "allow_protected": [
+      "references/arxiv/2005.11401",
+      "references/arxiv/2210.03629/source",
+      "references/arxiv/2210.03629/source.tar",
+      "references/arxiv/2303.11366",
+      "references/arxiv/2305.10601",
+      "references/arxiv/2308.03688",
+      "references/arxiv/2308.08155",
+      "references/arxiv/2310.06770",
+      "references/arxiv/2405.15793",
+      "references/arxiv/2411.01715",
+      "references/arxiv/2412.14470",
+      "references/arxiv/2503.16416",
+      "references/arxiv/2512.07785",
+      "references/arxiv/2512.15867",
+      "references/arxiv/2601.14922",
+      "references/arxiv/arxiv_metadata.json",
+      "references/arxiv/hep-ph/9509371",
+      "references/arxiv_src/2305.13971",
+      "references/arxiv_src/2509.08535",
+      "references/arxiv_src/2510.02426",
+      "references/inspire/recid-3062816",
+      "references/inspire/recid-3090360",
+      "references/inspire/recid-3093880"
+    ],
+    "blocked_count": 0,
+    "candidate_count": 23,
+    "existing_count": 23,
+    "generated_at": "2026-03-09T04:12:47Z",
+    "mode": "custom",
+    "protected_count": 23,
+    "repo_root": "/Users/fkg/Coding/Agents/autoresearch-lab/packages/hep-autoresearch",
+    "top_level": [
+      {
+        "count": 23,
+        "top_level": "references"
+      }
+    ],
+    "tracked_count": 23
+  }
+}

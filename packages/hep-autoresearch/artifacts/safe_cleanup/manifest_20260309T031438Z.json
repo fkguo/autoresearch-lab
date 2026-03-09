@@ -1,0 +1,104 @@
+{
+  "blocked": [],
+  "candidates": [
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": false,
+      "rel_path": "Draft_Derivation.md",
+      "tracked": false
+    },
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": false,
+      "rel_path": "PREWORK.md",
+      "tracked": false
+    },
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": false,
+      "rel_path": "PROJECT_CHARTER.md",
+      "tracked": false
+    },
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": false,
+      "rel_path": "PROJECT_MAP.md",
+      "tracked": false
+    },
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": false,
+      "rel_path": "RESEARCH_PLAN.md",
+      "tracked": false
+    },
+    {
+      "exists": true,
+      "kind": "dir",
+      "protected": false,
+      "rel_path": "paper",
+      "tracked": false
+    },
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": false,
+      "rel_path": "prompts/_system_member_a.txt",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": false,
+      "rel_path": "prompts/_system_member_b.txt",
+      "tracked": true
+    }
+  ],
+  "kind": "safe_cleanup_manifest",
+  "schema_version": 1,
+  "summary": {
+    "allow_protected": [],
+    "blocked_count": 0,
+    "candidate_count": 8,
+    "existing_count": 8,
+    "generated_at": "2026-03-09T03:14:38Z",
+    "mode": "custom",
+    "protected_count": 0,
+    "repo_root": "/Users/fkg/Coding/Agents/autoresearch-lab/packages/hep-autoresearch",
+    "top_level": [
+      {
+        "count": 2,
+        "top_level": "prompts"
+      },
+      {
+        "count": 1,
+        "top_level": "Draft_Derivation.md"
+      },
+      {
+        "count": 1,
+        "top_level": "PREWORK.md"
+      },
+      {
+        "count": 1,
+        "top_level": "PROJECT_CHARTER.md"
+      },
+      {
+        "count": 1,
+        "top_level": "PROJECT_MAP.md"
+      },
+      {
+        "count": 1,
+        "top_level": "RESEARCH_PLAN.md"
+      },
+      {
+        "count": 1,
+        "top_level": "paper"
+      }
+    ],
+    "tracked_count": 2
+  }
+}

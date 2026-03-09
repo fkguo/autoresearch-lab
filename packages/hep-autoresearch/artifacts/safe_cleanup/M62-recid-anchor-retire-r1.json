@@ -1,0 +1,61 @@
+{
+  "blocked": [],
+  "candidates": [
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": true,
+      "rel_path": "knowledge_base/literature/recid-2968660-agents-of-discovery.md",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": true,
+      "rel_path": "references/inspire/recid-2968660/extracted.json",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": true,
+      "rel_path": "references/inspire/recid-2968660/literature.bib",
+      "tracked": true
+    },
+    {
+      "exists": true,
+      "kind": "file",
+      "protected": true,
+      "rel_path": "references/inspire/recid-2968660/literature.json",
+      "tracked": true
+    }
+  ],
+  "kind": "safe_cleanup_manifest",
+  "schema_version": 1,
+  "summary": {
+    "allow_protected": [
+      "knowledge_base/literature/recid-2968660-agents-of-discovery.md",
+      "references/inspire/recid-2968660/extracted.json",
+      "references/inspire/recid-2968660/literature.bib",
+      "references/inspire/recid-2968660/literature.json"
+    ],
+    "blocked_count": 0,
+    "candidate_count": 4,
+    "existing_count": 4,
+    "generated_at": "2026-03-09T04:43:47Z",
+    "mode": "custom",
+    "protected_count": 4,
+    "repo_root": "/Users/fkg/Coding/Agents/autoresearch-lab/packages/hep-autoresearch",
+    "top_level": [
+      {
+        "count": 3,
+        "top_level": "references"
+      },
+      {
+        "count": 1,
+        "top_level": "knowledge_base"
+      }
+    ],
+    "tracked_count": 4
+  }
+}
