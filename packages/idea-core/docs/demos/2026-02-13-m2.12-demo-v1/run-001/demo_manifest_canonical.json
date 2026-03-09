@@ -192,11 +192,11 @@
     },
     "manifest_ref": "file://<path>",
     "milestone": "M2.12",
-    "run_dir": "/Users/fkg/Nutstore Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/<run_tag>",
+    "run_dir": "docs/demos/2026-02-13-m2.12-demo-v1/<run_tag>",
     "run_tag": "<run_tag>",
     "schema_version": 1,
     "script_entry": "python -m idea_core.demo.m2_12_replay",
-    "store_dir": "/Users/fkg/Nutstore Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/<run_tag>/store",
+    "store_dir": "docs/demos/2026-02-13-m2.12-demo-v1/<run_tag>/store",
     "validations": {
       "required_artifacts_exist": true,
       "search_replay_is_replay": true,

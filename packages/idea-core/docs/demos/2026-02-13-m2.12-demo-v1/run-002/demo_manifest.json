@@ -3,8 +3,8 @@
   "milestone": "M2.12",
   "generated_at": "2026-02-13T07:30:22Z",
   "run_tag": "run-002",
-  "run_dir": "/Users/fkg/Nutstore Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002",
-  "store_dir": "/Users/fkg/Nutstore Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store",
+  "run_dir": "docs/demos/2026-02-13-m2.12-demo-v1/run-002",
+  "store_dir": "docs/demos/2026-02-13-m2.12-demo-v1/run-002/store",
   "script_entry": "python -m idea_core.demo.m2_12_replay",
   "campaign_id": "588c60f4-3dc6-4f49-8f6c-7bdae5628170",
   "fixed_inputs": {
@@ -87,7 +87,7 @@
           "f7ae0974-89f0-444b-8763-003628155d53",
           "479d576f-6800-451d-854c-32aa9a78e414"
         ],
-        "new_nodes_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/search_steps/1d248d41-9696-4915-ac01-0c3ab2d790d0-new-nodes.json"
+        "new_nodes_artifact_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/search_steps/1d248d41-9696-4915-ac01-0c3ab2d790d0-new-nodes.json"
       }
     },
     {
@@ -113,7 +113,7 @@
         "updated_node_ids": [
           "f7ae0974-89f0-444b-8763-003628155d53"
         ],
-        "scorecards_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/scorecards/scorecards-937340a3-a19d-4645-9f14-2a3b3815d73c.json"
+        "scorecards_artifact_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/scorecards/scorecards-937340a3-a19d-4645-9f14-2a3b3815d73c.json"
       }
     },
     {
@@ -127,7 +127,7 @@
         ]
       },
       "result_summary": {
-        "ranking_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/rankings/ranking-2948f825-198e-46fc-af01-7e1cc33266ea.json",
+        "ranking_artifact_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/rankings/ranking-2948f825-198e-46fc-af01-7e1cc33266ea.json",
         "ranked_nodes": [
           {
             "node_id": "f7ae0974-89f0-444b-8763-003628155d53",
@@ -146,7 +146,7 @@
       },
       "result_summary": {
         "node_id": "f7ae0974-89f0-444b-8763-003628155d53",
-        "handoff_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/handoff/handoff-f7ae0974-89f0-444b-8763-003628155d53.json"
+        "handoff_artifact_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/handoff/handoff-f7ae0974-89f0-444b-8763-003628155d53.json"
       }
     }
   ],
@@ -157,13 +157,13 @@
         "f7ae0974-89f0-444b-8763-003628155d53",
         "479d576f-6800-451d-854c-32aa9a78e414"
       ],
-      "new_nodes_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/search_steps/1d248d41-9696-4915-ac01-0c3ab2d790d0-new-nodes.json"
+      "new_nodes_artifact_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/search_steps/1d248d41-9696-4915-ac01-0c3ab2d790d0-new-nodes.json"
     },
     "eval_run": {
       "updated_node_ids": [
         "f7ae0974-89f0-444b-8763-003628155d53"
       ],
-      "scorecards_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/scorecards/scorecards-937340a3-a19d-4645-9f14-2a3b3815d73c.json"
+      "scorecards_artifact_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/scorecards/scorecards-937340a3-a19d-4645-9f14-2a3b3815d73c.json"
     },
     "rank_compute": {
       "method": "pareto",
@@ -179,20 +179,20 @@
           "pareto_front": true
         }
       ],
-      "ranking_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/rankings/ranking-2948f825-198e-46fc-af01-7e1cc33266ea.json"
+      "ranking_artifact_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/rankings/ranking-2948f825-198e-46fc-af01-7e1cc33266ea.json"
     },
     "node_promote": {
       "node_id": "f7ae0974-89f0-444b-8763-003628155d53",
-      "handoff_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/handoff/handoff-f7ae0974-89f0-444b-8763-003628155d53.json"
+      "handoff_artifact_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/handoff/handoff-f7ae0974-89f0-444b-8763-003628155d53.json"
     }
   },
   "artifact_refs": {
-    "new_nodes_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/search_steps/1d248d41-9696-4915-ac01-0c3ab2d790d0-new-nodes.json",
-    "scorecards_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/scorecards/scorecards-937340a3-a19d-4645-9f14-2a3b3815d73c.json",
-    "ranking_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/rankings/ranking-2948f825-198e-46fc-af01-7e1cc33266ea.json",
-    "handoff_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/handoff/handoff-f7ae0974-89f0-444b-8763-003628155d53.json",
-    "nodes_latest_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/nodes_latest.json",
-    "nodes_log_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/nodes_log.jsonl"
+    "new_nodes_artifact_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/search_steps/1d248d41-9696-4915-ac01-0c3ab2d790d0-new-nodes.json",
+    "scorecards_artifact_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/scorecards/scorecards-937340a3-a19d-4645-9f14-2a3b3815d73c.json",
+    "ranking_artifact_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/rankings/ranking-2948f825-198e-46fc-af01-7e1cc33266ea.json",
+    "handoff_artifact_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/artifacts/handoff/handoff-f7ae0974-89f0-444b-8763-003628155d53.json",
+    "nodes_latest_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/nodes_latest.json",
+    "nodes_log_ref": "demo://m2-12-replay-demo/run-002/store/campaigns/588c60f4-3dc6-4f49-8f6c-7bdae5628170/nodes_log.jsonl"
   },
   "validations": {
     "search_replay_is_replay": true,
@@ -202,6 +202,6 @@
     "required_artifacts_exist": true,
     "status": "pass"
   },
-  "manifest_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/demo_manifest.json",
-  "canonical_manifest_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-002/demo_manifest_canonical.json"
+  "manifest_ref": "demo://m2-12-replay-demo/run-002/demo_manifest.json",
+  "canonical_manifest_ref": "demo://m2-12-replay-demo/run-002/demo_manifest_canonical.json"
 }

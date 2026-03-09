@@ -83,5 +83,5 @@
     "next_operator_index": 0
   },
   "last_step_id": "9242bf25-5176-4201-acca-3929869ca080",
-  "last_scorecards_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-001/store/campaigns/a79cfc51-2623-43b0-b2ba-b25bddf31378/artifacts/scorecards/scorecards-c39379ed-5dcc-467e-96a0-3221a04b95c4.json"
+  "last_scorecards_artifact_ref": "demo://m2-12-replay-demo/run-001/store/campaigns/a79cfc51-2623-43b0-b2ba-b25bddf31378/artifacts/scorecards/scorecards-c39379ed-5dcc-467e-96a0-3221a04b95c4.json"
 }

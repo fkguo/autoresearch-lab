@@ -42,7 +42,7 @@
           "is_replay": false,
           "payload_hash": "sha256:209828d10c206abb5198436816088e9b09a604f3b3195728ab1552e0ba7492c3"
         },
-        "new_nodes_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-001/store/campaigns/a79cfc51-2623-43b0-b2ba-b25bddf31378/artifacts/search_steps/9242bf25-5176-4201-acca-3929869ca080-new-nodes.json"
+        "new_nodes_artifact_ref": "demo://m2-12-replay-demo/run-001/store/campaigns/a79cfc51-2623-43b0-b2ba-b25bddf31378/artifacts/search_steps/9242bf25-5176-4201-acca-3929869ca080-new-nodes.json"
       }
     }
   },
@@ -63,7 +63,7 @@
         "node_revisions": {
           "1d96a82f-9246-436e-814c-50b94df7a578": 2
         },
-        "scorecards_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-001/store/campaigns/a79cfc51-2623-43b0-b2ba-b25bddf31378/artifacts/scorecards/scorecards-c39379ed-5dcc-467e-96a0-3221a04b95c4.json",
+        "scorecards_artifact_ref": "demo://m2-12-replay-demo/run-001/store/campaigns/a79cfc51-2623-43b0-b2ba-b25bddf31378/artifacts/scorecards/scorecards-c39379ed-5dcc-467e-96a0-3221a04b95c4.json",
         "budget_snapshot": {
           "tokens_used": 0,
           "tokens_remaining": 100000,
@@ -97,7 +97,7 @@
           "novelty",
           "impact"
         ],
-        "scorecards_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-001/store/campaigns/a79cfc51-2623-43b0-b2ba-b25bddf31378/artifacts/scorecards/scorecards-c39379ed-5dcc-467e-96a0-3221a04b95c4.json",
+        "scorecards_artifact_ref": "demo://m2-12-replay-demo/run-001/store/campaigns/a79cfc51-2623-43b0-b2ba-b25bddf31378/artifacts/scorecards/scorecards-c39379ed-5dcc-467e-96a0-3221a04b95c4.json",
         "ranked_nodes": [
           {
             "node_id": "1d96a82f-9246-436e-814c-50b94df7a578",
@@ -123,7 +123,7 @@
           "is_replay": false,
           "payload_hash": "sha256:b04ea95de7ec4eda37801409c09d82102d88a87c34fdc7056cb6c07c61f09485"
         },
-        "ranking_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-001/store/campaigns/a79cfc51-2623-43b0-b2ba-b25bddf31378/artifacts/rankings/ranking-b932e589-5dc2-4743-8c72-4886e0f8b89a.json"
+        "ranking_artifact_ref": "demo://m2-12-replay-demo/run-001/store/campaigns/a79cfc51-2623-43b0-b2ba-b25bddf31378/artifacts/rankings/ranking-b932e589-5dc2-4743-8c72-4886e0f8b89a.json"
       }
     }
   },
@@ -137,7 +137,7 @@
         "campaign_id": "a79cfc51-2623-43b0-b2ba-b25bddf31378",
         "node_id": "1d96a82f-9246-436e-814c-50b94df7a578",
         "idea_id": "a19e67a5-0092-46bf-a64d-2d9347e5ea13",
-        "handoff_artifact_ref": "file:///Users/fkg/Nutstore%20Files/Coding/Agents/idea-core/docs/demos/2026-02-13-m2.12-demo-v1/run-001/store/campaigns/a79cfc51-2623-43b0-b2ba-b25bddf31378/artifacts/handoff/handoff-1d96a82f-9246-436e-814c-50b94df7a578.json",
+        "handoff_artifact_ref": "demo://m2-12-replay-demo/run-001/store/campaigns/a79cfc51-2623-43b0-b2ba-b25bddf31378/artifacts/handoff/handoff-1d96a82f-9246-436e-814c-50b94df7a578.json",
         "formalism_check": {
           "status": "pass",
           "missing_formalisms": []
