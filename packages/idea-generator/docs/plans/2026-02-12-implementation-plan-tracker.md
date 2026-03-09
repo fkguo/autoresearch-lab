@@ -3,7 +3,7 @@
 > 日期：2026-02-12  
 > 最近整理：2026-03-09  
 > 目标：把 `idea-generator` 保持为**通用设计 / 契约 / 规划工作区**，只保留对 `idea-core` / `hepar` / 后续 `idea-engine` 有长期复用价值的实现状态。  
-> 原则：evidence-first、contract-first、HEP-first 但不 HEP-locked；实例级科研执行历史一律留在 repo 外归档。  
+> 原则：evidence-first、contract-first、以 HEP 作为首个 domain pack 但不把 core 锁死在 HEP；实例级科研执行历史一律留在 repo 外归档。
 > SSOT：本文件只记录**包级设计与实现进度**；不得写入 run-level 科学进展、board-sync 回执或实例化长日志。
 
 ---
@@ -39,7 +39,7 @@
 - **External implementation state**：
   - `M1` 契约工具链：已落地到 `packages/idea-core`
   - `M2` 最小闭环：已落地到 `packages/idea-core`
-  - `M3` HEP pack MVP：已完成最小可用闭环，但后续扩展必须保持 domain pack 边界
+  - `M3` 首个 domain pack MVP（当前为 HEP）：已完成最小可用闭环，但后续扩展必须保持 domain pack 边界
 - `M4` `hepar` / runtime adapter 集成：已完成最小落地
 - `M5` 实例解耦与质量门禁：已形成通用规则与 examples
 - **Top next**：
@@ -54,7 +54,7 @@
 - **M0 — 设计冻结**：架构 spec、OpenRPC、核心 schemas、双评审收敛。
 - **M1 — 契约工具链**：schema validate / bundle / drift guard / CI 骨架。
 - **M2 — idea-core 最小闭环**：seed → search → eval → rank → promote 的可审计最小实现。
-- **M3 — HEP DomainPack MVP**：HEP-first 的最小 pack，但不把 HEP 假设固化进 core。
+- **M3 — 首个 DomainPack MVP（当前为 HEP）**：首个 pack 的最小闭环，但不把其假设固化进 core。
 - **M4 — hepar / runtime 集成**：artifact、ledger、runtime adapter、team/role 编排。
 - **M5 — 质量门禁与实例解耦**：method fidelity、failure library、portability、repo boundary。
 - **M6 — 多 Agent 研究团队演进**：只保留接口与治理设计，不在此 repo 写社区级运行史。
@@ -87,7 +87,7 @@
 | CORE-08 | Core | Operator MVP | operator loop + auditable traces | DONE | M2.6 | 落地于 `packages/idea-core` |
 | CORE-09 | Core | 可回放 demo campaign | replay runner + manifest + isomorphism checks | DONE | M2.12 | 落地于 `packages/idea-core` |
 | CORE-10 | Core | Explain-Then-Formalize | deterministic formalization path | DONE | M2.7 | 落地于 `packages/idea-core` |
-| HEP-00 | HEP Pack | DomainPack 包装与按需加载 | index + lazy loading | DONE | M3.0 | HEP-first, not HEP-locked |
+| HEP-00 | HEP Pack | DomainPack 包装与按需加载 | index + lazy loading | DONE | M3.0 | 当前首个 domain pack；不把假设回流到 core |
 | HEP-01 | HEP Pack | formalism registry MVP | registry artifact | DONE | M3.1 | DomainPack 边界已明确 |
 | HEP-02 | HEP Pack | Operators x3 family completion | operator implementations + acceptance | TODO | HEP-01 | 必须保持 pack-level 假设，不回流到 core |
 | HEP-03 | HEP Pack | retrieval recipes | query templates | DONE | HEP-02 | 落地于 `packages/idea-core` |
@@ -123,7 +123,7 @@
 
 ### 2026-02-14 ~ 2026-02-15
 
-- `M3` HEP DomainPack MVP 与 `M4` hepar/runtime integration 完成最小实现闭环。
+- `M3` 首个 DomainPack MVP（当前为 HEP）与 `M4` hepar/runtime integration 完成最小实现闭环。
 - `M5` 的实例解耦、failure library、quality gates、portability / boundary hardening 收敛为通用规则。
 
 ### 2026-03-09
