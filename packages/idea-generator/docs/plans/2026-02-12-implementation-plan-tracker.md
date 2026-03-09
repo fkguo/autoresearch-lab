@@ -98,9 +98,9 @@
 | INT-02 | Integration | runtime adapter | API client + policy | DONE | INT-01 | 落地于 `packages/idea-core` |
 | INT-03 | Integration | hepar command bridge | translation + replay artifacts | DONE | INT-02 | 落地于 `packages/idea-core` |
 | INT-04 | Integration | Team/Role staged orchestration | parallel review merge-back | DONE | INT-03 | 落地于 `packages/idea-core` |
-| QL-01 | Quality | A0 gates + external pilot boundary | generic gate docs + external-instance rule | DONE | QL-04 | 见 `docs/plans/2026-02-15-m5-test-instance-retro-and-hardening.md` |
+| QL-01 | Quality | A0 gates + external instance boundary | generic gate docs + external-instance rule | DONE | QL-04 | 见 `docs/plans/2026-02-15-instance-boundary-and-quality-hardening.md` |
 | QL-02 | Quality | failure library | negative-results store + examples | DONE | QL-01 | Examples must stay generic |
-| QL-03 | Quality | test-instance decouple policy | `idea-runs` boundary + anti-pollution gate | DONE | M5 | 见 `docs/plans/2026-02-15-m5-test-instance-retro-and-hardening.md` |
+| QL-03 | Quality | test-instance decouple policy | `idea-runs` boundary + anti-pollution gate | DONE | M5 | 见 `docs/plans/2026-02-15-instance-boundary-and-quality-hardening.md` |
 | QL-04 | Quality | method / literature / numerics / doc / scope / portability gates | schemas + checklist | DONE | QL-03 | 见 `docs/plans/2026-02-15-quality-gates-checklist-v1.md` |
 | QL-05 | Quality | control-plane hardening backlog | security + reliability + perf patch plan | DONE | QL-03 | 通用工程结论已外溢到实现仓 |
 | QL-06 | Quality | clean-room 多评审 + debate trigger | gate contract + checklist | TODO | QL-04 | 仅保留通用 gate，不保留具体评审回合日志 |
@@ -128,5 +128,5 @@
 
 ### 2026-03-09
 
-- 从 checked-in tracker 中移除实例级 W6/pilot 运行史、board-sync 日志与 scientific diary。
+- 从 checked-in tracker 中移除实例级运行史、board-sync 日志与 scientific diary。
 - 保留对后续 `idea-engine` / orchestrator 仍有复用价值的稳定设计、契约与 gate 结论。
