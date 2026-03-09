@@ -399,19 +399,20 @@ action: |
 seeds:
   # ---- 种子类型 1: 自由文本 idea ----
   - type: freeform
-    title: "用 conformal bootstrap 约束暗物质有效场论"
+    title: "用自洽性约束收紧一个有效理论参数空间"
     description: |
-      Conformal bootstrap 在约束 CFT 数据方面取得了巨大成功。
-      能否将类似的自洽性约束应用于暗物质有效场论中的耦合常数?
-    domain: hep-ph
+      若某类理论同时满足对称性、解析性和已知低能约束，
+      能否把这些条件提升为 typed consistency constraints，
+      用来系统压缩参数空间并暴露最脆弱的假设?
+    domain: theory-physics
     priority: high  # high | medium | low
-    tags: [bootstrap, dark-matter, EFT]
+    tags: [consistency-search, EFT, constraints]
 
   # ---- 种子类型 2: 文献驱动 (INSPIRE RecID) ----
   - type: paper_seed
     inspire_recid: 2882456
     question: |
-      这篇论文提出的方法能否推广到 BSM 场景?
+      这篇论文提出的方法能否推广到另一类理论设置或边界条件?
     strategy: S3  # 跨域迁移
 
   # ---- 种子类型 3: 反常/张力 ----
@@ -457,10 +458,10 @@ config:
 
 ## High Priority
 
-- [ ] 用 conformal bootstrap 约束暗物质有效场论
-  - 背景: Bootstrap 在 CFT 数据约束中成功
-  - 问题: 能否应用于 DM EFT 耦合常数?
-  - Tags: bootstrap, dark-matter, EFT
+- [ ] 用自洽性约束收紧一个有效理论参数空间
+  - 背景: 多类理论问题都可以转写为“约束是否彼此相容”
+  - 问题: 能否把这些约束提升为 typed artifacts 并系统压缩参数空间?
+  - Tags: consistency-search, EFT, constraints
 
 - [ ] Muon g-2 + W mass 联合解释
   - 偏差: g-2 5.1σ, W mass 7σ
@@ -484,7 +485,7 @@ idea-generator/
 ├── seeds.yaml          # 结构化种子 (YAML)
 ├── ideas.md            # 简化种子 (Markdown)
 ├── seeds/              # 种子目录 (每个文件一个种子)
-│   ├── bootstrap-dm.yaml
+│   ├── consistency-constraint.yaml
 │   └── g2-w-mass.yaml
 └── .idea-generator.yaml  # 本地配置
 ```

@@ -98,6 +98,19 @@
 - `scope_classification_v1`
 - 用于明确当前结果是 `ecosystem_validation`、`preliminary_physics` 还是 `publication_ready`
 
+### 3.7 高价值候选不能停留在“记录层”
+
+- 对于被判定为 `IN_SCOPE` 且价值较高的 opportunity / island，系统必须二选一：
+  1) 产出对应执行证据；或
+  2) 给出结构化否决，并写入 failure library
+- 禁止把“知道这条路线更强，但暂时先不做”保留为非结构化注释，因为这会系统性偏向更易执行但语义更弱的 formulation
+
+### 3.8 约束语义与 solver 验收必须可审计
+
+- 约束不能只降成若干数值阈值；需要保留 `source`、`rationale`、`validity_window`、`acceptance_checks` 等语义层信息
+- 当更强 formulation 带来更敏感的数值行为时，solver acceptance 必须前置成固定模板（如 residual / gap / margin / cross-check）
+- 若未满足这些验收条件，结果只能保留为 diagnostic，而不能晋升为研究证据
+
 ---
 
 ## 4. 实现仓需要吸收的工程硬化项
