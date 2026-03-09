@@ -104,7 +104,7 @@
 **可迁移原则**:
 1. **三通道灵感检索** — 语义相似度 + 知识图谱 + 引用网络提供互补灵感类型
 2. **迭代 novelty boosting** — 通过显式对比现有文献逐步提升新颖性
-3. **Physics 的优势**: HEP 拥有结构化资源 (PDG, INSPIRE, HEPData)，可构建比 NLP 更高质量的知识图谱
+3. **结构化证据域的优势**: 当前首个 HEP domain pack 拥有 PDG / INSPIRE / HEPData 等结构化资源；这说明应把 structured evidence sources 建模为 pack/provider capability，而不是写死成 core 假设
 
 ### 1.5 ResearchBench (arXiv: 2503.21248)
 
@@ -189,8 +189,8 @@
 │                                                    │
 │  模式 A: 结构类比 (Structure Mapping)              │
 │  ─────────────────────────────────                │
-│  "凝聚态中的拓扑绝缘体 → HEP 中是否存在            │
-│   类似的拓扑保护态?"                               │
+│  "一个领域中的拓扑保护边界模 → 另一个理论 setting   │
+│   中是否存在同构的保护态?"                         │
 │  机制: 提取源域的数学/对称性结构，映射到目标域        │
 │                                                    │
 │  模式 B: 方法迁移 (Method Transfer)                │
@@ -211,7 +211,7 @@
 ### 2.2 跨领域类比管线
 
 ```
-输入: 目标域问题 (如 "dark matter detection sensitivity plateau")
+输入: 目标域问题 (如 "某类弱信号/高维约束问题出现性能平台")
   │
   ▼
 [Step 1: 抽象化]
@@ -251,7 +251,7 @@
 LLM 训练数据中包含大量跨领域知识，可通过以下方式激活:
 
 1. **显式跨域提示**: "这个问题在 [凝聚态/天体物理/数学/信息论] 中有没有类似的已解决问题?"
-2. **概念网络探索** (Deep Ideation 模式): 从 HEP 概念出发，在科学概念网络中探索跨域邻居
+2. **概念网络探索** (Deep Ideation 模式): 从当前目标域或首个 domain pack 的概念出发，在科学概念网络中探索跨域邻居
 3. **Few-shot 类比示范**: 提供成功的历史跨域类比案例 (如 AdS/CFT, 信息黑洞悖论)
 
 ---
@@ -264,8 +264,8 @@ LLM 训练数据中包含大量跨领域知识，可通过以下方式激活:
 
 | # | 策略名称 | 灵感来源 | 核心操作 | 示例 |
 |---|---------|---------|---------|------|
-| S1 | **反常追踪** | Kuhn (反常积累) | 系统搜索理论预测与实验数据的偏差 | W 质量反常、μ子 g-2、B 介子反常 |
-| S2 | **假设反转** | Popper (可证伪性) | 系统反转主流理论的关键假设 | "如果暗物质不是粒子而是修改引力?" |
+| S1 | **反常追踪** | Kuhn (反常积累) | 系统搜索不同表述/预测/观测之间的偏差 | 预测与观测不一致、边界条件冲突、跨 formalism 张力 |
+| S2 | **假设反转** | Popper (可证伪性) | 系统反转主流理论的关键假设 | "如果主导近似并不主导，结论会如何重排?" |
 | S3 | **跨域迁移** | 科学史 (类比发现) | 将另一领域的成功方法/概念迁移 | Maxwell 的场类比、AdS/CFT |
 | S4 | **统一推广** | 物理学统一传统 | 寻找看似不相关现象的共同描述 | 电弱统一、弦论 |
 | S5 | **极限外推** | 物理标度论 | 将已知理论推到极端参数区间 | 极高能、极低温、极大/极小尺度 |
@@ -281,16 +281,16 @@ LLM 训练数据中包含大量跨领域知识，可通过以下方式激活:
 
 **实现**:
 ```yaml
-trigger: 自动扫描 INSPIRE/PDG/HEPData
+trigger: 自动扫描领域文献索引/结构化证据源/benchmark
 signal: |
-  - 测量值与 SM 预测偏差 > 2σ
-  - 多个独立实验一致偏离
+  - 观测值与主流预测偏差持续扩大
+  - 多个独立来源给出一致偏离
   - 偏差随精度提升增大而非缩小
 action: |
-  1. 汇总所有相关反常的 PDG 数据
-  2. 搜索文献中已提出的解释
-  3. 用 LLM 提出未被考虑的新解释
-  4. 检查新解释是否同时解释多个反常
+  1. 汇总所有相关张力的证据记录
+  2. 搜索文献中已提出的解释或归因
+  3. 用 LLM 提出未被覆盖的新解释路径
+  4. 检查新解释是否同时解释多个相关张力
 ```
 
 #### S2: 假设反转 (Assumption Inverter)
@@ -302,7 +302,7 @@ action: |
 input: 一篇论文或理论框架
 action: |
   1. LLM 提取论文中的所有隐含假设
-     (如: "假设暗物质是热遗迹", "假设 CP 破缺只来自 CKM")
+     (如: "假设领头阶近似主导", "假设两个表述在当前精度下等价")
   2. 系统性地反转每个假设
   3. 评估反转后的理论是否自洽
   4. 搜索支持反转假设的实验证据
@@ -316,12 +316,12 @@ action: |
 
 **实现**:
 ```yaml
-input: 两个看似无关的物理现象/理论
+input: 两个看似无关的理论现象/形式化问题
 action: |
   1. LLM 分析两者的数学结构
   2. 寻找共同的对称性/代数结构
-  3. 构造统一描述的 Lagrangian 或等效框架
-  4. 预测统一框架的新现象
+  3. 构造统一描述的有效框架或等效结构
+  4. 预测统一框架的新现象/新约束
 ```
 
 #### S5: 极限外推 (Limit Explorer)
@@ -330,13 +330,13 @@ action: |
 ```yaml
 input: 一个已知有效的理论/方法
 action: |
-  1. 识别理论的有效参数范围
+  1. 识别理论或方法的有效参数范围
   2. 系统探索极限情况:
      - 能量 → ∞ 或 → 0
      - 维度 → 高维 或 → 低维
      - 耦合常数 → 强耦合 或 → 弱耦合
      - 粒子数 → ∞ (热力学极限)
-  3. 分析极限行为是否揭示新物理
+  3. 分析极限行为是否揭示新的结构、失效模式或可检验效应
 ```
 
 #### S6: 对称性操作 (Symmetry Operator)
@@ -351,15 +351,15 @@ action: |
      - 显式破缺: 什么新现象可观测?
      - 推广: 能否嵌入更大的对称群?
      - 对偶: 是否存在对偶描述?
-  3. 搜索每种操作的实验可检验后果
+  3. 搜索每种操作的可检验后果或形式化约束
 ```
 
 #### S7: 组合创新 (Combinatorial Innovation)
 
 类似 IdeaSearch 的进化方法:
 ```yaml
-input: 方法库 A = {EFT, lattice, ML, MC, bootstrap, ...}
-       理论库 B = {SM, SUSY, string, dark matter, ...}
+input: 方法库 A = {symbolic reasoning, numerical simulation, ML surrogates, variational methods, bootstrap, ...}
+       理论库 B = {effective theories, strongly coupled systems, topological phases, spectral problems, ...}
 action: |
   1. 对 (A_i, B_j) 对进行系统交叉
   2. LLM 评估每种组合的新颖性和可行性
@@ -374,10 +374,10 @@ action: |
 input: 标准计算/分析中使用的近似
 action: |
   1. LLM 列出领域中常用的近似:
-     - 零动量转移近似
-     - 领头阶微扰论
-     - 无穷大体积极限
-     - 淬火近似 (quenched approximation)
+     - 线性化/微扰截断
+     - 连续极限或无限体积近似
+     - 局域/平衡/均匀性假设
+     - 单尺度主导近似
   2. 系统放松每个近似
   3. 评估: 放松后结果是否显著不同?
   4. 如果是 → 新的物理效应可能隐藏其中
@@ -417,33 +417,33 @@ seeds:
 
   # ---- 种子类型 3: 反常/张力 ----
   - type: anomaly
-    name: "Muon g-2 anomaly"
-    theory_value: "116591810(43) × 10^{-11}"
-    experiment_value: "116592061(41) × 10^{-11}"
-    deviation: "5.1σ"
-    question: "什么新物理能同时解释 g-2 反常和 W 质量?"
+    name: "Cross-formalism scaling tension"
+    theory_value: "formalism_A predicts monotonic scaling"
+    experiment_value: "formalism_B requires a turnover"
+    deviation: "persistent model mismatch"
+    question: "哪一组隐藏假设导致两个表述对同一问题给出不兼容结论?"
 
   # ---- 种子类型 4: 跨域类比 ----
   - type: analogy
     source_domain: "condensed matter"
-    source_concept: "topological insulator edge states"
-    target_domain: "hep-th"
-    question: "HEP 中是否存在类似的拓扑保护态?"
+    source_concept: "topological edge protection"
+    target_domain: "quantum field theory"
+    question: "另一类理论 setting 中是否存在同构的保护态或边界模?"
 
   # ---- 种子类型 5: 方法组合 ----
   - type: combination
-    methods: ["machine learning", "lattice QCD"]
-    target: "improve chiral extrapolation"
+    methods: ["symbolic search", "numerical bootstrap"]
+    target: "tighten consistency bounds for an effective model"
 
   # ---- 种子类型 6: 假设反转 ----
   - type: assumption_inversion
-    paper_or_theory: "Standard WIMP dark matter"
-    assumption_to_invert: "Dark matter is a thermal relic"
-    alternative: "Dark matter produced via non-thermal mechanisms"
+    paper_or_theory: "Baseline effective-theory truncation"
+    assumption_to_invert: "Leading-order terms dominate the observable hierarchy"
+    alternative: "Subleading structure reorganizes the hierarchy"
 
 # ---- 全局配置 ----
 config:
-  default_domain: hep-ph
+  default_domain: theory-physics
   max_ideas_per_seed: 10
   strategies: [S1, S2, S3, S4, S5, S6, S7, S8]  # 启用的策略
   novelty_threshold: 0.6  # SciMON 式 novelty 阈值
@@ -463,19 +463,19 @@ config:
   - 问题: 能否把这些约束提升为 typed artifacts 并系统压缩参数空间?
   - Tags: consistency-search, EFT, constraints
 
-- [ ] Muon g-2 + W mass 联合解释
-  - 偏差: g-2 5.1σ, W mass 7σ
-  - 策略: 寻找同时解释两者的 BSM 模型
+- [ ] 把跨 formalism 张力转写为可检索的约束冲突图
+  - 偏差: 不同表述对同一允许区域给出不一致结论
+  - 策略: 追踪隐藏假设并寻找最小修正路径
 
 ## Medium Priority
 
-- [ ] 将 tensor network 方法从凝聚态引入格点 QCD
-- [ ] 用 normalizing flow 改进 MC 采样效率
+- [ ] 将 tensor-network 压缩引入高维状态空间搜索
+- [ ] 用 normalizing flow 改进受约束采样效率
 
 ## Seeds from Papers
 
-- INSPIRE:2882456 — 能否推广到 BSM?
-- arXiv:2501.12345 — 方法是否适用于 charm physics?
+- INSPIRE:2882456 — 能否推广到另一类边界条件?
+- arXiv:2501.12345 — 方法是否适用于另一类 strongly coupled system?
 ```
 
 ### 4.3 文件监控与热加载
@@ -584,7 +584,7 @@ idea-generator/
 | P5 | **迭代 Novelty Boosting** — 显式对比文献 | SciMON (55.6% novelty 提升) | 每个 idea 经过 retrieve-compare-update |
 | P6 | **跨域类比** — 远类比探索 + 近类比利用 | LacMaterial (新组合生成) | 三模式类比: 结构/方法/现象 |
 | P7 | **对抗 Agent** — 专门挑战衍生性 | Novelty Eval (Co-Scientist 4.17) | 管线中的"怀疑者"角色 |
-| P8 | **概念网络导航** — 利用图结构 | Deep Ideation (+10.25%) | 在 HEP 概念网络上 explore-expand-evolve |
+| P8 | **概念网络导航** — 利用图结构 | Deep Ideation (+10.25%) | 在当前目标域概念网络上 explore-expand-evolve |
 | P9 | **用户种子** — 简单文件添加 | 用户需求 | seeds.yaml + ideas.md |
 | P10 | **物理约束硬过滤** — 守恒律/对称性 | LacMaterial + physics review | 所有 idea 必须满足基本物理约束 |
 | P11 | **50% freshness** — 平衡新旧组合 | VirSci (Science of Science) | Agent 团队组建的 explore-exploit 平衡 |

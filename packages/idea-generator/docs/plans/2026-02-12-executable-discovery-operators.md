@@ -1,4 +1,4 @@
-# 可执行的“科学发现算子库”（HEP-first，面向 idea-core / DomainPack）
+# 可执行的“科学发现算子库”（首个 domain pack 落地版，面向 idea-core / DomainPack）
 
 > 日期：2026-02-12  
 > 目标：把科学史/科学哲学中的“发现路径”翻译成 **可执行、可审计、可组合** 的 `Operator`（算子）与 `SearchPolicy` 组件；为后续“物理学家社区/组团探索（Team/Role）”提供统一的工作语言。  
@@ -19,7 +19,7 @@
 
 ## 1. OperatorSpec：最小可执行契约（建议）
 
-这不是最终 schema（避免过早冻结），但建议 `HEP DomainPack` 内部先用同形对象描述算子，后续再升级为稳定 schema：
+这不是最终 schema（避免过早冻结），但建议首个 `DomainPack` 内部先用同形对象描述算子，后续再升级为稳定 schema：
 
 ```text
 OperatorSpec:
@@ -42,7 +42,7 @@ OperatorSpec:
 
 ## 2. 可执行算子族（从科学哲学/历史抽取 → 直接可落地）
 
-每个算子族都给出：**输入 seed → 输出约束 → 必做验证 → 常见误判**。HEP-first 的 MVP 建议先实现其中 4–6 个（用 Multi-Island 保多样性）。
+每个算子族都给出：**输入 seed → 输出约束 → 必做验证 → 常见误判**。首个 domain pack 的 MVP 建议先实现其中 4–6 个（用 Multi-Island 保多样性）。
 
 ### 2.1 `AnomalyAbduction`（反常→解释；Peirce/Kuhn 风格）
 
@@ -250,7 +250,7 @@ IslandArchetype:
   required_roles: [...]
 ```
 
-示例（HEP-first）：
+示例（首个 domain pack）：
 - `S1_anomaly`: `AnomalyAbduction` + `FalsificationPressure`
 - `S2_symmetry`: `SymmetryOperator` + `LimitExplorer`
 - `S3_analogy`: `CrossDomainAnalogy` + `TechniqueTransplant` + `CombinatorialSynthesis`

@@ -2,9 +2,11 @@
 
 > 三方 Agent Team 会商综合报告 (Claude Opus + Gemini 3 Pro + GPT-5.3 Codex)
 >
-> 日期: 2026-02-11 | 生态圈: HEP-Autoresearch M82+
+> 日期: 2026-02-11 | 生态圈: autoresearch 早期设计阶段
 >
 > 更新 (2026-02-12): 架构规格 SSOT 迁移到 `docs/plans/2026-02-12-idea-generator-architecture-spec.md`；IdeaSearch/OpenClaw 深读见 `docs/plans/2026-02-12-ideasearch-openclaw-deep-dive.md`；本文保留为 2026-02-11 会商综合报告。
+>
+> 更新 (2026-03-09): 本文为**历史会商报告**，不是当前 SSOT。稳定契约以 `docs/plans/2026-02-12-idea-generator-architecture-spec.md`、`docs/plans/2026-02-12-implementation-plan-tracker.md` 与 `schemas/` 为准；文中的领域/项目实例仅作历史示例，不定义 core scope。
 
 ---
 
@@ -57,7 +59,7 @@
 | **溯源图 (Provenance DAG)** | claim 级别证据链 | 部分（ledger 有事件追踪，但无 DAG） |
 | **种子生成器** | 张力/反常/跨域/参数化种子 | 部分（C1 gap 种子可用） |
 | **评审 rubric** | idea 专用 5 维评分框架 | 部分（referee-review 可适配） |
-| **Domain Pack 插件** | HEP 本体/提示词/可行性估算器 | 无 |
+| **Domain Pack 插件** | 首个 domain pack 的本体/模板/可行性估算器 | 无 |
 | **idea-generator skill** | hepar 适配器 | 无 |
 | **A0 审批门禁** | idea 审批逻辑 | 可基于现有 A1 扩展 |
 
@@ -287,28 +289,28 @@ version: 1
 status: "proposed"  # proposed | evaluating | approved | rejected | executing | completed
 
 # ── 核心内容 ──
-title: "暗光子产生中核跃迁的单圈修正"
+title: "把自洽性条件提升为 typed constraints 以压缩有效理论参数空间"
 abstract: |
-  计算 M1 核磁跃迁中暗光子发射的完整 NLO QED+BSM 修正，
-  解决理论预测与 ATOMKI 反常测量之间 O(10%) 的张力。
+  把对称性、解析性、匹配条件与已知低能/边界约束统一成可组合 artifacts，
+  用来系统缩小允许参数区域并暴露最脆弱的假设。
 
 research_questions:
-  - "NLO 修正对 M1 跃迁率的量级是多少？"
-  - "圈修正能否移动预测的不变质量峰值？"
+  - "哪些约束在不同 formalism 下是等价而可复用的？"
+  - "放松哪类近似最可能暴露隐藏的可检验效应？"
 
 # ── 溯源 ──
 seeds:
   - type: "tension"
-    source: "PDG:dark_photon_limits vs ATOMKI:2023"
-    description: "8Be 跃迁中持续的 6.8σ 反常"
+    source: "artifact:cross-formalism-constraint-mismatch"
+    description: "两类表述对同一允许区域给出不一致的约束结论"
   - type: "literature_gap"
     source: "C1:gap-2026-003"
-    description: "该过程不存在完整 NLO 计算"
+    description: "现有工作多为一次性扫描，缺少可复用的 typed consistency artifacts"
   - type: "llm_inferred"
     model: "claude-opus-4-6"
     prompt_hash: "sha256:abc123..."
     confidence: "medium"
-    description: "核形状因子效应可能比假设的更大"
+    description: "不同 formalism 的约束传播流程可统一到同一 artifact contract"
 
 parent_ideas: []
 child_ideas: []
@@ -522,15 +524,15 @@ class DomainPlugin(ABC):
 
 | 扩展点 | 说明 | HEP 实现 |
 |--------|------|---------|
-| `seed_enrichers` | 种子丰富化 | INSPIRE + PDG + ATOMKI tensions |
-| `query_expanders` | 查询扩展 | HEP 术语本体 + arXiv 分类 |
-| `feasibility_estimators` | 可行性估算 | FeynCalc/LoopTools 可用性检查 |
-| `method_compilers` | 方法编译 | QFT/EFT/lattice 蓝图 → run_card |
+| `seed_enrichers` | 种子丰富化 | 领域文献索引 + 结构化证据源 + tension feeds |
+| `query_expanders` | 查询扩展 | 领域术语本体 + source taxonomy |
+| `feasibility_estimators` | 可行性估算 | 符号/数值 backend 可用性检查 |
+| `method_compilers` | 方法编译 | formalism blueprints → run_card |
 
 ### 8.3 原则
 
-1. **先深度，后广度**: HEP 插件必须*出色*才考虑添加凝聚态。接口应从 HEP 实现中涌现。
-2. **提示词是主要知识载体**: 多数物理知识存在于 LLM 提示词模板中。
+1. **先深度，后广度**: 首个 domain pack 必须先经真实任务验证；稳定接口应从真实 pack 需求中涌现。
+2. **提示词只是可替换资产之一**: 领域知识可以部分承载在模板中，但 core 依赖的应是 typed contracts、evidence 和 validators，而不是 prompt hacks。
 3. **共享评估框架**: 5 维评分 (novelty/feasibility/impact/tractability/grounding) 跨领域通用，仅 rubric 细节变化。
 4. **跨域种子是核心特性，非插件特性**: `cross_domain_seed_generator` 接收两个 `ConceptOntology` 实例寻找类比。
 
@@ -545,9 +547,9 @@ class DomainPlugin(ABC):
 ```json
 {
   "claim_id": "uuid",
-  "claim_text": "NLO 修正量级为 O(10%)",
+  "claim_text": "一组一致性约束可把允许参数区域缩小一个数量级",
   "support_type": "literature | derived | transfer | parametric",
-  "source_uri": ["inspire:2301.12345", "pdg:dark_photon"],
+  "source_uri": ["inspire:2301.12345", "artifact:constraint_scan_v1"],
   "support_strength": 0.85,
   "uncertainty": 0.15,
   "llm_contribution": {
@@ -605,7 +607,7 @@ idea.result_closed
 - Provenance graph (JSONL DAG)
 - 种子生成器:
   - C1 gap 适配器
-  - 参数化 brainstorm (LLM + HEP 提示词)
+  - 参数化 brainstorm (LLM + 首个 domain pack 模板)
 - 平面展开（暂无树搜索）
 - INSPIRE grounding 管线
 - 单 Agent 评估 (Claude, 5 维)
@@ -630,7 +632,7 @@ idea.result_closed
 
 - 跨域种子生成器
 - 嵌入索引 (SPECTER2) 用于语义新颖性
-- Domain plugin 系统 (从 HEP 硬编码中抽取)
+- Domain plugin 系统 (从首个 domain pack 实现中抽取)
 - L2/L3 自演化集成 (自动调优搜索参数)
 - 投资组合构建 (多样化 idea 选择)
 - 并行 idea 探索 (idea 分支)
@@ -655,7 +657,7 @@ idea.result_closed
 | **新颖性评估遗漏已有工作** | 高 | 高 | 保守方案: 标记不确定性; folklore 启发式; 人类审查者兜底 |
 | **分支爆炸/计算消耗** | 中 | 高 | 硬预算 (max_nodes, 时间预算, $ 预算); 快速估计用于展开 |
 | **"新颖但琐碎"的 ideas** | 高 | 中 | impact 评分维度; Elo 自然惩罚; 领域专家提示词 |
-| **过早过度设计插件系统** | 中 | 中 | Phase 1-2 硬编码 HEP; Phase 3 才抽取插件接口 |
+| **过早过度设计插件系统** | 中 | 中 | Phase 1-2 先以首个 domain pack 验证；Phase 3 才抽取稳定接口 |
 | **多 Agent 辩论退化为共识** | 中 | 低 | 结构化对抗提示; 显式 devil's advocate; temperature 变化 |
 | **与 hepar 紧耦合** | 低 | 高 | 薄适配器 skill; core 零 hepar 导入; 通过 IdeaCard schema 通信 |
 | **Agent 打分博弈** | 中高 | 中高 | 盲配对判断、角色分离、随机审计提示词 |
@@ -680,7 +682,7 @@ idea.result_closed
 | **搜索策略** | BFTS + 发散-收敛 | BFTS | 发散-收敛 | 迭代精炼 | KG 引导 | MCTS |
 | **Grounding** | 4 层渐进式 | 文献综述 | 文献 grounding | 文献+网络 | 知识图谱 | 文献+KB |
 | **评估** | 多 Agent 5维 + Elo | 自动审稿 | 多 Agent 辩论 | Elo 锦标赛 | 一致性评分 | 奖励模型 |
-| **领域特异性** | 插件架构 (HEP 首选) | ML 实验 | 通用科学 | 生物医学 | 通用 | 理论物理 |
+| **领域特异性** | 插件架构 (首个 domain pack 落地) | ML 实验 | 通用科学 | 生物医学 | 通用 | 理论物理 |
 | **溯源** | **claim 级 DAG** | 部分 (论文引用) | 部分 | 部分 | KG 谱系 | 轨迹记录 |
 | **人类在环** | **A0 门禁 (强制)** | 可选 | 可选 | Elo 含人类 | 无 | 可选 |
 | **幻觉缓解** | grounding 分数 + 对抗 Agent + 物理检查 | 实验验证 | 多 Agent 交叉检查 | 锦标赛过滤 | KG 一致性 | 数值验证 |
@@ -701,7 +703,7 @@ idea.result_closed
 4. **C1 关系**: 三方一致认为互补非替代
 5. **溯源粒度**: 三方均强调 claim 级别/DAG 溯源
 6. **Elo 排名**: 三方均推荐锦标赛/Elo 排名机制
-7. **Domain Pack 插件**: 三方均建议插件化但从 HEP 硬编码开始
+7. **Domain Pack 插件**: 三方均建议插件化，但从首个真实 domain pack 的落地实现开始
 
 ### 13.2 各方独到见解
 

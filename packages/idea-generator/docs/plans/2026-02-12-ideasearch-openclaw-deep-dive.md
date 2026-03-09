@@ -1,7 +1,7 @@
 # Idea-Generator 深度调研：IdeaSearch（论文+开源框架）与 OpenClaw（工程化多 Agent 框架）
 
 > 日期：2026-02-12  
-> 目标：把“能执行的机制”抽取出来，反哺 `idea-generator` 的可扩展架构（HEP-first → 理论物理泛化）。  
+> 目标：把“能执行的机制”抽取出来，反哺 `idea-generator` 的可扩展架构（首个 domain pack → 理论物理泛化）。
 > 原则：研究质量优先（优先一手资料：论文 LaTeX 源码、开源仓库代码与文档）。
 
 ---
@@ -172,7 +172,7 @@ IdeaSearch（framework）的最小闭环是：
 2. `evaluate_func` 是用户自定义黑盒：缺少统一的 **证据链/溯源图** 与“硬过滤器”。
 3. 通用框架层面对“科学真实约束”（守恒/对称性/量纲/实验约束）没有内建概念。
 
-> 这正是我们要超越之处：**IdeaSearch 的“搜索骨架” + HEP-Autoresearch 的“证据/门禁/可复现执行链”**。
+> 这正是我们要超越之处：**IdeaSearch 的“搜索骨架” + autoresearch substrate 的“证据/门禁/可复现执行链”**。
 
 ---
 
