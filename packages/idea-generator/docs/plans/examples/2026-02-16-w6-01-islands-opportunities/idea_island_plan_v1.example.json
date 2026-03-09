@@ -1,15 +1,15 @@
 {
   "version": 1,
-  "island_id": "island-positivity-gff",
-  "title": "Positivity/analyticity bootstrap for pion GFFs",
-  "research_question": "What is the strongest model-independent bound on pion gravitational form factors (GFFs) from positivity/analyticity/dispersive constraints without coupled channels?",
-  "strategy_notes": "Start from a single-channel dispersive representation for pion GFFs and implement positivity constraints on spectral densities / moments. Avoid coupled-channel inputs by construction; treat subtraction constants/normalizations as parameters with explicit priors/constraints.",
+  "island_id": "island-constraint-bootstrap",
+  "title": "Constraint-guided bootstrap for a single-channel observable",
+  "research_question": "What is the strongest model-independent bound on a single-channel observable using positivity / analyticity / dispersive constraints under a laptop-feasible setup?",
+  "strategy_notes": "Start from a single-channel representation and implement typed positivity constraints on spectral densities or moments. Treat normalization choices as explicit assumptions with auditable priors and constraint binding.",
   "bootstrap_mechanism_tags": ["positivity", "analyticity", "dispersive"],
   "evaluation_metrics": [
     {
       "metric_id": "bound_strength",
-      "description": "Quantify tightening vs. baseline literature bounds at fixed kinematic points (e.g., t=0 or small |t|).",
-      "target": "At least one numerically reproducible bound stronger or qualitatively different than the seed papers."
+      "description": "Quantify tightening versus a published or synthetic baseline at fixed kinematic points.",
+      "target": "At least one numerically reproducible bound stronger or qualitatively different than the baseline."
     }
   ],
   "current_status": "PLANNED",
@@ -20,16 +20,16 @@
   ],
   "key_artifacts": [
     {
-      "path": "artifacts/islands/plans/island-positivity-gff/idea_island_plan_v1.json",
+      "path": "artifacts/islands/plans/island-constraint-bootstrap/idea_island_plan_v1.json",
       "description": "Per-island plan (this artifact) used by validate-project to enforce required structure.",
       "kind": "plan"
     }
   ],
   "evidence_uris": [
-    "https://arxiv.org/abs/2403.10772",
-    "https://arxiv.org/abs/2411.13398"
+    "https://example.org/observable-bound/baseline",
+    "https://example.org/observable-bound/constraint-upgrade"
   ],
-  "tags": ["method:bootstrap", "topic:gff", "domain:pion", "island_id:island-positivity-gff"],
+  "tags": ["method:constraint-bootstrap", "topic:observable-bound", "domain:theory", "island_id:island-constraint-bootstrap"],
   "created_at_utc": "2026-02-16T00:00:00Z",
   "updated_at_utc": "2026-02-16T00:00:00Z"
 }

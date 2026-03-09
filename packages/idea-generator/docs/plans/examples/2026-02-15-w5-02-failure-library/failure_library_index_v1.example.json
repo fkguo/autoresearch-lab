@@ -8,13 +8,13 @@
       "line_number": 1,
       "failed_approach": {
         "approach_id": "123e4567-e89b-42d3-a456-426614174000",
-        "approach_summary": "Unconstrained scan drifted from claimed bootstrap method family.",
+        "approach_summary": "Search branch drifted from the claimed constraint-guided method family after assumptions were injected without typed checks.",
         "failure_mode": "method_drift",
         "failure_modes": ["method_drift"],
         "failure_evidence_uris": ["file:artifacts/method/method_fidelity_contract_v1.json"],
         "lessons": ["Enforce method_fidelity_contract."],
         "reuse_potential": "high",
-        "tags": ["method:bootstrap", "topic:gff", "failure:method_drift"],
+        "tags": ["method:constraint-guided-search", "topic:method-fidelity", "failure:method_drift"],
         "created_at": "2026-02-15T00:00:00Z"
       }
     }

@@ -1,11 +1,11 @@
 {
   "version": 1,
   "opportunity_id": "223e4567-e89b-42d3-a456-426614174000",
-  "title": "Tighten pion GFF dispersive bounds with explicit positivity kernels",
-  "summary": "Recast pion GFF constraints into an optimization problem with explicit positivity kernels and scan subtraction/normalization assumptions. Goal: produce a numerically reproducible bound stronger/different than seed literature without coupled channels.",
+  "title": "Tighten a single-channel observable bound with explicit positivity kernels",
+  "summary": "Recast a single-channel observable constraint into an optimization problem with explicit positivity kernels and typed normalization assumptions. Goal: produce a numerically reproducible bound stronger or qualitatively different from the seed baseline without coupled-channel machinery.",
   "scope": "IN_SCOPE",
   "bootstrap_mechanism_tags": ["positivity", "analyticity", "dispersive"],
-  "related_island_ids": ["island-positivity-gff"],
+  "related_island_ids": ["island-constraint-bootstrap"],
   "expected_artifacts": [
     {
       "kind": "derivation_md",
@@ -18,15 +18,15 @@
       "path_hint": "runs/..."
     }
   ],
-  "verification_plan": "Implement a deterministic script that (i) reproduces a baseline bound from seed paper under identical assumptions and (ii) demonstrates a tightened bound when adding the new positivity constraint. Save all inputs/outputs/plots with hashes.",
+  "verification_plan": "Implement a deterministic script that (i) reproduces a baseline bound under identical assumptions and (ii) demonstrates a tightened bound when adding the new constraint. Save all inputs/outputs/plots with hashes.",
   "risks": [
     "Constraint set may be too weak without additional external inputs; mitigate by proving a clean analytic inequality first.",
     "Numerical optimization instability; mitigate with toy problems + regression tests."
   ],
   "evidence_uris": [
-    "https://arxiv.org/abs/2403.10772",
-    "https://arxiv.org/abs/2410.23333"
+    "https://example.org/observable-bound/baseline",
+    "https://example.org/observable-bound/constraint-upgrade"
   ],
-  "tags": ["method:bootstrap", "topic:gff", "domain:pion", "opportunity_id:223e4567-e89b-42d3-a456-426614174000"],
+  "tags": ["method:constraint-bootstrap", "topic:observable-bound", "domain:theory", "opportunity_id:223e4567-e89b-42d3-a456-426614174000"],
   "created_at_utc": "2026-02-16T00:00:00Z"
 }

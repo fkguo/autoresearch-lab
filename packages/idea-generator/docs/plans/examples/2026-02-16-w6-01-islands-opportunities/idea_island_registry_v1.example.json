@@ -1,24 +1,24 @@
 {
   "version": 1,
-  "campaign_slug": "pion-gff-bootstrap-positivity",
+  "campaign_slug": "theory-observable-bound-pilot",
   "generated_at_utc": "2026-02-16T00:00:00Z",
   "islands": [
     {
-      "island_id": "island-positivity-gff",
-      "title": "Positivity/analyticity bootstrap for pion GFFs",
+      "island_id": "island-constraint-bootstrap",
+      "title": "Constraint-guided bootstrap for a single-channel observable",
       "status": "PLANNED",
-      "plan_artifact_path": "artifacts/islands/plans/island-positivity-gff/idea_island_plan_v1.json",
+      "plan_artifact_path": "artifacts/islands/plans/island-constraint-bootstrap/idea_island_plan_v1.json",
       "bootstrap_mechanism_tags": ["positivity", "analyticity", "dispersive"],
-      "tags": ["method:bootstrap", "topic:gff", "domain:pion", "island_id:island-positivity-gff"],
+      "tags": ["method:constraint-bootstrap", "topic:observable-bound", "domain:theory", "island_id:island-constraint-bootstrap"],
       "last_updated_at_utc": "2026-02-16T00:00:00Z"
     },
     {
-      "island_id": "island-subtractions-scan",
-      "title": "Subtraction/normalization sensitivity scan (single-channel)",
+      "island_id": "island-assumption-scan",
+      "title": "Normalization / assumption sensitivity scan",
       "status": "PLANNED",
-      "plan_artifact_path": "artifacts/islands/plans/island-subtractions-scan/idea_island_plan_v1.json",
+      "plan_artifact_path": "artifacts/islands/plans/island-assumption-scan/idea_island_plan_v1.json",
       "bootstrap_mechanism_tags": ["analyticity", "dispersive"],
-      "tags": ["method:bootstrap", "topic:gff", "domain:pion", "island_id:island-subtractions-scan"],
+      "tags": ["method:constraint-bootstrap", "topic:assumption-scan", "domain:theory", "island_id:island-assumption-scan"],
       "last_updated_at_utc": "2026-02-16T00:00:00Z"
     }
   ],

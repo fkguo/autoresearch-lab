@@ -1,15 +1,15 @@
-# M5 测试实例复盘（Pion GFF Bootstrap）：解耦策略 + 质量门禁硬化（面向 idea-core / hepar / idea-generator）
+# M5 测试实例复盘：解耦策略 + 质量门禁硬化（面向 idea-core / hepar / idea-generator）
 
 > 日期：2026-02-15  
-> 范围：**工具生态改进**（idea-core / hepar / idea-generator）；`Pion GFF Bootstrap` 只是 M5 的 **测试实例**。  
+> 范围：**工具生态改进**（idea-core / hepar / idea-generator）；这里不保留任何单课题执行史，只保留测试实例暴露出的通用问题。  
 > 目标：把测试实例暴露的问题，转化为可执行的 **契约/门禁/目录规范/安全可靠性硬化** 清单；之后在完全解耦的新实例中重测。  
-> 非目标：不对物理内容做“反向优化”（不把 toy 模型改得更像 bootstrap 来“过门禁”）。
+> 非目标：不为了“过门禁”而围绕某个具体课题反向调模型或调实现。
 
 ---
 
 ## 0. 结论（TL;DR）
 
-这次 M5 测试实例显示：控制平面（review/gate/tracker/board-sync/campaign）流程已经能跑通，但**研究质量门禁没有阻止 method drift**，导致“宣称使用现代 bootstrap 方法”与“实际实现/证据”发生偏移；同时暴露出若干 **安全边界、原子写、超时/退避、ledger 性能与权限事件反应式处理** 等工程缺陷。
+这次 M5 测试实例显示：控制平面（review/gate/tracker/board-sync/campaign）流程已经能跑通，但**研究质量门禁没有阻止 method drift**；同时暴露出若干 **安全边界、原子写、超时/退避、ledger 性能与权限事件反应式处理** 等工程缺陷。
 
 因此需要两条主线并行推进：
 
@@ -81,7 +81,7 @@
 
 ### 3.1 `method_fidelity_contract_v1`（核心：声称的方法必须可审计）
 
-**动机**：测试实例出现“宣称 bootstrap，实际是 toy random sampling + 复述色散推导”的偏移；现有 gate 只检查 artifacts 存在与计数，无法阻止。
+**动机**：测试实例出现“宣称的方法族”和“实际实现 / 证据”不一致的偏移；现有 gate 只检查 artifacts 存在与计数，无法阻止。
 
 **建议产物**：`artifacts/method/method_fidelity_contract_v1.json`
 
@@ -98,7 +98,7 @@
 
 ### 3.2 `literature_search_evidence_v2`（从“数量”转为“相关性/覆盖面”）
 
-**动机**：测试实例暴露出“文献门禁被数量指标驱动”的风险：只要凑够若干篇文献就可能过 gate，但这些文献可能与**声称的方法/关键可检验结论**不匹配（例如只找到模型计算或背景综述，却缺少方法论与关键约束来源）。这不是 bootstrap 特有问题，而是所有“质量优先”的研究工作流都必须避免的漂移。
+**动机**：测试实例暴露出“文献门禁被数量指标驱动”的风险：只要凑够若干篇文献就可能过 gate，但这些文献可能与**声称的方法/关键可检验结论**不匹配。这不是某个具体方法族特有的问题，而是所有“质量优先”的研究工作流都必须避免的漂移。
 
 **建议升级**（在现有 `artifacts/literature/search_evidence.json` 基础上扩展）：
 - 每条纳入/剔除记录必须携带可审计标签（**不写死到某个物理子领域**）：

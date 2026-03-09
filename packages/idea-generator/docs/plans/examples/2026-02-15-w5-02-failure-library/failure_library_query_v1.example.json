@@ -2,7 +2,7 @@
   "version": 1,
   "generated_at_utc": "2026-02-15T00:00:00Z",
   "query": {
-    "tags": ["method:bootstrap", "topic:gff"],
+    "tags": ["method:constraint-guided-search", "topic:method-fidelity"],
     "failure_modes": ["method_drift"]
   },
   "max_hits": 50,

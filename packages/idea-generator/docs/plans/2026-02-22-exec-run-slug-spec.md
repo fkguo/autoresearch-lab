@@ -7,7 +7,7 @@
 
 - MUST：只用 ASCII 小写字母、数字、短横线 `-`；不得包含空格、冒号、斜杠、反斜杠。
 - MUST：以日期开头：`YYYY-MM-DD-...`（便于排序与审计）。
-- MUST：包含 tracker/看板可追踪的里程碑标识：`w<week>-<id>`（例如 `w6-40`）。
+- MUST：包含可审计的**语义化 lane / stage 标识**（例如 `baseline`、`constraint`、`pilot`、`repro`），不要把历史 batch id / week id 写进长期命名。
 - SHOULD：长度 ≤ 96 字符（经验阈值；给 Nutstore/跨平台路径留下余量）。
 - SHOULD：包含“物理对象 + 核心内核 + 变体 id + 网格尺度”四类信息即可；其余参数不要进 slug。
 - MUST：避免把所有 flag（`enf30/q2grid9/audit30/eps1e-6/...`）拼入 slug；这些属于 `config.json` 的职责。
@@ -15,7 +15,7 @@
 ## 2) 推荐模板
 
 ```
-{date}-w{week}-{milestone}-{topic}-{kernel}-v{variant}-g{grid}-n{q2n}
+{date}-{lane}-{topic}-{kernel}-v{variant}-g{grid}-n{q2n}
 ```
 
 字段含义（建议）：
@@ -28,10 +28,10 @@
 ## 3) 示例（本轮已采用）
 
 - 长名（不推荐）：`2026-02-22-theta-trace-s0-sdp-fullpsd-v1n-dispersion-grid80-enf30-q2grid9-audit27-cosmo-eps1e-6-...`
-- 短名（推荐）：`2026-02-22-w6-40-theta-fullpsd-v1q-g200-n9`
+- 短名（推荐）：`2026-02-22-constraint-theta-fullpsd-v1q-g200-n9`
 
 对应审计真源：
-- `runs/2026-02-22-w6-40-theta-fullpsd-v1q-g200-n9/config.json`
+- `runs/2026-02-22-constraint-theta-fullpsd-v1q-g200-n9/config.json`
 - `compute/theta_trace_s0_sdp_fullpsd_config_v1q_*.json`（完整参数 + notes）
 
 ## 4) 去重/碰撞策略（当需要时）
@@ -40,4 +40,3 @@
 - 若同一天同版本多次跑（需要并行/重跑）：
   - 方案 A（推荐）：`-r{NN}`（如 `-r02`）
   - 方案 B：`-h{8hex}`（`config.json` 的 sha256 前 8 位）
-
