@@ -89,10 +89,12 @@
 1. acceptance commands 全部通过；
 2. `review-swarm` 已收敛且三审 `0 blocking`；
 3. `self-review` 已完成且无未处理 blocking issue；
-4. tracker / `.serena/memories/architecture-decisions.md` / `AGENTS.md` 已同步；
-5. 若本批包含 SOTA preflight，则 canonical archive 已落到稳定本地目录（默认 `~/.autoresearch-lab-dev/sota-preflight/...`），且 worktree 清理前已确认可回溯；
-6. review amendments 与 deferred 原因已记录，且仍有后续价值的 deferred 项已同步到持久 SSOT。
-7. 完成汇报已给出**条件化的下一批建议**：必须基于本批 closeout 的实际结果，说明推荐的下一个 prompt / batch 是什么、为什么是它、以及为什么不是相邻但当前不该启动的 lane。
+4. 必需 SSOT 已同步：`meta/remediation_tracker_v1.json` 与 `AGENTS.md` 当前进度摘要；
+5. 若本批产出新的长期稳定架构不变量，`.serena/memories/architecture-decisions.md` 已同步；否则明确说明“无新增稳定不变量，不更新 memory”；
+6. 若本批改变了 phase 约束、lane 边界、依赖关系、unblock 顺序或 closeout 叙事，`meta/REDESIGN_PLAN.md` 已同步；否则明确说明“无设计层变更，不更新 REDESIGN_PLAN”；
+7. 若本批包含 SOTA preflight，则 canonical archive 已落到稳定本地目录（默认 `~/.autoresearch-lab-dev/sota-preflight/...`），且 worktree 清理前已确认可回溯；
+8. review amendments 与 deferred 原因已记录，且仍有后续价值的 deferred 项已同步到持久 SSOT。
+9. 完成汇报已给出**条件化的下一批建议**：必须基于本批 closeout 的实际结果，说明推荐的下一个 prompt / batch 是什么、为什么是它、以及为什么不是相邻但当前不该启动的 lane。
 
 `git commit` / `git push` 规则：
 
@@ -107,6 +109,6 @@
 2. `总验收命令`：列出 eval/test/build gates
 3. `Review-Swarm`：写明 mandatory reviewers（默认 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)`）、深审要求、收敛标准
 4. `Self-Review`：写明 agent 自审也是 mandatory gate，且需绑定代码 / GitNexus / eval / scope 证据
-5. `交付后必须同步`：tracker / memory / AGENTS / amendments / deferred
+5. `交付后必须同步`：至少写明 tracker / `AGENTS.md` 必更；`architecture-decisions` 与 `REDESIGN_PLAN` 何时需要更新、何时明确不更新；以及 amendments / deferred 的持久 SSOT 去向
 6. `版本控制门禁`：说明 commit/push 只有在收敛后且已获授权时才允许
 7. `SOTA preflight / archive`：写明 canonical archive path（默认 `~/.autoresearch-lab-dev/sota-preflight/...`）以及当前 `worktree` 副本 / 指针路径

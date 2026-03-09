@@ -220,6 +220,7 @@ autoresearch/                    # private monorepo (personal GitHub)
 - **回退/对照**: MCP 桥接作为回退
 - **Golden trace**: `idea-core/demo/m2_12_replay.py` 确保行为一致性
 - **Phase 4+**: idea-core Python 退役（与 hep-autoresearch 同步）
+- **产品边界约束 (2026-03-09)**: 若未来提供单一 end-user agent，必须作为独立 leaf package 引入（命名待定；可为 `packages/agent/` 或 `packages/autoresearch-agent/` 一类），由其消费 orchestrator + root composition layer + selected providers；不得让 repo root、`packages/orchestrator/` 或 `packages/idea-engine/` 直接承担该产品角色。该 leaf package 在 `P5A` 执行语义与 provider 边界稳定前不创建。详见 `meta/docs/2026-03-09-root-ecosystem-boundary-adr.md`。
 
 **迁移理由**:
 1. 所有主流 Agent 编排平台 (OpenCode, OpenClaw, Claude Code, Cursor) 均选择 TypeScript——Node.js 事件循环天然适合并发 Agent session 管理
@@ -2551,6 +2552,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 > - `P5A`: `EVO-01/02/03/06/07/09/10/11/12/13/14`
 > - `P5B`: `EVO-04/05/08/15/16/17/18/19/20/21`
 > - 该划分是 Phase 内部阅读 / 排期 lens，不新增 `Phase 6`，也不改变现有依赖顺序；若单项目闭环收束与社区外层建设发生取舍，默认先满足 `P5A`。
+> **产品化约束 (2026-03-09)**: 即使后续提供单一 packaged end-user agent，它也应是构建在 orchestrator/runtime + root composition layer + selected providers 之上的独立 leaf package，而不是把 repo root、`packages/orchestrator/`、或某个 domain-specific CLI 直接提升为产品 agent。
 
 ### EVO-01: idea→理论计算自动执行闭环
 
@@ -2797,6 +2799,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 **依赖**: NEW-05a (TS 编排器骨架), NEW-07 (Agent 注册表 + A2A 适配层)
 
 **2026-03-08 amendment**: 另见 `meta/docs/2026-03-08-evo13-runtime-governance-control-plane-amendment.md`。该 amendment 不改变 Phase 顺序，但要求 future `EVO-13` 显式吸收 delegation permission matrix、operator intervention vocabulary、live-status/replay control-plane view、以及 **team-local** lifecycle / health / timeout / cascade stop；相对地，**cross-run / fleet-level** 调度与 agent pool 健康仍留在 `EVO-14`。
+
+**产品入口非目标 (2026-03-09)**: `EVO-13` 的目标是单项目 / team-local runtime unification，而不是 packaged end-user agent。若未来需要统一的用户入口，应在 `P5A` 收束后以独立 leaf package 形式引入；不得把 `EVO-13` 直接扩张为 repo-root super-agent 或 orchestrator-internal 产品壳。
 
 **验收**:
 - 并行 team 执行中 kill 进程后可从 checkpoint 恢复，已完成角色不重跑
