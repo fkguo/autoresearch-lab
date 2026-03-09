@@ -290,7 +290,7 @@ BanditPolicySpec:
 
 reward 信号分两类：
 - **短期 proxy**：grounding ratio、novelty proxy、结构化可编译率（是否能形成 Canonical IdeaCard）
-- **长期 outcome**：A0.2 通过率、C2 成功率、W_compute 成功率（延迟奖励）
+- **长期 outcome**：A0.2 通过率、C2 成功率、computation 成功率（延迟奖励）
 
 **Phenotype profiling（用于异构分工与调度，不是“模型排行榜”）**：
 - 迁移自 IdeaSearchFitter 的动态过程指标：`Iter@k`（不同 epoch/step 的累积成功）、epoch 分布（中位数/3-4 分位）、成本（word/token）。

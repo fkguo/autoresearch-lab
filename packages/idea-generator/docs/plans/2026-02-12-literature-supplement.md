@@ -561,7 +561,7 @@ idea-generator/
 │                                                               │
 │  A0.1: Campaign Approval (人类确认研究方向)                   │
 │  A0.2: Idea Promotion (人类选择具体 idea 投入资源)            │
-│  → Phase C2 (Method Design) → W_compute                      │
+│  → Phase C2 (Method Design) → computation execution          │
 │                                                               │
 │  Rejected ideas → rejected_ideas KB (防止重复生成)            │
 │  Successful ideas → feedback loop to L1-L3 self-evolution     │

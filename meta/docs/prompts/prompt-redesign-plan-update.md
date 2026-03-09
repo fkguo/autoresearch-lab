@@ -15,7 +15,7 @@
 | 报告 | 路径 | 内容 |
 |------|------|------|
 | Scope Audit 收敛 | `meta/docs/scope-audit-converged.md` | 过度/欠工程化评估、优先级重排、SDK 策略 |
-| Dual-Mode 架构收敛 | `meta/docs/scope-audit-dual-mode-converged.md` | CLI-First 验证、idea-engine/W_compute/workflow 架构 |
+| Dual-Mode 架构收敛 | `meta/docs/scope-audit-dual-mode-converged.md` | CLI-First 验证、idea-engine/computation/workflow 架构 |
 | Pipeline 连通性审计 | `meta/docs/pipeline-connectivity-audit.md` | 5 孤岛 + 12 缺口 + NEW-CONN-01~05 (双模型 R4 收敛) |
 
 ### 已完成的实现
@@ -82,7 +82,7 @@ Phase 1 Batch 2 done ✅ → 以下现可执行:
 
 ### 6. Pipeline 连通性 (双模型 R4 收敛)
 
-**审计发现**: 研究全流程存在 5 个孤岛（idea-core, W_compute+hep-calc, 文献发现, 交叉检验, 编排器）和 12 个缺失连接。详见 `meta/docs/pipeline-connectivity-audit.md`。
+**审计发现**: 研究全流程存在 5 个孤岛（idea-core, computation+hep-calc, 文献发现, 交叉检验, 编排器）和 12 个缺失连接。详见 `meta/docs/pipeline-connectivity-audit.md`。
 
 **关键 schema 决策**: `EvidenceCatalogItemV1` 要求 `paper_id: string` + `locator: LatexLocatorV1`，是 LaTeX 特有的。计算结果**不能**存入此格式。解决方案: 创建并行的 `ComputationEvidenceCatalogItemV1` schema (JSON Schema SSOT in `meta/schemas/`, codegen via NEW-01)，含 `source_type: "computation"`, `ComputationLocatorV1` (artifact_uri + json_pointer + artifact_sha256), 以及 domain-specific 字段 (value, uncertainty, unit)。BM25 index builder 合并两类 evidence。LaTeX-only 消费者 (playback, citation verifier) 按 `paper_id` 过滤，自然跳过计算 evidence。
 
@@ -91,7 +91,7 @@ Phase 1 Batch 2 done ✅ → 以下现可执行:
 **Pipeline A/B 统一时间线**:
 1. Phase 2: NEW-IDEA-01 + NEW-COMP-01 → Pipeline A 能力暴露为 MCP
 2. Phase 2-2B: NEW-CONN-01~04 → 所有阶段通过 hint-only next_actions 连通
-3. Phase 3: NEW-COMP-02 (完整 W_compute MCP), NEW-CONN-05 (交叉检验)
+3. Phase 3: NEW-COMP-02 (完整 Computation MCP), NEW-CONN-05 (交叉检验)
 4. Phase 4: Pipeline A (hepar CLI) 退役
 
 ---
@@ -132,8 +132,8 @@ Phase 1 Batch 2 done ✅ → 以下现可执行:
 | **NEW-CONN-04** | Phase 2B | **Idea → Run creation**: `hep_run_create_from_idea` 接收 IdeaHandoffC2 URI, 创建 project + run, stage thesis/claims 为 outline seed, 返回 hint-only `next_actions` (inspire_search + build_evidence + ingest_skill_artifacts)。纯 staging，无网络调用。 | ~150 | NEW-IDEA-01 |
 | **NEW-CONN-05** | Phase 3 (deferred) | **Cross-validation → Pipeline**: `hep_run_build_measurements` 和 `hep_project_compare_measurements` 在发现 tension 时返回 `next_actions` 到 review/revision。扩展 measurements 消费计算 evidence。依赖 NEW-CONN-03 先实现。 | ~100 | NEW-CONN-03 |
 | **NEW-IDEA-01** | Phase 2 | idea-core MCP 包装 (`@autoresearch/idea-mcp`): MCP 工具暴露 campaign.*, search.step, eval.run | ~400-800 | H-01, H-02, H-03, H-16a |
-| **NEW-COMP-01** | Phase 2 late | W_compute MCP 工具表面设计 + 安全模型 (C-02 containment + A3 gating)。**追加**: 包含 `hep_run_ingest_skill_artifacts` 工具规格作为交付物 (single SSOT) | ~200 (设计) | C-02, NEW-R15-impl |
-| **NEW-COMP-02** | Phase 3 | W_compute MCP 实现 (`compute_run_card_v2` / `compute_status` / `compute_resolve_gate`) | ~500 | NEW-COMP-01 |
+| **NEW-COMP-01** | Phase 2 late | Computation MCP 工具表面设计 + 安全模型 (C-02 containment + A3 gating)。**追加**: 包含 `hep_run_ingest_skill_artifacts` 工具规格作为交付物 (single SSOT) | ~200 (设计) | C-02, NEW-R15-impl |
+| **NEW-COMP-02** | Phase 3 | Computation MCP 实现 (`compute_run_card_v2` / `compute_status` / `compute_resolve_gate`) | ~500 | NEW-COMP-01 |
 | **NEW-WF-01** | Phase 2 | `research_workflow_v1.schema.json` 设计 — 声明式研究工作流图 + 统一状态模型 + entry point variants (from_literature/idea/computation/existing_paper) + 模板 | ~100 (schema) | UX-04 |
 | **NEW-SKILL-01** | Phase 3 | `lean4-verify` skill (SKILL.md + run_lean4.sh + status.json) | ~200 | — |
 | **NEW-RT-01** | Phase 2 early | TS AgentRunner: Anthropic SDK + tool dispatch + lane queue + max_turns + approval gate injection | ~250 | NEW-R15-impl |
@@ -221,7 +221,7 @@ Phase 2B (Pipeline 连通):
 
 Phase 3 (独立 agent + 计算连通):
   NEW-05a Stage 3 续: idea-engine TS 重写完成
-  NEW-COMP-02: W_compute MCP 实现
+  NEW-COMP-02: Computation MCP 实现
   NEW-CONN-05: cross-validation → pipeline feedback (~100 LOC)
   NEW-SKILL-01: lean4-verify skill
   NEW-RT-04: durable execution

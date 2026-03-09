@@ -1,4 +1,4 @@
-# Phase 2 Batch 8 — TS AgentRunner + Durable Execution + W_compute MCP Design
+# Phase 2 Batch 8 — TS AgentRunner + Durable Execution + Computation MCP Design
 
 ## 前置状态
 
@@ -20,7 +20,7 @@
 
 ## 本批目标
 
-Phase 2 第八层——TS AgentRunner 实现 + Durable Execution + W_compute MCP 工具表面设计。Batch 7 完成了 NEW-R15-impl (orchestrator MCP tools)，现在实现依赖它的 AgentRunner。
+Phase 2 第八层——TS AgentRunner 实现 + Durable Execution + Computation MCP 工具表面设计。Batch 7 完成了 NEW-R15-impl (orchestrator MCP tools)，现在实现依赖它的 AgentRunner。
 
 **本批 3 项** (全部 TS/TypeScript + 设计文档):
 
@@ -28,7 +28,7 @@ Phase 2 第八层——TS AgentRunner 实现 + Durable Execution + W_compute MCP
 |---|-----|------|---------|------|------|
 | 1 | NEW-RT-01 | TS AgentRunner | ~250 | NEW-R15-impl ✅ | NEW-RT-04, EVO-01~03 |
 | 2 | NEW-RT-04 | Durable Execution | ~200 | NEW-RT-01 (本批完成) | EVO pipeline |
-| 3 | NEW-COMP-01 | W_compute MCP 工具表面设计 | ~200 (设计文档) | C-02 ✅, NEW-R15-impl ✅ | NEW-CONN-03 |
+| 3 | NEW-COMP-01 | Computation MCP 工具表面设计 | ~200 (设计文档) | C-02 ✅, NEW-R15-impl ✅ | NEW-CONN-03 |
 
 **总估计**: ~650 LOC (前两项 TS 代码，第三项设计文档)
 
@@ -167,15 +167,15 @@ Phase 2 第八层——TS AgentRunner 实现 + Durable Execution + W_compute MCP
 
 ---
 
-## Item 3: NEW-COMP-01 — W_compute MCP 工具表面设计
+## Item 3: NEW-COMP-01 — Computation MCP 工具表面设计
 
 **REDESIGN_PLAN 行号**: 搜索 `NEW-COMP-01`
 
-**范围**: 设计 W_compute MCP 工具表面安全模型 + 定义 `hep_run_ingest_skill_artifacts` 工具规格。这是设计文档交付物，为 NEW-COMP-02 (Phase 3 完整实现) 和 NEW-CONN-03 (Computation Evidence Ingestion) 奠定基础。
+**范围**: 设计 Computation MCP 工具表面安全模型 + 定义 `hep_run_ingest_skill_artifacts` 工具规格。这是设计文档交付物，为 NEW-COMP-02 (Phase 3 完整实现) 和 NEW-CONN-03 (Computation Evidence Ingestion) 奠定基础。
 
 **实现**:
 
-1. 创建 `meta/docs/wcompute-mcp-design.md` — W_compute MCP 工具表面安全模型:
+1. 创建 `meta/docs/computation-mcp-design.md` — Computation MCP 工具表面安全模型:
    - 工具清单 (建议工具名 + 参数规格 + 风险分级)
    - C-02 containment 对齐: 路径白名单 + 命令黑名单 + sandbox 约束
    - A3 default gating: 执行前需人类审批 (gate A3, approval packet 包含执行参数)
@@ -207,7 +207,7 @@ Phase 2 第八层——TS AgentRunner 实现 + Durable Execution + W_compute MCP
    - 注意: **不含** `paper_id` / `LatexLocatorV1` (与 EvidenceCatalogItemV1 语义不同)
 
 **验收检查点**:
-- [ ] `meta/docs/wcompute-mcp-design.md` 包含工具清单 + C-02 对齐 + A3 gating 策略
+- [ ] `meta/docs/computation-mcp-design.md` 包含工具清单 + C-02 对齐 + A3 gating 策略
 - [ ] `hep_run_ingest_skill_artifacts` 规格完整 (name, description, inputSchema, riskLevel)
 - [ ] `computation_evidence_catalog_item_v1.schema.json` 定义完成，通过 JSON Schema 格式验证
 - [ ] schema 明确不含 `paper_id` / `LatexLocatorV1` (注释说明与 EvidenceCatalogItemV1 的区别)

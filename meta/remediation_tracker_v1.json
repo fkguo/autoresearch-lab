@@ -845,13 +845,13 @@
         "NEW-COMP-01": {
           "status": "pending",
           "assignee": null,
-          "title": "W_compute MCP 安全设计",
+          "title": "Computation MCP 安全设计",
           "complexity": "medium",
           "depends_on": [
             "C-02",
             "NEW-R15-impl"
           ],
-          "note": "~200 LOC design."
+          "note": "~200 LOC design. Domain-neutral, task/capability-first compute substrate; provider/package lists remain open examples, not closed scope boundaries. Runtime LLM/agent chooses method/backend within approval/audit boundaries."
         },
         "NEW-WF-01": {
           "status": "done",
@@ -1080,13 +1080,13 @@
         "NEW-COMP-02": {
           "status": "pending",
           "assignee": null,
-          "title": "W_compute MCP 实现",
+          "title": "Computation MCP 实现",
           "complexity": "high",
           "depends_on": [
             "NEW-COMP-01",
             "C-02"
           ],
-          "note": "~500 LOC."
+          "note": "~500 LOC. Backend implementations must remain provider-pluggable; hep-calc is the first provider, not the sole executor family."
         },
         "NEW-SKILL-01": {
           "status": "pending",
@@ -1487,7 +1487,7 @@
             "NEW-COMP-01",
             "NEW-LOOP-01"
           ],
-          "note": "Builds on NEW-LOOP-01 single-user loop substrate; idea→compute execution plugs into the shared workspace/task graph instead of inventing a separate loop runtime."
+          "note": "Builds on NEW-LOOP-01 single-user loop substrate; idea→compute plugs into the shared workspace/task graph via domain-neutral execution plans. HEP-th / hep-calc is the first high-priority provider path, not the long-term scope boundary."
         },
         "EVO-02": {
           "title": "计算结果→idea 反馈循环",

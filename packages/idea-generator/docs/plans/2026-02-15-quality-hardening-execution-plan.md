@@ -1,8 +1,8 @@
-# W5-03/04/05 Hardening Implementation Plan
+# QL-03/04/05 Hardening Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Implement W5-03/W5-04/W5-05 as auditable, generic tool capabilities without mixing any M5 test-instance research content into tool repositories.
+**Goal:** Implement QL-03/QL-04/QL-05 as auditable, generic tool capabilities without mixing any M5 test-instance research content into tool repositories.
 
 **Architecture:** Use `idea-generator` as design/contract SSOT, `idea-core` as control-plane/runtime implementation target, and a separate `idea-runs` monorepo for all test-instance/run artifacts. Enforce the boundary with anti-pollution gates in tool repos and schema/gate contracts that are method-agnostic.
 
@@ -14,7 +14,7 @@
 
 **Files:**
 - Modify: `docs/plans/2026-02-12-implementation-plan-tracker.md`
-- Create: external local review archive note for `2026-02-15-w5-03-board-sync-check-v1.txt` (outside repo)
+- Create: external local review archive note for `2026-02-15-ql-03-board-sync-check-v1.txt` (outside repo)
 
 **Step 1: Run board/tracker sync checks**
 
@@ -23,21 +23,21 @@ Run:
 gh project item-list 1 --owner fkguo --limit 200 --format json
 gh project field-list 1 --owner fkguo --format json
 ```
-Expected: `W5-03` card exists and is `In Progress`; `W5-04`/`W5-05` are `Todo`.
+Expected: `QL-03` card exists and is `In Progress`; `QL-04`/`QL-05` are `Todo`.
 
 **Step 2: Update tracker stage status + append-only log**
 
-Set `W5-03` to `IN_PROGRESS`, keep `W5-04/05` as `TODO`, append an Update Log line with evidence path.
+Set `QL-03` to `IN_PROGRESS`, keep `QL-04/05` as `TODO`, append an Update Log line with evidence path.
 
 **Step 3: Commit tracker start sync**
 
 Run:
 ```bash
 git add docs/plans/2026-02-12-implementation-plan-tracker.md
-git commit -m "W5-03: start stage with tracker-board sync"
+git commit -m "QL-03: start stage with tracker-board sync"
 ```
 
-### Task 2: W5-03 Implementation (decouple + anti-pollution)
+### Task 2: QL-03 Implementation (decouple + anti-pollution)
 
 **Files:**
 - Create repo tree under: `idea-runs`
@@ -84,9 +84,9 @@ Repeat minimal fixes until both `VERDICT: READY`.
 
 **Step 6: Commit**
 
-Commit per repo with prefix `W5-03:`.
+Commit per repo with prefix `QL-03:`.
 
-### Task 3: W5-04 Implementation (generic schemas + checklist)
+### Task 3: QL-04 Implementation (generic schemas + checklist)
 
 **Files:**
 - Add/modify under: `idea-generator/schemas/`
@@ -114,9 +114,9 @@ Run schema validation and dual review loop until both READY.
 
 **Step 4: Commit**
 
-Commit with prefix `W5-04:`.
+Commit with prefix `QL-04:`.
 
-### Task 4: W5-05 Implementation (control-plane hardening)
+### Task 4: QL-05 Implementation (control-plane hardening)
 
 **Files:**
 - Modify: `idea-core/src/idea_core/hepar/*.py`
@@ -146,7 +146,7 @@ Run `make validate && pytest`; persist logs; dual review until both READY.
 
 **Step 5: Commit**
 
-Commit with prefix `W5-05:`.
+Commit with prefix `QL-05:`.
 
 ### Task 5: Final Sync + Clean State
 
@@ -155,7 +155,7 @@ Commit with prefix `W5-05:`.
 
 **Step 1: Mark statuses and evidence links**
 
-Set W5-03/04/05 to DONE only if verification + dual READY + commits complete.
+Set QL-03/04/05 to DONE only if verification + dual READY + commits complete.
 
 **Step 2: Board sync**
 

@@ -38,7 +38,7 @@
 | 文献管理 | Zotero MCP (7 工具) | 参考文献管理和导出 |
 | 文献缺口分析 | Phase C1 (`literature_survey.py`) | 作为种子源之一消费其输出 |
 | 方法设计脚手架 | Phase C2 (`method_design.py`) | idea 通过 A0 后下游消费 |
-| 通用计算 DAG | W_compute (`w_compute.py`) | 最终执行计算 |
+| 通用计算 DAG | computation executor (`computation.py`) | 最终执行计算 |
 | 多 Agent 团队 | review-swarm + research-team | 复用收敛门禁模式用于 idea 评审 |
 | 审批门禁 | A1-A5 系统 | 新增 A0 门禁，复用现有基础设施 |
 | 知识库 | KB (25 篇笔记 + methodology traces + priors) | 双向读写 |
@@ -96,7 +96,7 @@
 
 ### 3.1 四方案对比（三方 Agent 一致分析）
 
-| 准则 | A: 纯独立服务 | B: 新工作流 (W_idea) | C: 纯 Skill | **D: 混合架构** |
+| 准则 | A: 纯独立服务 | B: 新工作流 (`idea_loop`) | C: 纯 Skill | **D: 混合架构** |
 |------|-------------|-------------------|------------|--------------|
 | **耦合度** | 无——但失去 KB/门禁访问 | 高——绑定 hepar 内部 | 中——薄但逻辑嵌入提示词 | **低核心耦合，薄适配器** |
 | **跨域复用** | 优秀 | 差——hepar 专用 | 差——Claude 专用 | **核心优秀，HEP 适配器薄** |
@@ -107,7 +107,7 @@
 
 ### 3.2 三方共识：推荐方案 D（混合架构）
 
-> **Verdict (三方一致)**: 构建**独立的 `idea-core` 引擎**，通过严格的 artifact 契约与生态圈交互，以 `C0/C3/W_idea` 阶段形式暴露给编排器，通过新的 `A0` 审批门禁控制 idea 晋升。
+> **Verdict (三方一致)**: 构建**独立的 `idea-core` 引擎**，通过严格的 artifact 契约与生态圈交互，以 `C0/C3/idea_loop` 阶段形式暴露给编排器，通过新的 `A0` 审批门禁控制 idea 晋升。
 
 ---
 
@@ -262,7 +262,7 @@
 阶段 6: HANDOFF
 │
 │  已批准 ideas → IdeaCard (结构化输出)
-│  IdeaCard → C2 Method Design → W_compute run_card
+│  IdeaCard → C2 Method Design → computation execution plan
 ```
 
 ### 5.3 BFTS 评分函数
@@ -331,7 +331,7 @@ approval: {gate: "A0", status: "pending"}
 
 # ── 下游链接 ──
 method_design: null   # → C2 输出
-run_card: null        # → W_compute run_card
+run_card: null        # → computation execution plan
 results: null         # → 计算结果
 ```
 
@@ -404,7 +404,7 @@ results: null         # → 计算结果
     ├─────────────┤ ├────────────┤ ├───────────┤
     │ KB (25 笔记) │ │ KB (idea   │ │ C2 Method │
     │ C1 gap 列表 │ │  笔记)     │ │  Design   │
-    │ PDG 数据    │ │ Idea Store │ │ W_compute │
+    │ PDG 数据    │ │ Idea Store │ │ computation │
     │ INSPIRE API │ │ Provenance │ │ A0 门禁    │
     │ L1 记忆     │ │  Graph     │ │ L1 记忆    │
     │ 历史 ideas  │ │ Elo 评级   │ │           │
@@ -441,10 +441,10 @@ idea-generator 输入: IdeaSeed {
 - `minimal_compute_plan[]` (含预估运行时间量级)
 - `risk_register[]`, `evidence_uris[]`
 
-**非直接对接 W_compute**: ideas 必须经过 C2 验证才能触达 W_compute。
+**非直接对接 computation**: ideas 必须经过 C2 验证才能触达 computation executor。
 
 ```
-idea-generator →[A0 gate]→ C2 Method Design →[A2 gate]→ W_compute
+idea-generator →[A0 gate]→ C2 Method Design →[A2 gate]→ computation
 ```
 
 #### 审批门禁: A0
@@ -575,7 +575,7 @@ class DomainPlugin(ABC):
 
 ```
 论文/缺口证据 → idea claim → 选中 idea
-→ C2 方法规格 → W_compute run_card → 计算产物
+→ C2 方法规格 → computation execution plan → 计算产物
 → 结果摘要 → 反馈到 L1/L2/L3
 ```
 
@@ -596,7 +596,7 @@ idea.result_closed
 
 - 定义所有 JSON schemas (IdeaCard, 9 类产物)
 - 实现 A0 门禁逻辑
-- 最小 C0/W_idea wrapper
+- 最小 C0/idea_loop wrapper
 - 交付: 手动创建 ideas 可流入 C2
 
 ### Phase 1: MVP 生成 + Grounding
@@ -624,7 +624,7 @@ idea.result_closed
 - L1 记忆集成
 - C2 交接 (已批准 ideas → 方法设计)
 - **交付**: 完整管线 seeds → 树搜索 → 评估 → 排名 → A0 → C2
-- **验证**: 端到端: idea 生成 → 批准 → C2 方法规格 → W_compute run_card
+- **验证**: 端到端: idea 生成 → 批准 → C2 方法规格 → computation execution plan
 
 ### Phase 3: 智能 + 扩展性
 
@@ -684,7 +684,7 @@ idea.result_closed
 | **溯源** | **claim 级 DAG** | 部分 (论文引用) | 部分 | 部分 | KG 谱系 | 轨迹记录 |
 | **人类在环** | **A0 门禁 (强制)** | 可选 | 可选 | Elo 含人类 | 无 | 可选 |
 | **幻觉缓解** | grounding 分数 + 对抗 Agent + 物理检查 | 实验验证 | 多 Agent 交叉检查 | 锦标赛过滤 | KG 一致性 | 数值验证 |
-| **生态集成** | **深度 (KB, C1, C2, W_compute, L1-L3)** | 自包含 | 自包含 | 自包含 | 自包含 | 自包含 |
+| **生态集成** | **深度 (KB, C1, C2, computation, L1-L3)** | 自包含 | 自包含 | 自包含 | 自包含 | 自包含 |
 | **成本控制** | 预算上限 + 快速估计 | Token 限制 | 固定轮数 | 固定锦标赛 | 固定 KG 操作 | 固定管线 |
 
 **核心差异化**: 我们不是构建一个独立的 idea 生成器，而是为**已有的研究自动化平台添加创造性智能**。这是一个根本不同的集成挑战，但回报是一个可以从 idea → 已发表结果的端到端系统。

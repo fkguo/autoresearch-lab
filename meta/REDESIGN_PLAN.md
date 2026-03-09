@@ -108,7 +108,7 @@ Phase 2B (Pipeline 连通 + 深度集成):
   ├─ NEW-IDEA-01 idea-core MCP 桥接 (~400-800 LOC) ✅
   ├─ NEW-05a Stage 3 idea-engine TS 增量重写开始
   ├─ NEW-WF-01 Workflow schema 设计 (~100 LOC) ✅
-  ├─ NEW-COMP-01 W_compute MCP 安全设计 (~200 LOC) ✅
+  ├─ NEW-COMP-01 Computation MCP 安全设计 (~200 LOC) ✅
   ├─ NEW-RT-04 Durable execution (~200 LOC) ✅
   ├─ NEW-ARXIV-01 arxiv-mcp 独立 MCP (~1700 LOC) ← Phase 2 early add
   ├─ NEW-HEPDATA-01 hepdata-mcp 独立 MCP (~800 LOC) ← Phase 2 early add
@@ -118,7 +118,7 @@ Phase 2B (Pipeline 连通 + 深度集成):
   │
 Phase 3 (扩展性 + 计算连通 + 单研究者研究循环前置):
   ├─ NEW-05a Stage 3 续: idea-engine TS 重写完成
-  ├─ NEW-COMP-02 W_compute MCP 实现 (~500 LOC)
+  ├─ NEW-COMP-02 Computation MCP 实现 (~500 LOC)
   ├─ NEW-CONN-05 Cross-validation → Pipeline feedback (~100 LOC) ✅
   ├─ NEW-OPENALEX-01 openalex-mcp standalone MCP (~1700 LOC) ✅
   ├─ NEW-SKILL-01 lean4-verify skill (~200 LOC)
@@ -146,7 +146,7 @@ Pipeline A/B 统一时间线:
   Pipeline B = orchestrator (TS MCP) — 新编排器 (NEW-05a/NEW-R15)
   Phase 2:   NEW-IDEA-01 + NEW-COMP-01 → Pipeline A 能力暴露为 MCP (供 Pipeline B 消费)
   Phase 2B:  NEW-CONN-01~04 → 所有阶段通过 hint-only next_actions 连通
-  Phase 3:   NEW-COMP-02 (完整 W_compute MCP), NEW-CONN-05 (交叉检验)
+  Phase 3:   NEW-COMP-02 (完整 Computation MCP), NEW-CONN-05 (交叉检验)
   Phase 4+:  Pipeline A (hepar CLI) 退役, Pipeline B 成为唯一编排器
 
 NEW-R01 God-file 拆分 (跟踪伞) — 跨 Phase 1-3, 子项: NEW-R10/R11 (NEW-R09 cut)
@@ -243,7 +243,7 @@ autoresearch/                    # private monorepo (personal GitHub)
 |---|---|
 | `packages/orchestrator/` | (新 TS package) 最小编排骨架: StateManager, LedgerWriter, McpClient, ApprovalGate |
 | `packages/orchestrator/src/mcp-client.ts` | TypeScript MCP stdio client (替代 Python 版 mcp_stdio_client.py) |
-| `packages/orchestrator/src/state-machine.ts` | 研究循环编排内核（阶段枚举仅作 UX labels；执行走 event/task graph 而非固定 W1→W2→W3→W_compute） |
+| `packages/orchestrator/src/state-machine.ts` | 研究循环编排内核（阶段枚举仅作 UX labels；执行走 event/task graph 而非固定 ingest→reproduce→revision→computation 线性阶段） |
 | `packages/idea-engine/` | (新 TS package，阶段 3) idea-core 的 TS 重写: 搜索引擎、operator 接口、domain pack、评估维度、HEPAR 编排 |
 | `packages/idea-engine/src/operators.ts` | SearchOperator 接口 + HEP operator 实现 (anomaly abduction, symmetry, limit explorer) |
 | `packages/idea-engine/src/store.ts` | 文件级 JSON 存储 + proper-lockfile 并发控制 |
@@ -1502,7 +1502,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 ### NEW-CONN-03: Computation Evidence Ingestion (Phase 2)
 
-> **来源**: `meta/docs/pipeline-connectivity-audit.md` — Island 2 (W_compute + hep-calc CLI-only)
+> **来源**: `meta/docs/pipeline-connectivity-audit.md` — Island 2 (legacy computation workflow + hep-calc CLI-only)
 > **关键 schema 决策**: `EvidenceCatalogItemV1` 是 LaTeX 特有的 (required `paper_id` + `LatexLocatorV1`)。计算结果**不能**存入此格式。创建并行的 `ComputationEvidenceCatalogItemV1` schema。
 
 **依赖**: NEW-COMP-01, NEW-01
@@ -1549,15 +1549,16 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [x] idea-core 评估结果可通过 MCP 返回
 - [x] 错误通过 McpError (retryable) 传播
 
-### NEW-COMP-01: W_compute MCP 工具表面设计 (Phase 2 late)
+### NEW-COMP-01: Computation MCP 工具表面设计 (Phase 2 late)
 
 > **来源**: Dual-Mode 架构收敛 — 安全先行
 > **追加 (Pipeline 连通性审计)**: 包含 `hep_run_ingest_skill_artifacts` 工具规格作为交付物 (single SSOT)
+> **范围约束 (2026-03-08)**: `computation` substrate 应被实现为面向理论研究的 domain-neutral compute substrate，按 task/capability-first 建模；package 名称、后端名称与当前工具链只作开放示例或 provider 实现，不作封闭枚举、唯一执行路径或 scope 边界。具体问题的 decomposition、方法选择与 backend 组合默认由 runtime LLM / agent 在 typed contract + approval/audit 边界内决定。
 
 **依赖**: C-02, NEW-R15-impl
 **估计**: ~200 LOC (设计文档)
 
-**内容**: W_compute MCP 工具表面安全模型设计: C-02 containment (命令/输出验证) + A3 default gating (计算执行需人类批准) + allowlist。交付物包含 `hep_run_ingest_skill_artifacts` 工具规格。
+**内容**: Computation MCP 工具表面安全模型设计：统一 execution-plan / capability / provider contract + C-02 containment (命令/输出验证) + A3 default gating (计算执行需人类批准) + allowlist。交付物包含 `hep_run_ingest_skill_artifacts` 工具规格。
 
 **验收**:
 - [x] 安全模型设计文档通过双模型审核
@@ -2068,7 +2069,7 @@ paper/
 - [x] tension 发现时 next_actions 非空
 - [x] measurements 可消费计算 evidence (ComputationEvidenceCatalogItemV1)
 
-### NEW-COMP-02: W_compute MCP 实现 (Phase 3)
+### NEW-COMP-02: Computation MCP 实现 (Phase 3)
 
 > **来源**: Dual-Mode 架构收敛
 
@@ -2526,7 +2527,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 |---|---|---|
 | 单元测试 | 各组件内部逻辑 | 80% 行覆盖率 |
 | 契约测试 | 跨组件接口 (M-19, H-16b) | 100% 工具名 + 错误码覆盖 |
-| 集成测试 | 端到端工作流 (M-19) | W1-W4 冒烟测试通过 |
+| 集成测试 | 端到端工作流 (M-19) | 旧 ingest/reproduce/revision/computation 工作流族的冒烟测试通过 |
 | 回归基线 | N-1 版本 fixture (M-20) | 迁移测试通过 |
 
 ### Phase 4 验收总检查点
@@ -2554,33 +2555,31 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 ### EVO-01: idea→理论计算自动执行闭环
 
 > **依赖追加 (v1.9.2)**: UX-02 (computation contract), UX-04 (workflow schema), NEW-R15-impl (orch_run_*), NEW-COMP-01 (compute MCP 安全设计), NEW-LOOP-01 (single-user loop substrate)
+> **范围约束 (2026-03-08)**: 本项实现的是 domain-neutral `idea / method_spec -> execution_plan` handoff，而不是把某个 HEP tool wrapper 升格为 compute 语义本身。HEP-th / `hep-calc` 是首个高优先级 domain pack / provider，但不构成长期 scope 边界；下列能力与工具链仅作首批开放示例。
 
-**现状**: idea-core 输出 IdeaCard (自然语言)，C2 method_design 生成方法规格，但无法自动翻译为可执行的计算任务。hep-calc 可驱动 FeynCalc/FeynArts/FormCalc，但需要人类编写调用代码。
+**现状**: idea-core 输出 IdeaCard (自然语言)，C2 method_design 生成方法规格，但尚缺统一的 execution-planning handoff，无法稳定翻译为可审批、可审计、可复现的计算任务。当前 `hep-calc` 只是首个较成熟的 HEP theory provider，而非 compute 抽象本身。
 
-**计算类型覆盖**:
+**首批能力示例（非封闭）**:
 
-| 计算类型 | 工具链 | 优先级 |
+| 能力类 | 首批 provider / 工具链示例 | 说明 |
 |---|---|---|
-| 费曼图/振幅生成 | FeynArts / QGraf / QGRAF→FORM 管线 | 自动化流水线入口 |
-| 解析推导 (符号计算) | Wolfram Language (FeynCalc/FormCalc/FeynRules/Package-X) → wolframscript | 首选已有 HEP 程序包 |
-| 解析推导 (Python 生态) | SymPy + 领域扩展 | 仅当 Wolfram 包不覆盖特定类时 |
-| 数值计算 | LoopTools (Fortran/C++) → Julia/Fortran/C++ 绑定 | 优先选择性能最优的语言 |
-| 积分约化 | FIRE / LiteRed / Kira (IBP 约化) | 调用已有程序包 |
-| 解析主积分 | HyperInt / PolyLogTools / HPL | 调用已有程序包 |
-| 多圈数值积分 | pySecDec / FIESTA | 调用已有程序包 |
-| 算法设计 | 自定义代码 | 仅当已有程序包不能满足需求时 |
+| 符号推导 / 代数计算 | Wolfram-based stacks、SymPy、后续 CAS providers | 优先复用成熟 provider |
+| 数值计算 / 扫描 | Julia / C++ / Fortran / 现有数值求解器 | 按性能、可审计性与复现性选择 |
+| 约化 / 积分 / 专项求解 | FIRE/LiteRed/Kira、pySecDec/FIESTA、后续领域求解器 | 作为开放 provider 示例，不是封闭列表 |
+| 证明 / 验证 / 一致性检查 | 形式化工具、定理证明器、符号/数值 cross-check providers | 不限于当前 HEP 工具链 |
+| 受限自定义执行 | 生成或手写的 sandboxed executor | 仅在现有 provider 不满足需求且通过审批时启用 |
 
-**原则**: 优先搜索并调用领域内已有成熟程序包；仅在程序包不能满足具体需求时才编写自定义代码。
+**原则**: 优先复用成熟 provider / 现有程序包；仅在它们不能满足具体需求时，才由 runtime LLM / agent 在治理边界内组合 provider 或生成受限执行路径。
 
 **修改内容**:
 
 | 文件 | 变更 |
 |---|---|
-| `idea-core/src/idea_core/handoff/package_selector.py` | 根据 idea 类型自动选择计算程序包 + 搜索领域内已有工具 |
-| `idea-core/src/idea_core/handoff/run_card_compiler.py` | IdeaCard + method_spec → hep-calc run_card 编译器 (参数化调用模板) |
-| `skills/hep-calc/` | 扩展: 接受 run_card 自动执行，搜索并调用已有程序包，支持 wolframscript + SymPy + 高性能数值后端 |
+| `idea-core/src/idea_core/handoff/execution_strategy_planner.py` | 根据 research task / method_spec 选择执行策略、能力需求与候选 provider |
+| `idea-core/src/idea_core/handoff/execution_plan_compiler.py` | IdeaCard + method_spec → domain-neutral computation execution plan / provider payload 编译器 |
+| `skills/hep-calc/` | 作为首个 HEP theory provider 接入：接受 execution-plan 派生 payload 执行并产出可审计 artifacts；不定义 compute 抽象本身 |
 
-**验收**: run_card 编译器生成的调用代码可被 hep-calc 直接执行，驱动已有程序包完成计算。
+**验收**: execution plan 编译器生成的调用计划可被一个获批准的 provider（起始为 `hep-calc`）消费并执行，稳定产出可审计 computation artifacts。
 
 ### EVO-02: 计算结果→idea 反馈循环
 
@@ -2802,7 +2801,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 **验收**:
 - 并行 team 执行中 kill 进程后可从 checkpoint 恢复，已完成角色不重跑
 - `stage_gated` 策略: 阶段内并行 + 阶段间门禁 + 持久化均正常
-- 与现有 Orchestrator CLI 状态机兼容 (W1-W4 阶段可嵌入并行子任务)
+- 与现有 Orchestrator CLI 状态机兼容（旧 ingest/reproduce/revision/computation 工作流可嵌入并行子任务）
 
 ### EVO-14: 跨 Run 并行调度 + Agent 生命周期
 

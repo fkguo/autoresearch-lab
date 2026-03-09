@@ -18,15 +18,15 @@
 
 ### 0.1 执行状态更新（2026-02-15）
 
-- `W5-03`：已完成并收敛（Opus + gemini-3-pro-preview 均 `READY`），工具仓库反污染 gate 与 `idea-runs` 解耦结构已落地。  
+- `QL-03`：已完成并收敛（Opus + gemini-3-pro-preview 均 `READY`），工具仓库反污染 gate 与 `idea-runs` 解耦结构已落地。
   证据：`review archive (outside repo)`、`review archive (outside repo)`。
-- `W5-04`：已完成并收敛（round-002：Opus=`READY`，gemini-3-pro-preview=`READY`，`fallback_reason=null`），通用质量门禁 schemas + checklist + examples 已提交并验证通过。  
+- `QL-04`：已完成并收敛（round-002：Opus=`READY`，gemini-3-pro-preview=`READY`，`fallback_reason=null`），通用质量门禁 schemas + checklist + examples 已提交并验证通过。
   证据：`review archive (outside repo)`、`review archive (outside repo)`、`review archive (outside repo)`。
-- 看板状态已同步：`W5-03=Done`、`W5-04=Done`、`W5-05=In Progress`。  
+- 看板状态已同步：`QL-03=Done`、`QL-04=Done`、`QL-05=In Progress`。
   证据：`review archive (outside repo)`。
-- `W5-05`：已完成并收敛（round-001：Opus=`READY`，gemini-3-pro-preview=`READY`，`fallback_reason=null`），并通过 `make validate && pytest`（`105 passed`）验证。  
+- `QL-05`：已完成并收敛（round-001：Opus=`READY`，gemini-3-pro-preview=`READY`，`fallback_reason=null`），并通过 `make validate && pytest`（`105 passed`）验证。
   证据：`idea-core review archive (outside repo)`、`idea-core review archive (outside repo)`、`review archive (outside repo)`。
-- `W5-05` 代码实现提交：`idea-core` 已提交 `c3f8006`，将路径边界、原子写、timeout/backoff、权限事件反应式处理、replay 并发安全与 `env_whitelist` 一致性固化到运行时实现，并新增回归测试覆盖；复验证据：`idea-core review archive (outside repo)`。
+- `QL-05` 代码实现提交：`idea-core` 已提交 `c3f8006`，将路径边界、原子写、timeout/backoff、权限事件反应式处理、replay 并发安全与 `env_whitelist` 一致性固化到运行时实现，并新增回归测试覆盖；复验证据：`idea-core review archive (outside repo)`。
 - 推送状态：`idea-core` 与 `idea-generator` 的已完成阶段提交已 push 到 `origin/main`（后续新增提交待你确认是否继续 push）。
 
 ---
@@ -254,9 +254,9 @@
 
 ---
 
-## 5. 映射到 SSOT tracker 的可执行任务（W5.*）
+## 5. 映射到 SSOT tracker 的可执行任务（QL.*）
 
-本 RFC 的改造项将以 W5 任务落到 `docs/plans/2026-02-12-implementation-plan-tracker.md`，并要求每项 DONE 都提供：
+本 RFC 的改造项将以 QL 任务落到 `docs/plans/2026-02-12-implementation-plan-tracker.md`，并要求每项 DONE 都提供：
 - schema/接口文档（idea-generator）
 - 对应实现与测试证据（idea-core/hepar）
 - `idea-runs` 中的可重放样例（至少一个“预期失败”样例进入失败库）
