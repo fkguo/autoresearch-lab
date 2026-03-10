@@ -4,6 +4,8 @@
 >
 > 前置：`Batch 1` 已完成并收口。  
 > 目标：在 `NEW-05a Stage 3` 前，把 `idea-core` 中 generic core 不应持有的 HEP compute/domain 假设下沉到 domain-pack/provider seam。
+>
+> **状态注记 (2026-03-10)**：本 prompt 的局部代码清理已在当前工作树中完成并通过验收，但 closeout 暂停。原因是 repo-level public contracts 仍把 `formalism` 作为 mandatory gate，并继续把 shipped concrete instances 带入 tool ecology。继续收口前，先执行 `meta/docs/prompts/prompt-2026-03-10-formalism-contract-boundary.md`。
 
 ## 0. 开工前必读
 

@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.2-draft",
-  "updated_at": "2026-03-08T20:05:00+08:00",
-  "note": "v1.9.2-draft: v1.9.1 + single-user nonlinear research-loop clarification. Added NEW-LOOP-01 as a Phase 3 precursor so the near-term product is a single-user research system (interactive or autonomous) rather than a stage-linear demo flow. Agent-arXiv and REP remain later outer layers. Existing SOTA follow-up queue (NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e) remains in place. Architecture update dual-reviewed by Opus + Kimi K2.5 (both CONVERGED_WITH_AMENDMENTS, 0 blocking); dependency and REP-scope clarifications integrated. 161 items.",
+  "updated_at": "2026-03-10T13:40:00+08:00",
+  "note": "v1.9.2-draft: v1.9.1 + single-user nonlinear research-loop clarification. Added NEW-LOOP-01 as a Phase 3 precursor so the near-term product is a single-user research system (interactive or autonomous) rather than a stage-linear demo flow. Agent-arXiv and REP remain later outer layers. Existing SOTA follow-up queue (NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e) remains in place. Architecture update dual-reviewed by Opus + Kimi K2.5 (both CONVERGED_WITH_AMENDMENTS, 0 blocking); dependency and REP-scope clarifications integrated. 2026-03-10 supplement: standalone formalism-contract boundary follow-up prompt added so batch2 closeout stays paused until repo-level `formalism` public-contract leakage is removed. 162 items.",
   "phases": {
     "0": {
       "name": "止血",
@@ -766,6 +766,29 @@
           ],
           "completed_at": "2026-03-10",
           "note": "Standalone batch per meta/docs/prompts/prompt-2026-03-09-batch1-shared-boundary.md completed without commit (user did not authorize git commit). Shared no longer owns concrete HEP_* tool-name authority, HEP risk maps, or hep:// run-artifact helpers; hep-mcp now owns local HEP tool names/risk authority and runArtifactUri wrappers while still re-exporting sibling-provider cross-package contract constants from shared. Acceptance passed: pnpm --filter @autoresearch/shared test/build/lint; pnpm --filter @autoresearch/hep-mcp test/build/lint; pnpm --filter @autoresearch/orchestrator test/build; pnpm --filter @autoresearch/openalex-mcp test/build; pnpm -r build; pnpm -r test; git diff --check. Formal review: Gemini R1 CONVERGED before later local unavailability; user approved fallback reviewer zhipuai-coding-plan/glm-5; Opus R2 CONVERGED; GLM-5 adjudication CONVERGED; K2.5 R3 CONVERGED after narrower batch-contract adjudication. Adopted amendments: shared artifact-ref tests now include non-HEP scoped-URI examples and non-HEP createArtifactRefV1 URI examples. Deferred follow-up with persistent value: idea-mcp concrete tool-risk authority remains unowned by a local idea package map, but this is outside the shared/hep-mcp boundary batch and should be handled in a later idea-mcp-focused batch. Self-review: 0 blocking; GitNexus detect_changes/context remained useful for process/risk evidence but still under-reported new hep-mcp files and helper callsites (e.g. tool-risk.ts/tool-names.ts file nodes absent, staging still showed parseRunArtifactUri), so source rg inspection remained the exact post-change verification source of truth for helper migration."
+        },
+        "NEW-05a-idea-core-domain-boundary": {
+          "title": "idea-core 边界 re-baseline（移除 HEP 默认世界观）",
+          "status": "blocked",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "NEW-05a-shared-boundary",
+            "NEW-IDEA-01"
+          ],
+          "note": "Standalone batch executing meta/docs/prompts/prompt-2026-03-09-batch2-idea-core-domain-boundary.md. Local code cleanup is already present in the current worktree and acceptance is green (`make -C packages/idea-core test` => 107 passed), but closeout is paused because repo-level public contracts still require `candidate_formalisms[]` / `formalism_registry` / `formalism_check` and still leak shipped concrete formalism instances into the tool ecology. Resume/close only after NEW-05a-formalism-contract-boundary."
+        },
+        "NEW-05a-formalism-contract-boundary": {
+          "title": "formalism 合同边界 re-baseline（去实例化 / 去必填）",
+          "status": "pending",
+          "complexity": "high",
+          "assignee": null,
+          "depends_on": [
+            "NEW-05a-shared-boundary",
+            "NEW-IDEA-01"
+          ],
+          "design_doc": "meta/docs/2026-03-10-formalism-boundary-sota-memo.md",
+          "note": "Standalone follow-up per meta/docs/prompts/prompt-2026-03-10-formalism-contract-boundary.md. Scope: remove `formalism` from repo-level public mandatory authority, demote method/formalism information to optional run-local metadata, remove shipped concrete formalism ids from built-in pack authority, and realign `idea/question -> approach/method -> execution/provider` boundaries with current autoresearch direction and public SOTA systems (AI Scientist-v2, PiFlow, Agent Laboratory, AIDE)."
         },
         "NEW-RT-01": {
           "status": "done",

@@ -4,6 +4,8 @@
 >
 > 前置：`Batch 1`、`Batch 2` 已完成并收口。  
 > 目标：清理 runtime/provider/root 的 HEP 占位与命名漂移，使 repo face 与 control-plane face 不再误导后续实现。
+>
+> **状态注记 (2026-03-10)**：执行本 prompt 前，先完成 `meta/docs/prompts/prompt-2026-03-10-formalism-contract-boundary.md`。本批只处理 root/runtime/provider 的命名与入口占位，不解决 `formalism` mandatory-contract / shipped concrete instance leakage。
 
 ## 0. 开工前必读
 
