@@ -5,7 +5,7 @@
 > 前置：`Batch 1` 已完成并收口。  
 > 目标：在 `NEW-05a Stage 3` 前，把 `idea-core` 中 generic core 不应持有的 HEP compute/domain 假设下沉到 domain-pack/provider seam。
 >
-> **状态注记 (2026-03-10, 更新)**：本 prompt 的局部代码清理已在当前工作树中完成并通过验收，但 formal closeout 再次暂停。此前的 repo-level `formalism` blocker 已由 `meta/docs/prompts/prompt-2026-03-10-formalism-contract-boundary.md` 清除；随后深度审计发现 `idea-core` 仍保留 active HEP worldview authority（`hep.bootstrap` / `bootstrap_default` / `HEP_COMPUTE_RUBRIC_RULES` / `toy_laptop` 等）。继续收口前，先执行 `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md` 的 Batch A，或在新对话中将 Batch A 与本 prompt 的 residual scope 合并后再正式 closeout；该合并例外仅在两者共享同一 `idea-core` boundary、同一 acceptance surface 与同一 review boundary 时成立。
+> **状态注记 (2026-03-10, Batch F downstream recovery)**：本 prompt 的 residual scope 已被 `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md` 的 Batch A 实质吸收，并已以 `NEW-05a-idea-core-domain-boundary` closeout 正式收口。当前 `idea-core` live boundary 仅保留 provider-local `hep.operators.v1` pack catalog 与 explicit capability/task-first constraint policy；`hep.bootstrap` / `bootstrap_default` / `HEP_COMPUTE_RUBRIC_RULES` / `toy_laptop` 不再位于 generic/default authority path。除非后续出现新的 blocking regression，否则不要重新开启本 prompt；下一条独立 prompt 是 `meta/docs/prompts/prompt-2026-03-09-batch3-runtime-root-dehep.md`，但不属于本批。
 
 ## 0. 开工前必读
 
@@ -17,7 +17,7 @@
 6. `meta/docs/prompts/prompt-2026-03-09-batch1-shared-boundary.md`
 7. `packages/idea-core/src/idea_core/engine/coordinator.py`
 8. `packages/idea-core/src/idea_core/engine/domain_pack.py`
-9. `packages/idea-core/src/idea_core/engine/formalism_registry.py`
+9. `packages/idea-core/src/idea_core/engine/hep_constraint_policy.py`
 10. 相邻测试：
    - `packages/idea-core/tests/engine/test_domain_pack_m30.py`
    - `packages/idea-core/tests/engine/test_formalism_registry_m31.py`
