@@ -5,7 +5,7 @@
 > 前置：`Batch 1` 已完成并收口。  
 > 目标：在 `NEW-05a Stage 3` 前，把 `idea-core` 中 generic core 不应持有的 HEP compute/domain 假设下沉到 domain-pack/provider seam。
 >
-> **状态注记 (2026-03-10)**：本 prompt 的局部代码清理已在当前工作树中完成并通过验收，但 closeout 暂停。原因是 repo-level public contracts 仍把 `formalism` 作为 mandatory gate，并继续把 shipped concrete instances 带入 tool ecology。继续收口前，先执行 `meta/docs/prompts/prompt-2026-03-10-formalism-contract-boundary.md`。
+> **状态注记 (2026-03-10, 更新)**：本 prompt 的局部代码清理已在当前工作树中完成并通过验收，但 formal closeout 再次暂停。此前的 repo-level `formalism` blocker 已由 `meta/docs/prompts/prompt-2026-03-10-formalism-contract-boundary.md` 清除；随后深度审计发现 `idea-core` 仍保留 active HEP worldview authority（`hep.bootstrap` / `bootstrap_default` / `HEP_COMPUTE_RUBRIC_RULES` / `toy_laptop` 等）。继续收口前，先执行 `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md` 的 Batch A，或在新对话中将 Batch A 与本 prompt 的 residual scope 合并后再正式 closeout；该合并例外仅在两者共享同一 `idea-core` boundary、同一 acceptance surface 与同一 review boundary 时成立。
 
 ## 0. 开工前必读
 

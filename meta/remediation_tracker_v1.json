@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "plan_version": "1.9.2-draft",
-  "updated_at": "2026-03-10T13:40:00+08:00",
-  "note": "v1.9.2-draft: v1.9.1 + single-user nonlinear research-loop clarification. Added NEW-LOOP-01 as a Phase 3 precursor so the near-term product is a single-user research system (interactive or autonomous) rather than a stage-linear demo flow. Agent-arXiv and REP remain later outer layers. Existing SOTA follow-up queue (NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e) remains in place. Architecture update dual-reviewed by Opus + Kimi K2.5 (both CONVERGED_WITH_AMENDMENTS, 0 blocking); dependency and REP-scope clarifications integrated. 2026-03-10 supplement: standalone formalism-contract boundary follow-up prompt added so batch2 closeout stays paused until repo-level `formalism` public-contract leakage is removed. 162 items.",
+  "plan_version": "1.9.3-draft",
+  "updated_at": "2026-03-10T17:20:00+08:00",
+  "note": "v1.9.3-draft: v1.9.2 + semantic-authority boundary clarification. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. 163 items.",
   "phases": {
     "0": {
       "name": "止血",
@@ -769,18 +769,19 @@
         },
         "NEW-05a-idea-core-domain-boundary": {
           "title": "idea-core 边界 re-baseline（移除 HEP 默认世界观）",
-          "status": "blocked",
+          "status": "pending",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "NEW-05a-shared-boundary",
-            "NEW-IDEA-01"
+            "NEW-IDEA-01",
+            "NEW-05a-hep-semantic-authority-deep-cleanup"
           ],
-          "note": "Standalone batch executing meta/docs/prompts/prompt-2026-03-09-batch2-idea-core-domain-boundary.md. Local code cleanup is already present in the current worktree and acceptance is green (`make -C packages/idea-core test` => 107 passed), but closeout is paused because repo-level public contracts still require `candidate_formalisms[]` / `formalism_registry` / `formalism_check` and still leak shipped concrete formalism instances into the tool ecology. Resume/close only after NEW-05a-formalism-contract-boundary."
+          "note": "Standalone batch for meta/docs/prompts/prompt-2026-03-09-batch2-idea-core-domain-boundary.md still has useful local cleanup in the current worktree and idea-core acceptance remains green (`make -C packages/idea-core test` => 107 passed), but formal closeout is paused again. The former repo-level `formalism` blocker was removed by NEW-05a-formalism-contract-boundary on 2026-03-10; a deeper audit then found remaining active worldview authority in `hep_builtin_domain_packs.json`, `hep_domain_pack.py`, and `hep_constraint_policy.py` (`hep.bootstrap`, `bootstrap_default`, `HEP_COMPUTE_RUBRIC_RULES`, `toy_laptop`). Next step: execute Batch A of the semantic deep-cleanup program first, then either merge the residual batch2 scope into that closeout or resume formal closeout immediately afterward. Do not proceed to batch3 before that sequence is complete."
         },
         "NEW-05a-formalism-contract-boundary": {
           "title": "formalism 合同边界 re-baseline（去实例化 / 去必填）",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
           "assignee": null,
           "depends_on": [
@@ -788,7 +789,21 @@
             "NEW-IDEA-01"
           ],
           "design_doc": "meta/docs/2026-03-10-formalism-boundary-sota-memo.md",
-          "note": "Standalone follow-up per meta/docs/prompts/prompt-2026-03-10-formalism-contract-boundary.md. Scope: remove `formalism` from repo-level public mandatory authority, demote method/formalism information to optional run-local metadata, remove shipped concrete formalism ids from built-in pack authority, and realign `idea/question -> approach/method -> execution/provider` boundaries with current autoresearch direction and public SOTA systems (AI Scientist-v2, PiFlow, Agent Laboratory, AIDE)."
+          "completed_at": "2026-03-10",
+          "note": "Standalone follow-up per meta/docs/prompts/prompt-2026-03-10-formalism-contract-boundary.md completed without commit (user did not authorize git commit). Public contract/runtime boundary now treats formalism as optional run-local metadata only: `candidate_formalisms[]` was demoted from required + registry-patterned field to optional advisory strings; `formalism_registry_v1` and `formalism_check` were removed from source schemas, vendored snapshots, OpenRPC, and idea-core runtime; built-in HEP pack authority no longer ships concrete `hep/toy` / `hep/eft` / `hep/lattice` catalogs; and public graph-viz no longer emits formalism nodes/edges. Current-facing docs were aligned in `packages/idea-generator/docs/plans/2026-02-11-idea-generator-design.md`, `packages/idea-generator/docs/plans/2026-02-12-idea-generator-architecture-spec.md`, and `meta/docs/graph-visualization-layer.md`. Acceptance passed on the current worktree: `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m pytest packages/idea-core/tests/engine -q`; `PYTHONPYCACHEPREFIX=/tmp/pycache make -C packages/idea-core validate`; `PYTHONPYCACHEPREFIX=/tmp/pycache make -C packages/idea-core test` (107 passed); `pnpm --filter @autoresearch/shared test` (166 tests); `pnpm --filter @autoresearch/shared build`; `pnpm --filter @autoresearch/hep-mcp test -- tests/core/createFromIdea.test.ts tests/contracts/ideaRunsIntegrationContract.test.ts` (13 tests); `git diff --check`. Formal review R1 via `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)` converged at 0 blocking / 0 amendments. Self-review also passed with 0 blocking: core mandatory contract remains thesis/hypotheses/observables/minimal_compute_plan/claims plus grounding+reduction gates, while method/formalism hints are optional run-local metadata only. GitNexus impact spot checks stayed HIGH/CRITICAL only on expected idea-core hot paths (`IdeaCoreService`, `OperatorContext`); exact post-change verification used scoped source grep because repo-wide `detect_changes` was noisy in the dirty worktree. This removes the public-contract blocker for NEW-05a-idea-core-domain-boundary closeout. Because the user did not authorize `git commit`, the `done` status here reflects the current preserved worktree state and must not be treated as durable if these changes are discarded before being committed or otherwise exported."
+        },
+        "NEW-05a-hep-semantic-authority-deep-cleanup": {
+          "title": "HEP semantic authority 深度清理（删除 / 重写 / 上提）",
+          "status": "pending",
+          "complexity": "high",
+          "assignee": null,
+          "depends_on": [
+            "NEW-05a-shared-boundary",
+            "NEW-05a-formalism-contract-boundary",
+            "NEW-RT-05"
+          ],
+          "design_doc": "meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md",
+          "note": "Doc-layer audit/program definition completed on 2026-03-10. Audit memo: `meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`. Program prompt: `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`. Deep source inspection found active worldview/semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, `HEP_COMPUTE_RUBRIC_RULES`, `toy_laptop`) and hep-mcp review/classification/question/assumption/conflict/grouping/challenge modules. The program is split into batches A-F: A=idea-core bootstrap/toy cleanup; B=review/paper/critical/assumption cleanup; C=theoretical-conflict cleanup; D=synthesis/grouping/challenge/survey/deepAnalyze cleanup; E=generic uplift of surviving typed semantic contracts only after provider-neutral rewrite; F=residual batch2 closeout then batch3. Ordering is now semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Review policy exception for this program is explicit: Gemini is temporarily unavailable and the user approved Opus + Kimi K2.5 dual-review fallback; record that exception in review artifacts rather than silently substituting another reviewer."
         },
         "NEW-RT-01": {
           "status": "done",
@@ -1392,7 +1407,7 @@
           "depends_on": [
             "NEW-RT-05"
           ],
-          "note": "Phase 3 Batch 14 completed (2026-03-07): replaced keyword-heavy topic extraction and drifting methodology grouping with shared semantic authority in `packages/hep-mcp/src/tools/research/synthesis/collectionSemanticLexicon.ts` and `packages/hep-mcp/src/tools/research/synthesis/collectionSemanticGrouping.ts`. `analyzePapers.ts::extractTopics` plus `grouping.ts::{groupByMethodology,groupForComparison}` now consume the same semantic grouping result while preserving the legacy `CollectionAnalysis.topics` outward shape. Locked eval plane: `tests/eval/evalSem10TopicMethodGrouping.test.ts`, fixtures under `tests/eval/fixtures/sem10/`, baseline `tests/eval/baselines/sem10_topic_method_grouping.baseline.json`. Acceptance: `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm -r build`. Formal implementation review (Opus + OpenCode kimi-for-coding/k2p5) converged on 2026-03-07 with 0 blocking; adopted low-risk amendments: removed orphaned `tfidf` barrel export, added explicit locked-baseline guards in eval tests, and normalized the `eft` alias. Formal self-review also passed with 0 blocking. Deferred non-blocking amendment: keep `tfidf.ts` file itself for now to avoid unrelated churn; only its stale export surface was removed. `NEW-RT-07`, `NEW-DISC-01` D4/D5, `NEW-LOOP-01`, and `NEW-SEM-06b` were not started. Implementation commit: `7bd21bc19cf9dadabb7bed19d7882b4c8cc93f35`.",
+          "note": "Phase 3 Batch 14 completed (2026-03-07): replaced keyword-heavy topic extraction and drifting methodology grouping with a provider-local semantic grouping module in `packages/hep-mcp/src/tools/research/synthesis/collectionSemanticLexicon.ts` and `packages/hep-mcp/src/tools/research/synthesis/collectionSemanticGrouping.ts`. `analyzePapers.ts::extractTopics` plus `grouping.ts::{groupByMethodology,groupForComparison}` now consume the same grouping result while preserving the legacy `CollectionAnalysis.topics` outward shape. Locked eval plane: `tests/eval/evalSem10TopicMethodGrouping.test.ts`, fixtures under `tests/eval/fixtures/sem10/`, baseline `tests/eval/baselines/sem10_topic_method_grouping.baseline.json`. Acceptance: `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm -r build`. Formal implementation review (Opus + OpenCode kimi-for-coding/k2p5) converged on 2026-03-07 with 0 blocking; adopted low-risk amendments: removed orphaned `tfidf` barrel export, added explicit locked-baseline guards in eval tests, and normalized the `eft` alias. Formal self-review also passed with 0 blocking. Deferred non-blocking amendment: keep `tfidf.ts` file itself for now to avoid unrelated churn; only its stale export surface was removed. Boundary clarification added on 2026-03-10: this closeout is an interim provider-local quality improvement, not evidence that the current grouping lexicon is final shared/generic authority. `NEW-RT-07`, `NEW-DISC-01` D4/D5, `NEW-LOOP-01`, and `NEW-SEM-06b` were not started. Implementation commit: `7bd21bc19cf9dadabb7bed19d7882b4c8cc93f35`.",
           "completed_at": "2026-03-07"
         },
         "NEW-SEM-11": {

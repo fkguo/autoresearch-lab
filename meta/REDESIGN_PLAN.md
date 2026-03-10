@@ -1,10 +1,16 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.2-draft (v1.9.1 + single-user research loop precursor)
-> **日期**: 2026-03-06
-> **基线**: v1.9.1-draft
+> **版本**: 1.9.3-draft (v1.9.2 + semantic-authority boundary clarification)
+> **日期**: 2026-03-10
+> **基线**: v1.9.2-draft
 > **重构项总数**: 160 项 (152 既有 + 8 新增: NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e, NEW-LOOP-01)
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.3 Changelog**:
+> - 追加 semantic-authority boundary clarification：`formalism` 去实例化之后，`idea-core` / `hep-mcp` 仍存在 active HEP worldview 与 closed semantic authority，必须在 residual `batch2` closeout 与 `batch3` 前先执行独立 deep cleanup program（详见 `meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md` 与 `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`）
+> - `NEW-05a` 长期边界收紧：generic core / future `idea-engine` 不得内嵌 domain-specific bootstrap ids、compute-rubric heuristics、review/paper taxonomies、topic/method/challenge lexicons 或其他 closed worldview authority；仅允许 provider-local non-authoritative seams 或 provider-neutral typed contracts
+> - `NEW-SEM-05` / `NEW-SEM-10` / `NEW-SEM-13` 重释为 provider-local interim quality gains，而非 final shared/generic authority；若其中有长期价值，必须在 provider-neutral rewrite 后再提升出去
+> - conversation guidance clarified for this cleanup program：不要把 A-F 塞进一个超长线程；默认一批一个对话，但共享同一 boundary / acceptance / review surface 的相邻批次可例外合并
 >
 > **v1.9.2 Changelog**:
 > - 明确近中期主产品为“单研究者研究系统”，将非线性 research loop 而非 Agent-arXiv 社区作为 monorepo 主干
@@ -221,6 +227,7 @@ autoresearch/                    # private monorepo (personal GitHub)
 - **Golden trace**: `idea-core/demo/m2_12_replay.py` 确保行为一致性
 - **Phase 4+**: idea-core Python 退役（与 hep-autoresearch 同步）
 - **产品边界约束 (2026-03-09)**: 若未来提供单一 end-user agent，必须作为独立 leaf package 引入（命名待定；可为 `packages/agent/` 或 `packages/autoresearch-agent/` 一类），由其消费 orchestrator + root composition layer + selected providers；不得让 repo root、`packages/orchestrator/` 或 `packages/idea-engine/` 直接承担该产品角色。该 leaf package 在 `P5A` 执行语义与 provider 边界稳定前不创建。详见 `meta/docs/2026-03-09-root-ecosystem-boundary-adr.md`。
+- **语义 authority 边界约束 (2026-03-10)**: 在 `NEW-05a Stage 3` 正式 closeout 前，必须先完成 `meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md` / `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md` 所定义的 deep cleanup program。generic core / future `idea-engine` 不得携带 `hep.bootstrap`、`bootstrap_default`、closed HEP compute rubric、review/paper taxonomies、topic/method/challenge lexicons、或任何以 closed domain enum 充当默认 semantic/worldview authority 的实现；有价值的长期内容只能通过 provider-neutral typed contract 上提。
 
 **迁移理由**:
 1. 所有主流 Agent 编排平台 (OpenCode, OpenClaw, Claude Code, Cursor) 均选择 TypeScript——Node.js 事件循环天然适合并发 Agent session 管理
@@ -2170,6 +2177,11 @@ paper/
 > - deterministic 逻辑仅作 **post-guards / 不变量**（schema/unit/numeric bounds/policy），不替代语义判断。
 > - TS 内 LLM 调用必须走 **MCP sampling** (`ctx.createMessage`)；禁止在 MCP server 内嵌 provider SDK/client（与 NEW-MCP-SAMPLING 的约束一致）。
 >
+> **边界澄清 (2026-03-10)**:
+> - `NEW-SEM-05` / `NEW-SEM-10` / `NEW-SEM-13` 已交付的是 provider-local interim improvements，不是 final shared/generic semantic authority。
+> - 若当前 `hep-mcp` 仍存在 closed keyword/alias/taxonomy logic 直接决定 public output、grouping、scoring、question framing 或默认 worldview，则必须继续清理；不能因为已有 batch closeout 就视作终态。
+> - 在 residual `batch2` closeout 与 `batch3` runtime/root de-HEP 之前，先执行 `meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md` / `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md` 定义的 semantic-authority deep cleanup A-E。
+>
 > **依赖**: `NEW-RT-05`（eval framework）是前置；多数 TS 消费者还依赖 `NEW-MCP-SAMPLING` 的 plumbing。
 >
 > **统一验收模板（质量优先）**:
@@ -2191,8 +2203,8 @@ paper/
 | 10 | NEW-SEM-01 + NEW-SEM-06a | P1 | high + medium | G1 | 核心 duo: quantity adjudicator + evidence retrieval baseline。SEM-01 修复最关键语义缺陷 (Critical)。`NEW-SEM-06` 在 Batch 10 交付的是可评测 baseline（semantic-first retrieval + deterministic rerank），不是终态 SOTA 检索架构。 |
 | 11 | NEW-SEM-02 | P1 | high | G3 | Evidence/Claim Semantic Grading V2。**前置**: SEM-01 eval 达标。定义 claim→evidence→stance 权威 schema。 |
 | 12 | NEW-SEM-03 + NEW-SEM-04 | P1+P2 | high + medium | G4 | Stance engine + theoretical conflict reasoner。均涉及 entailment/contradiction adjudication。SEM-03 复用 SEM-02 stance schema。 |
-| 13 | NEW-SEM-05 + NEW-SEM-09 | P2 | medium + medium | G1 | Hybrid classifier + section role classifier。独立模块。SEM-05 统一分类器完成后供 SEM-12 复用。 |
-| 14 | NEW-SEM-10 + NEW-SEM-13 | P2-P3 | medium + low | G1 | Topic/method grouping + challenge extractor。相关 synthesis/analysis 子系统。 |
+| 13 | NEW-SEM-05 + NEW-SEM-09 | P2 | medium + medium | G1 | Provider-local classifier consolidation + section role classifier。`SEM-05` 的 closeout 仅代表局部质量改善与单一入口整合；若仍有 closed authority，后续必须继续清理。 |
+| 14 | NEW-SEM-10 + NEW-SEM-13 | P2-P3 | medium + low | G1 | Provider-local topic/method grouping + challenge extractor。当前实现不是 final generic/shared authority；若保留长期价值，必须在 provider-neutral rewrite 后再提升出去。 |
 | 15 | NEW-SEM-08 | P2-P3 | medium | G1 | Semantic packet curation。Python-side（skills/research-team + writer）。单独 batch 避免跨语言上下文切换。 |
 | 16 | NEW-SEM-11 + NEW-SEM-12 | P3 | medium + medium | G5 | Equation importance + provenance matcher。TS-side。SEM-12 复用 SEM-05 unified classifier。 |
 
@@ -2202,15 +2214,15 @@ paper/
 | NEW-SEM-02 | Evidence/Claim Semantic Grading V2 | `hep-mcp/src/tools/research/evidenceGrading.ts` | high | NEW-RT-05, NEW-MCP-SAMPLING, G3 | 11 | negation/hedging 反转错误消失；claim→evidence→stance 评测达标 |
 | NEW-SEM-03 | LLM-First Stance Engine | `hep-mcp/src/tools/research/stance/*` | high | NEW-RT-05, NEW-MCP-SAMPLING, G4 | 12 | scoped negation + multi-citation stance 集合误差率下降；fallback rate 可控 |
 | NEW-SEM-04 | Theoretical Conflict Reasoner | `hep-mcp/src/tools/research/theoreticalConflicts.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 12 | hard conflict 需可审计 rationale；”not comparable” 处理覆盖 |
-| NEW-SEM-05 | Hybrid Paper/Review/Content Classifier | `hep-mcp/src/tools/research/reviewClassifier.ts` / `paperClassifier.ts` / `criticalQuestions.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 13 | terminology drift 下鲁棒性提升；逻辑去重（单一权威分类器） |
+| NEW-SEM-05 | Hybrid Paper/Review/Content Classifier (provider-local interim baseline) | `hep-mcp/src/tools/research/reviewClassifier.ts` / `paperClassifier.ts` / `criticalQuestions.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 13 | provider-local terminology drift 鲁棒性提升；当前 closeout 不自动授予 generic/shared authority 资格 |
 | NEW-SEM-06 | Evidence Retrieval Upgrade (SEM-06a baseline) | `hep-mcp/src/core/evidence.ts` / `core/writing/evidence.ts` / `evidenceSemantic.ts` | medium | NEW-RT-05 | 10 | claim→evidence 相关性基准 P@k/R@k 提升；citation/support 单独评测；semantic-first retrieval + deterministic rerank 成为后续 SOTA 路线的 baseline |
 | NEW-SEM-07 ✅ | Structured Gate Semantics | `skills/research-team/.../check_*_convergence.py` + writer gates | high | NEW-RT-05, RT-01 | 9 | gate 仅以 JSON schema 为 SoT；格式漂移不影响 pass/fail（回归测试） |
 | NEW-SEM-08 | Semantic Packet Curation | `skills/research-team/.../build_*packet.py` + writer distill/learn | medium | NEW-RT-05, NEW-SKILL-WRITING | 15 | “missed critical section” 集合召回率提升；可审计输出 |
 | NEW-SEM-09 | Deep Analysis Section Role Classifier | `hep-mcp/src/tools/research/deepAnalyze.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 13 | section role 标注 P/R 达标（不依赖 heading 关键词） |
-| NEW-SEM-10 | Topic/Method Grouping Semanticizer | `hep-mcp/src/tools/research/analyzePapers.ts` + `synthesis/grouping.ts` | medium | NEW-RT-05 | 14 | 聚类稳定性/一致性提升；固定语料回归可重复 |
+| NEW-SEM-10 | Topic/Method Grouping Semanticizer (provider-local interim baseline) | `hep-mcp/src/tools/research/analyzePapers.ts` + `synthesis/grouping.ts` | medium | NEW-RT-05 | 14 | provider-local grouping 一致性提升；任何 surviving abstraction 需在 provider-neutral rewrite 后再考虑上提 |
 | NEW-SEM-11 | Key Equation Semantic Importance | `hep-mcp/src/tools/research/latex/keyEquationIdentifier.ts` + `equationTypeSignals.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 16 | top-k 命中率提升；catalog 仅作 hints |
 | NEW-SEM-12 | Paper Version / Provenance Matcher | `hep-mcp/src/tools/research/traceToOriginal.ts` + review detection reuse | medium | NEW-RT-05, G5 | 16 | matched-pairs precision/recall 达标；”不确定”路径明确 |
-| NEW-SEM-13 | Synthesis Challenge Extractor | `hep-mcp/src/tools/research/synthesis/narrative.ts` | low | NEW-RT-05 | 14 | challenge 提取漏检率下降；taxonomy 覆盖 hard cases |
+| NEW-SEM-13 | Synthesis Challenge Extractor (provider-local interim baseline) | `hep-mcp/src/tools/research/synthesis/narrative.ts` | low | NEW-RT-05 | 14 | provider-local challenge detection 漏检率下降；当前 taxonomy 不应被当成 final generic authority |
 
 ### Phase 3 SOTA 检索/发现/单研究者研究循环后续队列 (Batch 11+ 建议排期)
 
@@ -2240,6 +2252,8 @@ paper/
 | Batch 18 | `NEW-SEM-06d` | 在强 backbone 上叠加 triggered reformulation / QPP，而不是拿它补洞 |
 | Batch 19 | `NEW-SEM-06e`（已于 2026-03-08 standalone closeout） | 结构化 evidence localization 已成为 `agent-arxiv` 检索扩展前置门槛；shared typed locator contract、LaTeX+PDF semantic localization 与 failure-path eval 已收口 |
 | Standalone（2026-03-08） | `NEW-SEM-06f`（已 closeout） | 在 `NEW-SEM-06e` localization backbone 之上以 bounded multimodal/page-native fusion 收束 multimodal retrieval；不重开 discovery substrate / runtime scope |
+
+> **Ordering clarification (2026-03-10)**: 旧的隐含顺序“formalism cleanup -> residual batch2 closeout -> batch3”已失效。当前正确顺序为：semantic-authority deep cleanup A-E -> residual `batch2` closeout -> `batch3` runtime/root de-HEP。`batch3` 不应早于这一边界程序启动。
 
 > **Closeout update (2026-03-07)**: `NEW-RT-07` 已通过 standalone implementation prompt 完成；host-side MCP sampling routing registry、typed metadata contract、以及 auditable fallback/fail-closed path 已落地。Acceptance（`pnpm --filter @autoresearch/orchestrator test/build`, `pnpm --filter @autoresearch/hep-mcp test/build`, `pnpm --filter @autoresearch/shared test/build`, `pnpm lint`, `pnpm -r test/build`）全绿；正式 `review-swarm`（`Opus` + `OpenCode(kimi-for-coding/k2p5)`）与 `self-review` 均 0 blocking。`NEW-DISC-01` 也已通过 standalone implementation prompt 完成 D4/D5 closeout：shared canonical paper / query-plan / dedup / search-log authority + broker consumer + deterministic eval fixtures / baseline / holdout 已落地，全部 acceptance commands 全绿，正式 `review-swarm`（`Opus` + `OpenCode(kimi-for-coding/k2p5)`）在 R2 收敛到 0 blocking，agent `self-review` 0 blocking；implementation commit `f233e77`，PR `#3` 已合并到 `main`（merge commit `2dbb97a`）；retrieval/discovery lane 现继续推进 `NEW-SEM-06b/d/e`。
 

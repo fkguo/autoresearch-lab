@@ -439,7 +439,7 @@ idea-generator 输入: IdeaSeed {
 - `idea_id`, `branch_id`, `thesis_statement`
 - `testable_hypotheses[]`
 - `required_observables[]`
-- `candidate_formalisms[]` (如 EFT/lattice/perturbative/QCD sum-rule)
+- optional `candidate_formalisms[]` / method hints (run-local only; if present they are advisory metadata, not a mandatory registry-backed gate)
 - `minimal_compute_plan[]` (含预估运行时间量级)
 - `risk_register[]`, `evidence_uris[]`
 
@@ -527,7 +527,7 @@ class DomainPlugin(ABC):
 | `seed_enrichers` | 种子丰富化 | 领域文献索引 + 结构化证据源 + tension feeds |
 | `query_expanders` | 查询扩展 | 领域术语本体 + source taxonomy |
 | `feasibility_estimators` | 可行性估算 | 符号/数值 backend 可用性检查 |
-| `method_compilers` | 方法编译 | formalism blueprints → run_card |
+| `method_compilers` | 方法编译 | provider-local method hints / execution recipes → run_card |
 
 ### 8.3 原则
 

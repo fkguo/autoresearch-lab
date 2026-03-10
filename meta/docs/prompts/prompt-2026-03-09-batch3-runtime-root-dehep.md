@@ -2,10 +2,10 @@
 
 > 默认继承 `meta/docs/prompts/IMPLEMENTATION_PROMPT_CHECKLIST.md`
 >
-> 前置：`Batch 1`、`Batch 2` 已完成并收口。  
+> 前置：`Batch 1` 已完成并收口；semantic-authority deep cleanup A-E 与 residual `Batch 2` closeout 已完成。
 > 目标：清理 runtime/provider/root 的 HEP 占位与命名漂移，使 repo face 与 control-plane face 不再误导后续实现。
 >
-> **状态注记 (2026-03-10)**：执行本 prompt 前，先完成 `meta/docs/prompts/prompt-2026-03-10-formalism-contract-boundary.md`。本批只处理 root/runtime/provider 的命名与入口占位，不解决 `formalism` mandatory-contract / shipped concrete instance leakage。
+> **状态注记 (2026-03-10, 更新)**：`formalism` mandatory-contract / shipped instance leakage 已被清理，但这还不足以启动本批。执行本 prompt 前，先完成 `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md` 的 A-E 批次，并完成 residual `Batch 2` closeout；否则本批只会做表层改名，同时把 active semantic authority leakage 留在 provider/core seam 里。
 
 ## 0. 开工前必读
 
