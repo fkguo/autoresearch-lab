@@ -2203,7 +2203,7 @@ paper/
 | 10 | NEW-SEM-01 + NEW-SEM-06a | P1 | high + medium | G1 | 核心 duo: quantity adjudicator + evidence retrieval baseline。SEM-01 修复最关键语义缺陷 (Critical)。`NEW-SEM-06` 在 Batch 10 交付的是可评测 baseline（semantic-first retrieval + deterministic rerank），不是终态 SOTA 检索架构。 |
 | 11 | NEW-SEM-02 | P1 | high | G3 | Evidence/Claim Semantic Grading V2。**前置**: SEM-01 eval 达标。定义 claim→evidence→stance 权威 schema。 |
 | 12 | NEW-SEM-03 + NEW-SEM-04 | P1+P2 | high + medium | G4 | Stance engine + theoretical conflict reasoner。均涉及 entailment/contradiction adjudication。SEM-03 复用 SEM-02 stance schema。 |
-| 13 | NEW-SEM-05 + NEW-SEM-09 | P2 | medium + medium | G1 | Provider-local classifier consolidation + section role classifier。`SEM-05` 的 closeout 仅代表局部质量改善与单一入口整合；若仍有 closed authority，后续必须继续清理。 |
+| 13 | NEW-SEM-05 + NEW-SEM-09 | P2 | medium + medium | G1 | Provider-local classifier consolidation + deepAnalyze section-surface cleanup。`SEM-05` 的 closeout 仅代表局部质量改善与单一入口整合；`NEW-SEM-09` 的旧 “section role classifier” closeout 叙事已在 2026-03-10 Batch D 按当前代码树纠偏为 explicit heading-utility diagnostics；若仍有 closed authority，后续必须继续清理。 |
 | 14 | NEW-SEM-10 + NEW-SEM-13 | P2-P3 | medium + low | G1 | Provider-local topic/method grouping + challenge extractor。当前实现不是 final generic/shared authority；若保留长期价值，必须在 provider-neutral rewrite 后再提升出去。 |
 | 15 | NEW-SEM-08 | P2-P3 | medium | G1 | Semantic packet curation。Python-side（skills/research-team + writer）。单独 batch 避免跨语言上下文切换。 |
 | 16 | NEW-SEM-11 + NEW-SEM-12 | P3 | medium + medium | G5 | Equation importance + provenance matcher。TS-side。SEM-12 复用 SEM-05 unified classifier。 |
@@ -2218,7 +2218,7 @@ paper/
 | NEW-SEM-06 | Evidence Retrieval Upgrade (SEM-06a baseline) | `hep-mcp/src/core/evidence.ts` / `core/writing/evidence.ts` / `evidenceSemantic.ts` | medium | NEW-RT-05 | 10 | claim→evidence 相关性基准 P@k/R@k 提升；citation/support 单独评测；semantic-first retrieval + deterministic rerank 成为后续 SOTA 路线的 baseline |
 | NEW-SEM-07 ✅ | Structured Gate Semantics | `skills/research-team/.../check_*_convergence.py` + writer gates | high | NEW-RT-05, RT-01 | 9 | gate 仅以 JSON schema 为 SoT；格式漂移不影响 pass/fail（回归测试） |
 | NEW-SEM-08 | Semantic Packet Curation | `skills/research-team/.../build_*packet.py` + writer distill/learn | medium | NEW-RT-05, NEW-SKILL-WRITING | 15 | “missed critical section” 集合召回率提升；可审计输出 |
-| NEW-SEM-09 | Deep Analysis Section Role Classifier | `hep-mcp/src/tools/research/deepAnalyze.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 13 | section role 标注 P/R 达标（不依赖 heading 关键词） |
+| NEW-SEM-09 | Deep Analysis Section Role Classifier | `hep-mcp/src/tools/research/deepAnalyze.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 13 | 当前树以 explicit heading-utility diagnostics 为准，不得再把 heading lookup 当成 semantic authority；旧 closeout 中的 `sectionRole*` / `evalSem09...` 仅属历史叙事漂移 |
 | NEW-SEM-10 | Topic/Method Grouping Semanticizer (provider-local interim baseline) | `hep-mcp/src/tools/research/analyzePapers.ts` + `synthesis/grouping.ts` | medium | NEW-RT-05 | 14 | provider-local grouping 一致性提升；任何 surviving abstraction 需在 provider-neutral rewrite 后再考虑上提 |
 | NEW-SEM-11 | Key Equation Semantic Importance | `hep-mcp/src/tools/research/latex/keyEquationIdentifier.ts` + `equationTypeSignals.ts` | medium | NEW-RT-05, NEW-MCP-SAMPLING | 16 | top-k 命中率提升；catalog 仅作 hints |
 | NEW-SEM-12 | Paper Version / Provenance Matcher | `hep-mcp/src/tools/research/traceToOriginal.ts` + review detection reuse | medium | NEW-RT-05, G5 | 16 | matched-pairs precision/recall 达标；”不确定”路径明确 |
