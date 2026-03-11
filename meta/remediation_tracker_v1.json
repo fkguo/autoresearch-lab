@@ -1429,24 +1429,26 @@
         },
         "NEW-SEM-11": {
           "title": "Key Equation Semantic Importance",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "NEW-RT-05",
             "NEW-MCP-SAMPLING"
           ],
-          "note": "Phase 3 Batch 16 (SEM track P3). Catalog hits are hints; context-aware ranking via LLM. Eval via labeled key-equation top-k accuracy."
+          "note": "Phase 3 Batch 16 completed (2026-03-11): `identifyKeyEquations` no longer lets section keywords / reference count / HEP-local equation signals decide key-equation authority. `packages/hep-mcp/src/tools/research/latex/{keyEquationIdentifier,keyEquationSampling}.ts` now implement bounded candidate generation + MCP semantic adjudication with explicit `selected | uncertain | abstained | unavailable` states, and downstream consumers in `parseLatexContent`, `deepAnalyze`, and `synthesizeReview` consume that auditable surface rather than drifting heuristic scores. Locked eval/regression surface: `tests/eval/evalSem11KeyEquationImportance.test.ts`, fixtures/baseline under `tests/eval/fixtures/sem11/` + `tests/eval/baselines/sem11_key_equation_importance.baseline.json`, `tests/research/synthesizeReview.test.ts`, plus post-review guard `tests/research/latex/keyEquationSampling.test.ts`. Acceptance passed on the current worktree: `pnpm --filter @autoresearch/hep-mcp test -- tests/eval/evalSem11KeyEquationImportance.test.ts`, `pnpm --filter @autoresearch/hep-mcp test -- tests/eval/evalSem12ProvenanceMatcher.test.ts`, `pnpm --filter @autoresearch/hep-mcp test -- tests/research/synthesizeReview.test.ts tests/research/fieldSurvey.test.ts`, `pnpm --filter @autoresearch/hep-mcp test -- tests/tools.test.ts tests/research/researchNavigator.test.ts tests/research/researchNavigatorParity.test.ts`, `pnpm --filter @autoresearch/hep-mcp test`, `pnpm --filter @autoresearch/hep-mcp test:eval`, `pnpm --filter @autoresearch/hep-mcp build`, `pnpm lint`, `git diff --check`; after adopting the low-risk prompt-truncation amendment, targeted revalidation also passed via `tests/research/latex/keyEquationSampling.test.ts` + relevant Batch 16 eval/regression tests. Formal review converged with 0 blocking: `Opus` = `CONVERGED_WITH_AMENDMENTS`, `Gemini-3.1-Pro-Preview` = `CONVERGED`, `OpenCode(Kimi 2.5 local alias)` = `CONVERGED_WITH_AMENDMENTS`. Adopted amendment: SEM-11 sampling prompt truncation guardrails. Declined/closed: unavailable-path coverage was already present in SEM-11/12 eval+holdout fixtures; timeout-specific public status would widen the Batch 16 contract without correctness gain. Formal self-review passed with 0 blocking. GitNexus post-change refresh remained up to date, with intended callers on `identifyKeyEquations`, but exact source inspection remained authoritative for stale `traceToOriginal` helper reporting. No git commit hash recorded because commit/push were not authorized in this conversation.",
+          "completed_at": "2026-03-11"
         },
         "NEW-SEM-12": {
           "title": "Paper Version / Provenance Matcher",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "NEW-RT-05"
           ],
-          "note": "Phase 3 Batch 16 (SEM track P3, gate G5). Conference→journal / version matching via semantic matching; reuses SEM-05 unified classifier for review detection."
+          "note": "Phase 3 Batch 16 completed (2026-03-11): `traceToOriginal` no longer lets first-author overlap, title-token overlap, or publication/year metadata act as final provenance authority. `packages/hep-mcp/src/tools/research/{traceToOriginal,provenanceMatchingSampling}.ts` now use metadata and `SEM-05` review/conference classification only to bound candidate retrieval, then perform semantic provenance adjudication with explicit `matched | uncertain | no_match | input_not_traceable | sampling_unavailable` states and auditable provenance. `fieldSurvey` now swaps conference papers only when `traceToOriginal.success === true`, preserving conservative behavior for uncertain/unavailable cases. Locked eval/regression surface: `tests/eval/evalSem12ProvenanceMatcher.test.ts`, fixtures/baseline under `tests/eval/fixtures/sem12/` + `tests/eval/baselines/sem12_provenance_matcher.baseline.json`, and `tests/research/fieldSurvey.test.ts`; shared Batch 16 acceptance and post-review revalidation matched the `NEW-SEM-11` note above and all passed on the current worktree. Formal review converged with 0 blocking via the same reviewer trio (`Opus`, `Gemini-3.1-Pro-Preview`, `OpenCode` Kimi 2.5 local alias). No SEM-12-specific reviewer amendment required code changes: the suggested unexpected-status fallback is already enforced by `z.enum(...)` parse failure -> explicit `uncertain`/`invalid_response`, and the claimed hard year filter was closed as inaccurate because year delta is only a prior signal, not an exclusion rule. Formal self-review passed with 0 blocking. GitNexus `impact(traceToOriginal, upstream)` remained LOW, while `detect_changes` still exposed stale helper-symbol blind spots on `traceToOriginal`, so final verification for prior-only vs authority paths relied on exact source inspection. No git commit hash recorded because commit/push were not authorized in this conversation.",
+          "completed_at": "2026-03-11"
         },
         "NEW-SEM-13": {
           "title": "Synthesis Challenge Extractor",
