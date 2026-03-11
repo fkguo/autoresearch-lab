@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.3-draft",
-  "updated_at": "2026-03-11T00:01:36+08:00",
+  "updated_at": "2026-03-11T10:13:02+08:00",
   "note": "v1.9.3-draft: v1.9.2 + semantic-authority boundary clarification. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Batch A-E are now completed in the current worktree, and Batch F downstream recovery has confirmed the residual batch2 closeout was fully absorbed by `NEW-05a-idea-core-domain-boundary` / semantic Batch A rather than remaining as a separate code batch. `batch3` remains a separate later prompt and was not started in this bounded closeout run. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. Formal review for Batch F later converged with 0 blocking via that approved fallback, and self-review also passed with 0 blocking. 163 items.",
   "phases": {
     "0": {
@@ -1395,14 +1395,15 @@
         },
         "NEW-SEM-08": {
           "title": "Semantic Packet Curation for Review/Writer",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "NEW-RT-05",
             "NEW-SKILL-WRITING"
           ],
-          "note": "Phase 3 Batch 15 (SEM track P2-P3, Python-side). LLM-based relevance/diagnostic section selection + semantic tagging with deterministic output schema."
+          "note": "Phase 3 Batch 15 completed (2026-03-11): archive-first SOTA preflight landed at `~/.autoresearch-lab-dev/sota-preflight/2026-03-11/NEW-SEM-08/`; added `skills/research-team/scripts/lib/semantic_packet_curator.py` plus Python-side integrations in `build_draft_packet.py` and `research_writer_learn_discussion_logic.py` so deterministic logic only expands/ranks auditable section/paragraph candidates while structured semantic adjudication decides `selected|rejected|uncertain|abstained` with fail-closed render plans `semantic_selected|semantic_uncertain|candidate_fallback|none`. Packet / evidence artifacts now surface rationale, semantic tags, adjudicator status, and failure states. Acceptance on the final worktree: targeted semantic pytest (`6 passed`), `python3 -m pytest skills/research-team/tests` (`198 passed, 1 skipped`), `bash skills/research-team/scripts/dev/smoke/smoke_test_tex_draft_cycle.sh`, and `git diff --check`; the discussion-logic portion of `skills/research-writer/scripts/dev/run_all_smoke_tests.sh` covering the NEW-SEM-08 surface passed, but the full smoke script still hits a pre-existing missing fixture under `scripts/dev/fixtures/paper_manifest/ok_root` outside this batch. Earlier in-batch checks also passed for `py_compile` and `bash -n` on the modified Python/shell entrypoints. Formal review: Gemini unavailable; human explicitly approved the dual-review fallback; the actual final formal review used `Opus + OpenCode(kimi-for-coding/k2p5)` and converged with 0 blocking. Adopted low-risk amendments: added the no-adjudication-path regression test, clarified in the helper docstring that deterministic hints are provenance only, and updated `research-writer` RUNBOOK/ROADMAP wording away from 'auto-selected diagnostics'. Deferred with continuing value: none. Declined/closed: direct `build_team_packet.py` semantic integration is unnecessary for this batch because that path already uses explicit excerpt/capsule markers rather than heading/keyword authority; direct `distill_discussion_logic.py` consumption of `evidence.json` is unnecessary because downstream distillation already operates on model outputs over the rendered curated packs. Residual pre-existing blockers outside NEW-SEM-08 remain: `bash skills/research-team/scripts/dev/run_all_smoke_tests.sh` hangs in the sidecar/model-runner smoke path, `bash skills/research-team/scripts/validation/run_full_contract_validation.sh` still fails in the pre-existing `full_access` stub path (`failed to parse member requests JSON`), and the full `research-writer` smoke script still references the missing `paper_manifest/ok_root` fixture. GitNexus post-change refresh reported `Already up to date`, but `detect_changes/context` still miss the Python/shell glue entrypoints for this batch, so exact source inspection remained the final authority. No implementation commit hash recorded yet because commit/push were not authorized in this conversation.",
+          "completed_at": "2026-03-11"
         },
         "NEW-SEM-09": {
           "title": "Deep Analysis Section Role Classifier",
