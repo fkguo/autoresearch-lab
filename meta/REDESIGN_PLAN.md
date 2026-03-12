@@ -1,10 +1,15 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.3-draft (v1.9.2 + semantic-authority boundary clarification)
-> **日期**: 2026-03-10
-> **基线**: v1.9.2-draft
+> **版本**: 1.9.4-draft (v1.9.3 + generic-authority broadening)
+> **日期**: 2026-03-12
+> **基线**: v1.9.3-draft
 > **重构项总数**: 160 项 (152 既有 + 8 新增: NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e, NEW-LOOP-01)
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.4 Changelog**:
+> - 泛化 `generic/provider-neutral` 边界约束：不只 computation lane；凡长期可复用的 contract / execution semantics / routing / retrieval / review / writing / result / audit abstraction，默认都应先落在 generic/provider-neutral 层，再由 provider-local / host-local 包承载薄适配层或首个示例实现
+> - 明确 provider-local package、host-local MCP tool、standalone provider server、以及首个 domain 示例都**不是** architecture authority；只有 provider-neutral contract / generic core 才能充当长期共享 authority
+> - `NEW-COMP-02` 重释为 generic computation execution core + first host adapter，移除旧 `compute_run_card_v2` / `compute_status` / `compute_resolve_gate` 叙事，避免再次把 HEP host surface 写成通用 authority
 >
 > **v1.9.3 Changelog**:
 > - 追加 semantic-authority boundary clarification：`formalism` 去实例化之后，`idea-core` / `hep-mcp` 仍存在 active HEP worldview 与 closed semantic authority，必须在 residual `batch2` closeout 与 `batch3` 前先执行独立 deep cleanup program（详见 `meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md` 与 `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`）
@@ -68,6 +73,8 @@
 
 > **质量优先**: 科学研究以质量为最高标准。不设硬性成本限额 (`max_cost_usd` / `max_llm_tokens` 等)。Budget tracking 仅作为 observability（记录消耗），不作为 runtime constraint。质量门禁 (Approval Gates A1-A5) 是 pipeline 推进的控制机制。不需要 `RunBudget` 接口。
 
+> **Generic-First 上提约束**: 凡具有跨 domain / provider / host 长期复用价值的抽象，默认必须先在 generic/provider-neutral 层定义 authority，再由 provider-local / host-local 包承载薄适配层或首个实现示例。适用范围不只 computation，也包括 discovery、retrieval、routing、review、writing、result/audit contracts 等。provider-local package、host-local MCP tool、standalone provider server、以及“第一个 HEP/某领域实现”都不得在计划文本中被表述为 shared/generic authority，除非其 surviving abstraction 已完成 provider-neutral rewrite 并被显式提升。若“是否具有长期复用价值”存在争议，应通过架构审查 / 正式多模型审核裁定，而不是由单个 implementer 自行上提。
+
 ## 依赖拓扑总览
 
 ```
@@ -124,7 +131,7 @@ Phase 2B (Pipeline 连通 + 深度集成):
   │
 Phase 3 (扩展性 + 计算连通 + 单研究者研究循环前置):
   ├─ NEW-05a Stage 3 续: idea-engine TS 重写完成
-  ├─ NEW-COMP-02 Computation MCP 实现 (~500 LOC)
+  ├─ NEW-COMP-02 Generic computation execution core + first host adapter (~500 LOC)
   ├─ NEW-CONN-05 Cross-validation → Pipeline feedback (~100 LOC) ✅
   ├─ NEW-OPENALEX-01 openalex-mcp standalone MCP (~1700 LOC) ✅
   ├─ NEW-SKILL-01 lean4-verify skill (~200 LOC)
@@ -152,7 +159,7 @@ Pipeline A/B 统一时间线:
   Pipeline B = orchestrator (TS MCP) — 新编排器 (NEW-05a/NEW-R15)
   Phase 2:   NEW-IDEA-01 + NEW-COMP-01 → Pipeline A 能力暴露为 MCP (供 Pipeline B 消费)
   Phase 2B:  NEW-CONN-01~04 → 所有阶段通过 hint-only next_actions 连通
-  Phase 3:   NEW-COMP-02 (完整 Computation MCP), NEW-CONN-05 (交叉检验)
+  Phase 3:   NEW-COMP-02 (generic computation execution core + first host adapter), NEW-CONN-05 (交叉检验)
   Phase 4+:  Pipeline A (hepar CLI) 退役, Pipeline B 成为唯一编排器
 
 NEW-R01 God-file 拆分 (跟踪伞) — 跨 Phase 1-3, 子项: NEW-R10/R11 (NEW-R09 cut)
@@ -2077,19 +2084,26 @@ paper/
 - [x] tension 发现时 next_actions 非空
 - [x] measurements 可消费计算 evidence (ComputationEvidenceCatalogItemV1)
 
-### NEW-COMP-02: Computation MCP 实现 (Phase 3)
+### NEW-COMP-02: Generic Computation Execution Core + First Host Adapter (Phase 3)
 
 > **来源**: Dual-Mode 架构收敛
 
 **依赖**: NEW-COMP-01, C-02
 **估计**: ~500 LOC
 
-**内容**: `compute_run_card_v2` / `compute_status` / `compute_resolve_gate` MCP 工具实现，含 C-02 containment + A3 gating 安全防护。
+**内容**:
+1. 以 `computation_manifest_v1` 为唯一 manifest authority，落地 provider-neutral computation execution core
+2. execution / approval / audit / run-state semantics 属于 generic core，不属于任何 provider-local package 或 host-local tool 名称
+3. 若当前 `main` 仍需 host-local MCP surface，可保留一个 first host adapter（例如 `hep-mcp` 中的 thin adapter），但它只能做 registration / schema / risk wiring + delegation，不得反向定义通用 authority
+4. `first host adapter` 只是当前落地顺序下的交付形态，不自动成为长期 canonical 模板；一旦后续出现第二个 host/provider implementation，应重新审视哪些剩余逻辑仍属于 generic core，哪些只应留在 provider-local package
+5. 含 C-02 containment + A3 gating 安全防护
 
 **验收**:
-- [ ] 可通过 MCP 提交计算任务并查询状态
+- [ ] `computation_manifest_v1` 驱动的 generic execution core 可完成 validation / approval / execution / audit
+- [ ] 若保留 host-local MCP surface，它被验证为 thin adapter，而不是通用 authority
 - [ ] A3 gating: 计算执行需人类批准
 - [ ] C-02 containment: 命令/输出路径验证
+- [ ] `REDESIGN_PLAN` / design docs 不再把 host-local tool 名称表述为 shared/generic authority
 
 ### NEW-SKILL-01: lean4-verify Skill (Phase 3)
 
