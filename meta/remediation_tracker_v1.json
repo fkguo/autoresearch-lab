@@ -1151,15 +1151,16 @@
           "completed_at": "2026-03-04"
         },
         "NEW-COMP-02": {
-          "status": "pending",
-          "assignee": null,
+          "status": "done",
+          "assignee": "gpt-5-codex",
           "title": "Computation MCP 实现",
           "complexity": "high",
           "depends_on": [
             "NEW-COMP-01",
             "C-02"
           ],
-          "note": "~500 LOC. Backend implementations must remain provider-pluggable; hep-calc is the first provider, not the sole executor family."
+          "note": "Standalone closeout completed (2026-03-12): `computation_manifest_v1` remains the sole manifest authority, with generic execution / approval / audit logic now implemented in `packages/orchestrator/src/computation/` and generic `orch_run_*` handler authority consolidated in `packages/orchestrator/src/orch-tools/`. `packages/hep-mcp/src/tools/execute-manifest.ts` is a thin first host adapter only, while `packages/hep-mcp/src/tools/orchestrator/tools.ts` was reduced to a thin re-export after prompt-required migration of pre-existing host-local orchestrator execution logic back into generic core. `hep_run_execute_manifest` remains a destructive dispatcher-confirmed surface, performs dry-run validation only when requested, fails closed on unsafe paths / blocked commands, and returns A3 approval packets before any real execution. Acceptance commands all passed; formal review (`Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)`) converged with 0 blocking / 0 amendments; self-review found 0 blocking issues. Post-change GitNexus symbol coverage remained incomplete/noisy, so exact verification used direct source inspection plus passing acceptance. No commit hash is recorded because `git commit` was not authorized. Delivered scope exceeded the original `~500 LOC` estimate because boundary compliance also required migrating pre-existing host-local orchestrator logic out of `hep-mcp`.",
+          "completed_at": "2026-03-12"
         },
         "NEW-SKILL-01": {
           "status": "pending",

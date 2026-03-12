@@ -2084,12 +2084,12 @@ paper/
 - [x] tension 发现时 next_actions 非空
 - [x] measurements 可消费计算 evidence (ComputationEvidenceCatalogItemV1)
 
-### NEW-COMP-02: Generic Computation Execution Core + First Host Adapter (Phase 3)
+### NEW-COMP-02: Generic Computation Execution Core + First Host Adapter ✅ Standalone closeout (2026-03-12)
 
 > **来源**: Dual-Mode 架构收敛
 
 **依赖**: NEW-COMP-01, C-02
-**估计**: ~500 LOC
+**估计**: ~500 LOC（closeout: 实际交付超出该估计，见下方完成情况）
 
 **内容**:
 1. 以 `computation_manifest_v1` 为唯一 manifest authority，落地 provider-neutral computation execution core
@@ -2098,12 +2098,21 @@ paper/
 4. `first host adapter` 只是当前落地顺序下的交付形态，不自动成为长期 canonical 模板；一旦后续出现第二个 host/provider implementation，应重新审视哪些剩余逻辑仍属于 generic core，哪些只应留在 provider-local package
 5. 含 C-02 containment + A3 gating 安全防护
 
+> **完成情况 (2026-03-12)**:
+> - generic execution / approval / audit authority 现位于 `packages/orchestrator/src/computation/`
+> - generic `orch_run_*` handler authority 现位于 `packages/orchestrator/src/orch-tools/`
+> - `packages/hep-mcp/src/tools/execute-manifest.ts` 仅保留 first host adapter 所需的 run/path 校验与 delegation；`packages/hep-mcp/src/tools/orchestrator/tools.ts` 已降为 thin re-export
+> - `hep_run_execute_manifest` 仍是 destructive host surface，并维持 dispatcher `_confirm` + A3 sequencing：`dry_run` 只做 validation/planning，未满足 A3 时仅返回 approval packet，批准前无部分执行
+> - 全部 prompt acceptance commands 已通过；formal review (`Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)`) 收敛为 0 blocking / 0 amendments；self-review 0 blocking
+> - 无 implementation commit：本批未获 `git commit` 授权
+> - 原 `~500 LOC` 估计被动放大，因为 prompt 明确要求把 pre-existing host-local orchestrator execution logic 从 `hep-mcp` 迁回 generic core，不能继续留在 host layer
+
 **验收**:
-- [ ] `computation_manifest_v1` 驱动的 generic execution core 可完成 validation / approval / execution / audit
-- [ ] 若保留 host-local MCP surface，它被验证为 thin adapter，而不是通用 authority
-- [ ] A3 gating: 计算执行需人类批准
-- [ ] C-02 containment: 命令/输出路径验证
-- [ ] `REDESIGN_PLAN` / design docs 不再把 host-local tool 名称表述为 shared/generic authority
+- [x] `computation_manifest_v1` 驱动的 generic execution core 可完成 validation / approval / execution / audit
+- [x] 若保留 host-local MCP surface，它被验证为 thin adapter，而不是通用 authority
+- [x] A3 gating: 计算执行需人类批准
+- [x] C-02 containment: 命令/输出路径验证
+- [x] `REDESIGN_PLAN` / design docs 不再把 host-local tool 名称表述为 shared/generic authority
 
 ### NEW-SKILL-01: lean4-verify Skill (Phase 3)
 
@@ -3132,11 +3141,11 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06 | 23 (19 done, 3 pending, 1 cut) |
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-19/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05~R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-ARXIV-01, NEW-HEPDATA-01, NEW-05a Stage 3 (start) | 44 (26 done, 18 pending) |
-| **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 50 (32 done, 18 pending) |
+| **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 50 (33 done, 17 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (0 done, 8 pending) |
 | **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (0 done, 14 pending, 8 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09 | 1（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **160** (152 既有 + 8 新增) — **91 done** |
+| **总计** | **Phase 0–5 remediation items only** | **160** (152 既有 + 8 新增) — **92 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 与 `NEW-R09` 作为 bookkeeping rows 单列展示但不计入 160。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）现已完成 closeout，Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
