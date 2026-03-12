@@ -671,9 +671,9 @@
         },
         "NEW-R15-impl": {
           "title": "编排器 MCP 工具实现 (orch_run_* + orch_policy_query)",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "H-03",
             "H-02",
@@ -688,7 +688,8 @@
             "NEW-R15-spec"
           ],
           "source": "deep-refactoring-analysis",
-          "note": "scope 扩展 (2026-02-22): 增加 orch_policy_query (GAP-06)"
+          "completed_at": "2026-03-12",
+          "note": "Retro-closeout completed (2026-03-12): existing Phase 2 Batch 7 implementation was reality-audited rather than re-built. Bounded gaps patched only: orch_run_approvals_list dedupe/merge, 8 closeout-critical contract-regression cases, risk-spec sync, and CLI/MCP shared on-disk parity wording correction. Acceptance commands passed; formal review (Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)) converged with 0 blocking; self-review 0 blocking. GitNexus post-change MCP remained unavailable (Transport closed), so exact verification used direct source inspection + passing acceptance gates. No commit hash recorded because commit was not authorized. Scope 扩展 (2026-02-22): 增加 orch_policy_query (GAP-06)"
         },
         "UX-02": {
           "title": "结构化计算代码目录 (computation/ + manifest.json)",

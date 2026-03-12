@@ -1808,7 +1808,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [x] 所有 `orch_run_*` 工具通过 contract tests
 - [x] `orch_run_approve` 的 `approval_id` + `approval_packet_sha256` 双重验证工作
 - [x] 命名空间无冲突 (`orch_run_*` vs `hep_run_*`)
-- [x] `hepar approve/status/run` CLI 可通过 `orch_run_*` MCP 工具操作
+- [x] reality-audit closeout: `hepar` CLI 与 `orch_run_*` handlers 共享同一 `.autoresearch/state.json` / `ledger.jsonl` / approval-packet on-disk contract；当前树确认 parity，而非 CLI 通过 MCP handler delegation
 
 ---
 
