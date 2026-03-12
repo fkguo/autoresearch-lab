@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.3-draft",
-  "updated_at": "2026-03-11T10:13:02+08:00",
+  "updated_at": "2026-03-12T08:25:47+08:00",
   "note": "v1.9.3-draft: v1.9.2 + semantic-authority boundary clarification. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Batch A-E are now completed in the current worktree, and Batch F downstream recovery has confirmed the residual batch2 closeout was fully absorbed by `NEW-05a-idea-core-domain-boundary` / semantic Batch A rather than remaining as a separate code batch. `batch3` remains a separate later prompt and was not started in this bounded closeout run. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. Formal review for Batch F later converged with 0 blocking via that approved fallback, and self-review also passed with 0 blocking. 163 items.",
   "phases": {
     "0": {
@@ -897,8 +897,8 @@
           "note": "~150 LOC."
         },
         "NEW-IDEA-01": {
-          "status": "pending",
-          "assignee": null,
+          "status": "done",
+          "assignee": "gpt-5-codex",
           "title": "idea-core MCP 桥接",
           "complexity": "high",
           "depends_on": [
@@ -907,7 +907,8 @@
             "H-03",
             "H-16a"
           ],
-          "note": "~400-800 LOC."
+          "note": "Retro-closeout completed on 2026-03-12 for the existing Batch 9 `packages/idea-mcp/` bridge (historical landing commit `7e074e5`; current worktree baseline `5f0517deb76c04d43c58b1e8abdb3def63bea654`; no new git commit created because the user did not authorize commit). This pass closed only the bounded acceptance gaps: replaced the old shorthand MCP input surface with live OpenRPC-aligned schemas for the eight scoped campaign/search/eval tools, preserved JSON-RPC numeric semantics in MCP error data while fixing the false-retryable mapping for `-32000` / `-32001`, added `tool-registry` / `mcp-input-schema` / `rpc-error-mapping` seams, and locked both mocked regression coverage plus a deterministic real round-trip test against `idea_core.rpc.server`. Acceptance passed in the current worktree: `pnpm --filter @autoresearch/idea-mcp build`, `pnpm --filter @autoresearch/idea-mcp test`, `uv run --project packages/idea-core pytest packages/idea-core/tests/hepar/test_skill_bridge_m43.py packages/idea-core/tests/engine/test_search_step_island_state_machine.py -q`, and `git diff --check`. GitNexus post-change gate was refreshed (`npx gitnexus analyze` => up to date; `detect_changes` LOW; `impact(IdeaRpcClient/startServer)` LOW). Formal review converged with `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)` at 0 blocking; `Opus` required a local retry after an initial hang, but no fallback reviewer was needed. Formal self-review also passed with 0 blocking. Preflight dispositions: adopted = live contract alignment, JSON-RPC fidelity, real round-trip coverage; deferred = repo-wide MCP protocol-error normalization and broader lifecycle round-trip breadth; declined/closed = stdio transport redesign and local `idea-mcp` tool-risk authority, because no live consumer/gating path makes that authority active in this bounded closeout. No new stable invariant emerged, so `.serena/memories/architecture-decisions.md` was not updated, and `meta/REDESIGN_PLAN.md` remained unchanged because the bridge boundary / acceptance narrative did not materially shift.",
+          "completed_at": "2026-03-12"
         },
         "NEW-COMP-01": {
           "status": "pending",
