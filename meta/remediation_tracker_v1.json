@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.3-draft",
-  "updated_at": "2026-03-12T08:25:47+08:00",
+  "updated_at": "2026-03-12T13:26:50+08:00",
   "note": "v1.9.3-draft: v1.9.2 + semantic-authority boundary clarification. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Batch A-E are now completed in the current worktree, and Batch F downstream recovery has confirmed the residual batch2 closeout was fully absorbed by `NEW-05a-idea-core-domain-boundary` / semantic Batch A rather than remaining as a separate code batch. `batch3` remains a separate later prompt and was not started in this bounded closeout run. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. Formal review for Batch F later converged with 0 blocking via that approved fallback, and self-review also passed with 0 blocking. 163 items.",
   "phases": {
     "0": {
@@ -693,14 +693,15 @@
         },
         "UX-02": {
           "title": "结构化计算代码目录 (computation/ + manifest.json)",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "UX-01"
           ],
           "source": "user-stories-ux-gaps",
-          "note": "Scope Audit 升级: Computation Contract. 输出格式兼容 EvidenceCatalog JSONL."
+          "note": "Retro-closeout completed (2026-03-12): tracker drift only. `computation_manifest_v1` already existed as the compute-lane schema/workflow contract, but `meta/REDESIGN_PLAN.md` overstated direct provider execution. This pass corrected the narrative to contract/codegen/downstream workflow scope and added `packages/hep-mcp/tests/core/computationManifestSchema.test.ts` to lock required fields plus rejection paths. Acceptance commands passed; formal review (Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)) converged with 0 blocking; self-review 0 blocking. No new commit hash recorded because commit was not authorized.",
+          "completed_at": "2026-03-12"
         },
         "UX-07": {
           "title": "审批上下文丰富化 (per-gate context assemblers)",
@@ -857,14 +858,15 @@
           "note": "Batch 4B: Span interface in shared/span.ts + SpanCollector + ActiveSpan JSONL writer in orchestrator/tracing.ts. ~150 LOC total."
         },
         "NEW-RT-04": {
-          "status": "pending",
-          "assignee": null,
+          "status": "done",
+          "assignee": "gpt-5-codex",
           "title": "Durable execution",
           "complexity": "medium",
           "depends_on": [
             "NEW-RT-01"
           ],
-          "note": "~200 LOC. checkpoint/resume."
+          "note": "Retro-closeout completed (2026-03-12): existing `RunManifestManager` / crash-recovery semantics were real, but live `AgentRunner` execution had not been persisting checkpoints. This pass added bounded `manifestManager` + `checkpointRecorder` wiring through both normal tool execution and incomplete-tool-use recovery, plus `packages/orchestrator/tests/agent-runner-manifest.test.ts` to lock both paths. Acceptance commands passed; GitNexus post-change evidence refreshed successfully (`npx gitnexus analyze` up to date, `detect_changes` LOW, `impact(AgentRunner)` LOW); formal review converged with 0 blocking and self-review 0 blocking. No new commit hash recorded because commit was not authorized.",
+          "completed_at": "2026-03-12"
         },
         "NEW-CONN-02": {
           "status": "done",
@@ -888,14 +890,15 @@
           "completed_at": "2026-03-03"
         },
         "NEW-CONN-04": {
-          "status": "pending",
-          "assignee": null,
+          "status": "done",
+          "assignee": "gpt-5-codex",
           "title": "Idea → Run creation",
           "complexity": "low",
           "depends_on": [
             "NEW-IDEA-01"
           ],
-          "note": "~150 LOC."
+          "note": "Retro-closeout completed (2026-03-12): tracker drift only. `packages/hep-mcp/src/tools/create-from-idea.ts`, registry wiring, `outline_seed_v1` staging, and the contract/regression tests were already live from the earlier Phase 2 landing. This pass re-audited the live source/tests and acceptance surface without widening scope beyond the four-item compute-lane closeout. Acceptance commands passed; formal review (Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)) converged with 0 blocking; self-review 0 blocking. No new commit hash recorded because commit was not authorized.",
+          "completed_at": "2026-03-12"
         },
         "NEW-IDEA-01": {
           "status": "done",
@@ -912,15 +915,16 @@
           "completed_at": "2026-03-12"
         },
         "NEW-COMP-01": {
-          "status": "pending",
-          "assignee": null,
+          "status": "done",
+          "assignee": "gpt-5-codex",
           "title": "Computation MCP 安全设计",
           "complexity": "medium",
           "depends_on": [
             "C-02",
             "NEW-R15-impl"
           ],
-          "note": "~200 LOC design. Domain-neutral, task/capability-first compute substrate; provider/package lists remain open examples, not closed scope boundaries. Runtime LLM/agent chooses method/backend within approval/audit boundaries."
+          "note": "Retro-closeout completed (2026-03-12): design-only item was already delivered in `meta/docs/computation-mcp-design.md` and related compute-lane contracts. This pass reality-audited the design against the live schema/workflow surfaces, confirmed the domain-neutral task/capability-first framing, and added the missing schema-level acceptance coverage without starting `NEW-COMP-02` runtime/provider execution work. Acceptance commands passed; formal review (Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)) converged with 0 blocking; self-review 0 blocking. No new commit hash recorded because commit was not authorized.",
+          "completed_at": "2026-03-12"
         },
         "NEW-WF-01": {
           "status": "done",

@@ -1274,8 +1274,8 @@ artifacts/runs/<run_id>/approvals/<approval_id>/
 | 文件 | 变更 |
 |---|---|
 | `autoresearch-meta/schemas/computation_manifest_v1.schema.json` | 计算清单 schema: steps[], environment, dependencies — 作为 research-team 计算规划与 hep-calc 执行之间的标准接口 |
-| research-team 输出规范 | Section 6 (Mapping to Computation) 输出 `computation/manifest.json` 而非自由文本描述 |
-| hep-calc skill | 新增: 可消费 `computation/manifest.json` 批量执行 (补充现有 job.yml 路径) |
+| research-team / derivation guidance | Section 6 (Mapping to Computation) 保留 `computation/manifest.json` 合同与 code↔artifact mapping；当前树中仍以人类 / member staging 为主，而非自动生成 |
+| downstream compute surfaces | workflow entry points、codegen types 与 computation evidence ingestion metadata 均可引用 `computation/manifest.json`；direct provider execution 仍属于后续 compute runtime/provider lane |
 
 **目录结构**:
 ```
@@ -1293,8 +1293,8 @@ computation/
 
 **验收**:
 - [x] `computation_manifest_v1.schema.json` 定义完成
-- [x] research-team Member 输出可运行代码至 `computation/`
-- [x] hep-calc 可消费 manifest.json 执行完整计算管线
+- [x] manifest contract 已进入 codegen / downstream workflow surfaces，并有 schema-level contract validation
+- [x] research-team / derivation guidance 已显式保留 `computation/` contract 与 code↔artifact mapping
 - [x] manifest.json 包含环境要求 + 运行顺序 + 预期输出
 
 ### UX-07: 审批上下文丰富化 ✅ Phase 2 Batch 7 ★UX
