@@ -1554,9 +1554,9 @@
       "items": {
         "EVO-01": {
           "title": "idea→理论计算自动执行闭环",
-          "status": "pending",
+          "status": "in_progress",
           "complexity": "high",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "UX-02",
             "UX-04",
@@ -1564,7 +1564,7 @@
             "NEW-COMP-01",
             "NEW-LOOP-01"
           ],
-          "note": "Builds on NEW-LOOP-01 single-user loop substrate; idea→compute plugs into the shared workspace/task graph via domain-neutral execution plans. HEP-th / hep-calc is the first high-priority provider path, not the long-term scope boundary."
+          "note": "Builds on NEW-LOOP-01 single-user loop substrate; idea→compute plugs into the shared workspace/task graph via domain-neutral execution plans. HEP-th / hep-calc is the first high-priority provider path, not the long-term scope boundary. 2026-03-13: bounded EVO-01-A bridge closeout completed on the current worktree only for idea/method_spec -> execution_plan -> computation_manifest_v1 -> dry_run/A3 approval packet. `execution_plan_v1` is now a checked-in provider-neutral audited IR; `computation/manifest.json` remains the materialized execution surface; and the pre-approval bridge is validation-only / zero-execution, fail-closed even when A3 is already satisfied. Acceptance passed after rerunning `bash meta/scripts/codegen.sh`, shared/orchestrator/hep-mcp targeted build/tests, and `git diff --check`. Formal review via `Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)` converged with 0 blocking; the only non-blocking amendment (explicit A3-satisfied rejection coverage) was adopted in `packages/orchestrator/tests/compute-bridge.test.ts`. Self-review also passed with 0 blocking. GitNexus post-change evidence stayed partial: `detect_changes` reported LOW risk, but symbol coverage still missed new bridge files/helpers, so exact verification relied on direct source inspection plus targeted tests. Full EVO-01 remains open for real provider execution, feedback ingestion, and writing/review mapping; NEW-05a-stage3 and EVO-13 were not started."
         },
         "EVO-02": {
           "title": "计算结果→idea 反馈循环",
