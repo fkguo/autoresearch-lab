@@ -1568,14 +1568,14 @@
         },
         "EVO-02": {
           "title": "计算结果→idea 反馈循环",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "EVO-01",
             "NEW-LOOP-01"
           ],
-          "note": "Builds on NEW-LOOP-01 single-user loop substrate; compute results flow back into idea scoring/pruning via the shared workspace/task graph."
+          "note": "Builds on NEW-LOOP-01 single-user loop substrate; compute results flow back into idea scoring/pruning via the shared workspace/task graph. 2026-03-13: EVO-02 closeout completed on the current worktree by making `computation_result_v1` the sole canonical result-ingestion authority for deterministic provider-neutral feedback lowering. `meta/schemas/computation_result_v1.schema.json` plus generated TS/Python bindings now require `objective_title` and `feedback_lowering`; `packages/orchestrator/src/computation/result.ts` derives/stores canonical lowering before persistence; `feedback-lowering.ts` encodes success/weak_signal/failure -> `capture_finding`/`branch_idea`/`downgrade_idea` with explicit `priority_change` + `prune_candidate`; and `feedback-state.ts` ingests that canonical result into typed `workspace_feedback` / `next_actions` / `FeedbackHandoff` substrate state. `result-signal.ts` keeps signal extraction on produced structured JSON result artifacts rather than stdout/stderr, while `packages/hep-mcp/tests/contracts/compute-loop-contract.test.ts` confirms the thin host adapter only surfaces the canonical lowered outcome. Acceptance passed: `bash meta/scripts/codegen.sh`, `pnpm --filter @autoresearch/shared build`, `pnpm --filter @autoresearch/shared test`, `pnpm --filter @autoresearch/orchestrator build`, `pnpm --filter @autoresearch/orchestrator test -- tests/research-loop-types.test.ts tests/research-loop-runtime.test.ts tests/research-loop-smoke.test.ts`, `pnpm --filter @autoresearch/orchestrator test -- tests/compute-loop-execution.test.ts tests/compute-loop-feedback.test.ts`, provider prerequisite builds (`@autoresearch/arxiv-mcp`, `@autoresearch/openalex-mcp`, `@autoresearch/pdg-mcp`, `@autoresearch/zotero-mcp`, `@autoresearch/hepdata-mcp`), `pnpm --filter @autoresearch/hep-mcp build`, `pnpm --filter @autoresearch/hep-mcp test -- tests/contracts/ideaRunsIntegrationContract.test.ts`, `pnpm --filter @autoresearch/hep-mcp test -- tests/contracts/compute-loop-contract.test.ts`, and `git diff --check`. Formal review via `Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)` converged with 0 blocking / 0 amendments; `review-swarm` contract checking reported only informational wrapper preambles, while all three reviewer JSON verdicts were `CONVERGED`. Self-review also passed with 0 blocking, recorded no adopted/deferred/declined amendments, and confirmed that remaining work stays in `EVO-03` / `EVO-13` rather than this batch. GitNexus post-change coverage remained unreliable for new helpers/callsites even after force reindex, so exact verification used direct source inspection plus the targeted acceptance suite. No commit hash is recorded because `git commit` was not authorized. No `.serena/memories/architecture-decisions.md` or `meta/REDESIGN_PLAN.md` update was needed because this batch introduced no new stable invariant or design-layer boundary change."
         },
         "EVO-03": {
           "title": "结果→writing evidence 自动映射 + 审稿修订循环",
