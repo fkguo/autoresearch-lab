@@ -846,20 +846,20 @@ branches:     candidate → pending, active → running, abandoned → completed
 **状态**: cut
 **原因**: hep-autoresearch → TS orchestrator 迁移路径下，拆分 Python god-file 无投入产出价值。
 
-### UX-01: 研究笔记与机器 Contract 分离 ★UX
+### UX-01: 研究笔记与机器合同分离 ★UX
 
-> **新增 (2026-02-22)**: User Story 分析发现 Draft_Derivation.md 同时承担人类笔记和机器 contract 两个角色，格式受 REPRO_CAPSULE / tier tags / headline 格式主导，人类阅读体验差。
+> **新增 (2026-02-22, 2026-03-14 重述)**: User Story 分析发现 `Draft_Derivation.md` 同时承担人类笔记和机器合同两个角色，格式受 `REPRO_CAPSULE` / tier tags / headline 格式主导，人类阅读体验差；当前仓库又已明确无向后兼容负担，因此 UX-01 应直接把项目根目录的错误命名正名，而不是继续保留旧名。
 
-**现状**: Draft_Derivation.md 被 research-team、context_pack.py、w3_revision.py 多方引用，既是人类编辑的研究笔记入口，又是机器 gate 检查器的输入。
+**现状**: `Draft_Derivation.md` 被 research-team、`context_pack.py`、`revision.py` 多方引用，既是人类编辑的研究笔记入口，又是机器检查器的输入，导致人类内容和机器结构互相污染。
 
 **变更**:
 
 | 文件 | 变更 |
 |---|---|
-| research-team `assets/derivation_notes_template.md` | 拆分为 `research_notebook_template.md` (人类入口) + `derivation_contract_template.md` (机器 contract) |
-| `hep-autoresearch/src/.../context_pack.py` | 新增 `research_notebook.md` 为 required 上下文文件；`Draft_Derivation.md` 改为 auto-generated |
-| `hep-autoresearch/src/.../w3_revision.py` | 从 `Draft_Derivation.md` (machine contract) 提取 headlines，不从 notebook |
-| (新) `hep-autoresearch/src/.../contract_extractor.py` | 从 notebook + artifacts 自动生成/更新 Draft_Derivation.md (REPRO_CAPSULE, headlines, tier tags) |
+| research-team `assets/derivation_notes_template.md` | 直接改为 `research_notebook_template.md`（人类入口）与 `research_contract_template.md`（机器入口），不再保留 `Draft_Derivation` 命名 |
+| `hep-autoresearch/src/.../context_pack.py` | 改为显式消费 `research_notebook.md` 与 `research_contract.md`，不再把旧名当作项目根目录权威入口 |
+| `hep-autoresearch/src/.../revision.py` | 从 `research_contract.md` 提取机器需要的 headline / pointers，不再从人类笔记或旧名提取 |
+| (新) `hep-autoresearch/src/.../contract_extractor.py` | 从 `research_notebook.md` + artifacts 确定性生成 / 刷新 `research_contract.md` |
 
 **research_notebook.md 设计**:
 - 自由 LaTeX 公式 (不受 Markdown 数学卫生规则限制)
@@ -868,38 +868,46 @@ branches:     candidate → pending, active → running, abandoned → completed
 - 嵌入交叉验证: 从 EVO-06 integrity_report 提取摘要
 - 引用计算代码: "见 `computation/mathematica/one_loop_amplitude.wl`"
 
+**research_contract.md 设计**:
+- 只承载脚本稳定读取所需的机器结构
+- 由确定性逻辑生成 / 刷新，不要求人类直接编辑
+- 作为 context pack、revision、gate 的统一机器入口
+
 **依赖**: 无 (可独立执行)
 
 **验收**:
 - [ ] research_notebook.md 可被标准 Markdown 编辑器 (Typora/Obsidian/VS Code) 正常渲染
-- [ ] Draft_Derivation.md 由 contract_extractor 自动生成，人类不需直接编辑
+- [ ] `research_contract.md` 由确定性提取逻辑生成 / 刷新，人类不需直接编辑
 - [ ] research-team convergence gate 检查 notebook 内容一致性
-- [ ] w3_revision.py 从 contract (非 notebook) 提取 headlines
+- [ ] `revision.py`、`context_pack.py` 与相关 gate 改为消费 `research_contract.md`
+- [ ] 项目根目录脚手架与面向用户文档不再要求 `Draft_Derivation.md`
 
-### UX-05: 延迟脚手架 + 统一初始化入口 ★UX
+### UX-05: 延迟脚手架 + 统一新建项目入口 ★UX
 
-> **新增 (2026-02-22)**: hepar init 和 research-team scaffold 存在重复 (~15 个文件)；默认全量脚手架创建 ~20+ 文件，多数初期用不到。
+> **新增 (2026-02-22, 2026-03-14 重述)**: `hepar init` 和 `research-team scaffold` 存在重复 (~15 个文件)；默认全量脚手架创建 ~20+ 文件，多数初期用不到。当前应把两者收束到同一套“新建项目规则”，而不是继续让任何一个入口充当长期权威来源。
 
 **现状**:
-- `hepar init` (project_scaffold.py) 创建 CHARTER, MAP, PLAN, PREWORK, Draft_Derivation, AGENTS, docs/*, kb 结构
-- `research-team scaffold` 创建同一批 + prompts/, team config, INNOVATION_LOG 等
+- `hepar init` (`project_scaffold.py`) 创建 CHARTER, MAP, PLAN, PREWORK, `Draft_Derivation`, `AGENTS`, `docs/*`, `kb` 结构
+- `research-team scaffold` 创建同一批 + `prompts/`, `team` config, `INNOVATION_LOG` 等
 - 两者独立运行，模板内容略有不同
 
 **变更**:
 
 | 文件 | 变更 |
 |---|---|
-| `hep-autoresearch/src/.../project_scaffold.py` | 改为调用 research-team scaffold (--minimal mode)，只创建核心 5 文件: CHARTER, PLAN, research_notebook.md, AGENTS, .mcp.json |
-| `research-team scripts/bin/scaffold_research_workflow.sh` | 默认改为 `--minimal`；按需生成: prompts/ (team cycle 首次运行时), knowledge_base/ (KB 首次使用时), computation/ (计算首次执行时) |
-| 去除重复: `research-team` 不再独立生成 CHARTER/MAP/PLAN 模板 | 统一由 project_scaffold.py 提供 |
+| (新) shared scaffold contract / module | 作为唯一的“新建项目规则”权威来源，定义最小项目骨架、文件名、按需创建目录与文档角色 |
+| `hep-autoresearch/src/.../project_scaffold.py` | 改为调用 shared scaffold contract / module，不再拥有单独的一套脚手架规则 |
+| `research-team scripts/bin/scaffold_research_workflow.sh` | 同样改为调用 shared scaffold contract / module；默认只创建最小骨架，其他目录按需生成 |
+| 脚手架与模板层 | 直接把 `PROJECT_CHARTER` / `PROJECT_MAP` / `PREWORK` / `INITIAL_INSTRUCTION` / `INNOVATION_LOG` 等旧名改成长期可保留的新名字，并完成一次有边界的脚手架命名审计 |
 
 **依赖**: UX-01 (notebook 分离)
 
 **验收**:
-- [ ] `hepar init` 产出 ≤8 个文件 (核心 5 + docs/ 3)
-- [ ] 首次 `run_team_cycle.sh` 自动补充 prompts/ + team config
-- [ ] 首次 KB 操作自动补充 knowledge_base/ 结构
-- [ ] `--full` 选项保留完整脚手架能力
+- [ ] `hepar init` 与 `research-team scaffold` 产出的默认核心项目结构一致
+- [ ] 默认最小骨架至少围绕 `research_notebook.md`、`research_contract.md`、`project_charter.md`、`project_index.md`、`research_plan.md`、`.mcp.json`
+- [ ] `prompts/`、`knowledge_base/`、`computation/`、`team/` 等按需创建，不再默认铺满
+- [ ] 脚手架面不再创建或要求 `Draft_Derivation.md`、`PROJECT_MAP.md`、`PREWORK.md`、`INITIAL_INSTRUCTION.md`、`INNOVATION_LOG.md`
+- [ ] 对 `knowledge_base/`、`prompts/`、`team/`、`research_team_config.json`、`references/`、`.hep/` 直达项目根目录的名字完成一次有边界的审计，并给出“直接改 / 暂不改”的明确结论
 
 ### UX-06: 研究会话入口协议 ✅ Batch 4B ★UX
 
@@ -961,7 +969,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] `hepar doctor` + `hepar bridge` 冒烟测试通过
 - [ ] Zotero 工具整合完成 (NEW-R04)
 - [ ] diff-scoped `as any` CI 门禁就绪 (NEW-R02)
-- [ ] research_notebook.md 可渲染 + Draft_Derivation.md 自动生成 (UX-01)
+- [ ] `research_notebook.md` 可渲染 + `research_contract.md` 确定性生成 / 刷新 (UX-01)
 - [ ] 脚手架默认 minimal，按需扩展 (UX-05)
 - [ ] session_protocol_v1 定义完成 (UX-06)
 - [ ] 无 Phase 0 回归

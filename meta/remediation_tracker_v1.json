@@ -355,22 +355,24 @@
           "note": "Scope Audit 3/3 cut: hep-autoresearch 整体退役."
         },
         "UX-01": {
-          "title": "研究笔记与机器 Contract 分离",
+          "title": "研究笔记与机器合同分离",
           "status": "pending",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [],
-          "source": "user-stories-ux-gaps"
+          "source": "user-stories-ux-gaps",
+          "note": "当前重构期默认直接正名，不保留脚手架面旧名兼容别名；人类入口=research_notebook.md，机器入口=research_contract.md。"
         },
         "UX-05": {
-          "title": "延迟脚手架 + 统一初始化入口",
+          "title": "延迟脚手架 + 统一新建项目入口",
           "status": "pending",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
             "UX-01"
           ],
-          "source": "user-stories-ux-gaps"
+          "source": "user-stories-ux-gaps",
+          "note": "hepar init 与 research-team scaffold 都应收束为同一套新建项目规则的薄调用方；本批需完成一次有边界的脚手架命名审计。"
         },
         "UX-06": {
           "title": "研究会话入口协议",
