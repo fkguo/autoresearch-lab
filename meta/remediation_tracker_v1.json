@@ -749,13 +749,14 @@
         },
         "NEW-05a-stage3": {
           "title": "idea-engine TS 增量重写 (Stage 3)",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
           "assignee": null,
           "depends_on": [
             "NEW-IDEA-01"
           ],
-          "note": "Re-scoped from NEW-05a. Phase 2-3 增量迁移."
+          "completed_at": "2026-03-14",
+          "note": "Standalone closeout for the bounded `NEW-05a Stage 3 foundation` first slice completed on the current worktree without commit (user did not authorize `git commit`). `packages/idea-engine/` is now a real TS package with minimal store/idempotency substrate (`campaign.json`, `nodes_latest.json`, `nodes_log.jsonl`, artifact write/read, campaign/global idempotency store paths, atomic JSON write, JSONL append, `.lock.lck` boundary), read-side `campaign.status` / `node.get` / `node.list`, minimal JSON-RPC envelope/dispatch compatibility, and RFC 8785/JCS + SHA-256 `payload_hash` parity against Python live authority. Python-generated on-disk/golden fixtures now lock cross-language parity for read-RPC and `_hash_without_idempotency`, including key ordering, nested objects, Unicode/non-ASCII, representative numeric formatting, and `node.list` default filling. Acceptance passed after adopted review amendments: `pnpm --filter @autoresearch/idea-engine build`; `pnpm --filter @autoresearch/idea-engine test`; `pnpm --filter @autoresearch/idea-engine test -- tests/read-rpc-parity.test.ts`; `cd packages/idea-core && pytest tests/engine/test_node_read_methods.py tests/engine/test_service_rank_and_idempotency.py tests/contracts/test_validate_contracts.py tests/engine/test_m2_12_demo_replay.py -q`; `git diff --check`. Formal review packet lives under `.review/2026-03-14-new05a-stage3-foundation-impl/`; `Opus` returned `CONVERGED_WITH_AMENDMENTS` and `OpenCode(kimi-for-coding/k2p5)` returned `CONVERGED`, both with 0 blocking. `Gemini-3.1-Pro-Preview` hung in the agentic tool loop for >10 minutes without producing an output file, that failure was recorded, and the human explicitly approved ignoring Gemini for this round, so formal review converged via the documented dual-review fallback (`Opus` + `OpenCode(kimi-for-coding/k2p5)`). Adopted amendments: missing store-internal artifact refs now throw instead of silently returning `{}`, and `RpcError.name` is now locked to `RpcError` with a dedicated test. Self-review passed with 0 blocking. GitNexus preflight authority alignment was completed, but post-change graph coverage remained partial: `npx gitnexus analyze` was up to date while `detect_changes` under-reported the new `idea-engine` files and `context`/`impact` could not resolve the newly added TS symbols, so exact verification for this batch relied on direct source inspection plus the targeted acceptance suite. Scope remained intentionally bounded: no `campaign.init`, `search.step`, `eval.run`, `rank.compute`, `node.promote`, operator/domain-pack migration, retrieval semantics, `NEW-07`, or `EVO-13` work was started."
         },
         "NEW-05a-shared-boundary": {
           "title": "shared 边界 re-baseline（移除 HEP authority）",
