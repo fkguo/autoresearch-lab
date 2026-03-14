@@ -29,14 +29,15 @@
 
 1. 读取 `gitnexus://repo/{name}/context`。
 2. 若 index stale，先运行 `npx gitnexus analyze`，再重新读取 context。
-3. 读取匹配任务的 GitNexus skill。
-4. 在改代码前，用 GitNexus 明确关键符号、调用方、受影响 execution flows。
+3. 若当前 `worktree` 是 dirty 的，尤其包含新增文件 / 新符号 / helper callsites，默认改用 `npx gitnexus analyze --force`；不要把普通 `analyze` 的 `Already up to date` 当成当前工作树已入图的证据。
+4. 读取匹配任务的 GitNexus skill。
+5. 在改代码前，用 GitNexus 明确关键符号、调用方、受影响 execution flows。
 
 ### 2.2 审核前
 
 若实现新增/重命名符号、修改关键调用链、或当前 index 已不反映工作树：
 
-1. 再次运行 `npx gitnexus analyze`。
+1. 再次刷新 GitNexus；dirty `worktree` 默认运行 `npx gitnexus analyze --force`。
 2. 使用 `detect_changes`，必要时配合 `impact` / `context`。
 3. 把受影响 callers / flows / downstream surface 纳入 review packet。
 
