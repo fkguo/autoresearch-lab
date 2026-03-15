@@ -850,6 +850,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 > **新增 (2026-02-22, 2026-03-14 重述)**: User Story 分析发现 `Draft_Derivation.md` 同时承担人类笔记和机器合同两个角色，格式受 `REPRO_CAPSULE` / tier tags / headline 格式主导，人类阅读体验差；当前仓库又已明确无向后兼容负担，因此 UX-01 应直接把项目根目录的错误命名正名，而不是继续保留旧名。
 
+**状态**: done (2026-03-14 standalone closeout)
+
 **现状**: `Draft_Derivation.md` 被 research-team、`context_pack.py`、`revision.py` 多方引用，既是人类编辑的研究笔记入口，又是机器检查器的输入，导致人类内容和机器结构互相污染。
 
 **变更**:
@@ -859,7 +861,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 | research-team `assets/derivation_notes_template.md` | 直接改为 `research_notebook_template.md`（人类入口）与 `research_contract_template.md`（机器入口），不再保留 `Draft_Derivation` 命名 |
 | `hep-autoresearch/src/.../context_pack.py` | 改为显式消费 `research_notebook.md` 与 `research_contract.md`，不再把旧名当作项目根目录权威入口 |
 | `hep-autoresearch/src/.../revision.py` | 从 `research_contract.md` 提取机器需要的 headline / pointers，不再从人类笔记或旧名提取 |
-| (新) `hep-autoresearch/src/.../contract_extractor.py` | 从 `research_notebook.md` + artifacts 确定性生成 / 刷新 `research_contract.md` |
+| (新) `hep-autoresearch/src/.../research_contract.py` | 从 `research_notebook.md` 确定性同步 / 刷新 `research_contract.md` 的机器稳定区块 |
 
 **research_notebook.md 设计**:
 - 自由 LaTeX 公式 (不受 Markdown 数学卫生规则限制)
@@ -876,15 +878,17 @@ branches:     candidate → pending, active → running, abandoned → completed
 **依赖**: 无 (可独立执行)
 
 **验收**:
-- [ ] research_notebook.md 可被标准 Markdown 编辑器 (Typora/Obsidian/VS Code) 正常渲染
-- [ ] `research_contract.md` 由确定性提取逻辑生成 / 刷新，人类不需直接编辑
-- [ ] research-team convergence gate 检查 notebook 内容一致性
-- [ ] `revision.py`、`context_pack.py` 与相关 gate 改为消费 `research_contract.md`
-- [ ] 项目根目录脚手架与面向用户文档不再要求 `Draft_Derivation.md`
+- [x] research_notebook.md 可被标准 Markdown 编辑器 (Typora/Obsidian/VS Code) 正常渲染
+- [x] `research_contract.md` 由确定性提取逻辑生成 / 刷新，人类不需直接编辑
+- [x] research-team convergence gate 检查 notebook 内容一致性
+- [x] `revision.py`、`context_pack.py` 与相关 gate 改为消费 `research_contract.md`
+- [x] 项目根目录脚手架与面向用户文档不再要求 `Draft_Derivation.md`
 
 ### UX-05: 延迟脚手架 + 统一新建项目入口 ★UX
 
 > **新增 (2026-02-22, 2026-03-14 重述)**: `hepar init` 和 `research-team scaffold` 存在重复 (~15 个文件)；默认全量脚手架创建 ~20+ 文件，多数初期用不到。当前应把两者收束到同一套“新建项目规则”，而不是继续让任何一个入口充当长期权威来源。
+
+**状态**: done (2026-03-14 standalone closeout)
 
 **现状**:
 - `hepar init` (`project_scaffold.py`) 创建 CHARTER, MAP, PLAN, PREWORK, `Draft_Derivation`, `AGENTS`, `docs/*`, `kb` 结构
@@ -903,11 +907,11 @@ branches:     candidate → pending, active → running, abandoned → completed
 **依赖**: UX-01 (notebook 分离)
 
 **验收**:
-- [ ] `hepar init` 与 `research-team scaffold` 产出的默认核心项目结构一致
-- [ ] 默认最小骨架至少围绕 `research_notebook.md`、`research_contract.md`、`project_charter.md`、`project_index.md`、`research_plan.md`、`.mcp.json`
-- [ ] `prompts/`、`knowledge_base/`、`computation/`、`team/` 等按需创建，不再默认铺满
-- [ ] 脚手架面不再创建或要求 `Draft_Derivation.md`、`PROJECT_MAP.md`、`PREWORK.md`、`INITIAL_INSTRUCTION.md`、`INNOVATION_LOG.md`
-- [ ] 对 `knowledge_base/`、`prompts/`、`team/`、`research_team_config.json`、`references/`、`.hep/` 直达项目根目录的名字完成一次有边界的审计，并给出“直接改 / 暂不改”的明确结论
+- [x] `hepar init` 与 `research-team scaffold` 产出的默认核心项目结构一致
+- [x] 默认最小骨架至少围绕 `research_notebook.md`、`research_contract.md`、`project_charter.md`、`project_index.md`、`research_plan.md`、`.mcp.json.example`
+- [x] `prompts/`、`knowledge_base/`、`computation/`、`team/` 等按需创建，不再默认铺满
+- [x] 脚手架面不再创建或要求 `Draft_Derivation.md`、`PROJECT_MAP.md`、`PREWORK.md`、`INITIAL_INSTRUCTION.md`、`INNOVATION_LOG.md`
+- [x] 对 `knowledge_base/`、`prompts/`、`team/`、`research_team_config.json`、`references/`、`.hep/` 直达项目根目录的名字完成一次有边界的审计，并给出“直接改 / 暂不改”的明确结论
 
 ### UX-06: 研究会话入口协议 ✅ Batch 4B ★UX
 
@@ -969,8 +973,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [ ] `hepar doctor` + `hepar bridge` 冒烟测试通过
 - [ ] Zotero 工具整合完成 (NEW-R04)
 - [ ] diff-scoped `as any` CI 门禁就绪 (NEW-R02)
-- [ ] `research_notebook.md` 可渲染 + `research_contract.md` 确定性生成 / 刷新 (UX-01)
-- [ ] 脚手架默认 minimal，按需扩展 (UX-05)
+- [x] `research_notebook.md` 可渲染 + `research_contract.md` 确定性生成 / 刷新 (UX-01)
+- [x] 脚手架默认 minimal，按需扩展 (UX-05)
 - [ ] session_protocol_v1 定义完成 (UX-06)
 - [ ] 无 Phase 0 回归
 
@@ -3147,7 +3151,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | Phase | 缺陷 ID | 数量 |
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
-| **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06 | 23 (19 done, 3 pending, 1 cut) |
+| **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06 | 23 (21 done, 1 pending, 1 cut) |
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-19/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05~R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-ARXIV-01, NEW-HEPDATA-01, NEW-05a Stage 3 (start) | 44 (26 done, 18 pending) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 50 (33 done, 17 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (0 done, 8 pending) |

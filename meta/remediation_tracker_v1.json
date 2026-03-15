@@ -356,23 +356,25 @@
         },
         "UX-01": {
           "title": "研究笔记与机器合同分离",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [],
           "source": "user-stories-ux-gaps",
-          "note": "当前重构期默认直接正名，不保留脚手架面旧名兼容别名；人类入口=research_notebook.md，机器入口=research_contract.md。"
+          "completed_at": "2026-03-14",
+          "note": "Standalone closeout complete: human entry=research_notebook.md, machine contract=research_contract.md, deterministic sync now lives in research_contract.py, downstream machine-facing consumers read research_contract.md, formal review converged at 0 blocking (Opus + K2.5 + Gemini-3.1-Pro-Preview packetized rerun after agentic tool-path failure), self-review 0 blocking."
         },
         "UX-05": {
           "title": "延迟脚手架 + 统一新建项目入口",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "UX-01"
           ],
           "source": "user-stories-ux-gaps",
-          "note": "hepar init 与 research-team scaffold 都应收束为同一套新建项目规则的薄调用方；本批需完成一次有边界的脚手架命名审计。"
+          "completed_at": "2026-03-14",
+          "note": "Standalone closeout complete: ensure_project_scaffold is the shared scaffold authority for hepar init and research-team scaffold; canonical minimal root surface is project_charter.md/project_index.md/research_plan.md/research_notebook.md/research_contract.md/.mcp.json.example; minimal vs full scaffold behavior and bounded naming audit are locked by tests/smokes; formal review converged at 0 blocking and self-review found 0 blocking issues."
         },
         "UX-06": {
           "title": "研究会话入口协议",
