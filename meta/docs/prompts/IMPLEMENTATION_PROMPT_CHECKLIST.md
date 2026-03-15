@@ -61,15 +61,17 @@
 1. 检查实现代码本身，而非只看 diff 摘要。
 2. 检查调用链、关键 execution flows、下游消费者。
 3. 检查 tests、eval fixtures、baselines、holdout gate。
-4. 检查 scope discipline，确认未顺手拉入 lane 外工作。
-5. 对每个 blocking issue / amendment 给出文件级或测试级证据。
+4. 检查 packet / prompt 前提是否成立；任何“已收口”“已锁定”“pre-existing unrelated debt”“out of scope”的分类都不是默认可信，必须结合实际代码、shared entrypoint、acceptance failure 与 downstream surface 重新判断。
+5. 对 shared/canonical authority 迁移类任务，检查 authority completeness，而不只是看命名或局部 diff：至少核对 authority map -> concrete artifact/template、artifact/template -> authority map、是否仍有 inline duplicate authority、以及 shared entrypoint / canonical acceptance 是否真的通过。
+6. 检查 scope discipline，确认未顺手拉入 lane 外工作；但 shared entrypoint 或 canonical acceptance failure 默认先视为 packet assumption breach，而不是自动降级为 lane 外 debt，除非 reviewer 明确给出反证。
+7. 对每个 blocking issue / amendment 给出文件级或测试级证据。
 
 ### 收敛判定
 
 - 只有当三审都达到 `CONVERGED` / `CONVERGED_WITH_AMENDMENTS`，且 `blocking_issues = 0` 时，才算审核收敛。
 - 任一 reviewer 有 blocking issue，就必须修正并重跑下一轮。
 - 凡当前 batch 直接相关、高价值、低风险、可独立验证且不依赖后续 phase / lane 的 amendments，默认必须本轮吸收；不得仅因 `non-blocking` 就顺延。
-- deferred 仅允许用于 lane 外工作、依赖后续 phase / lane（或当前 batch 之外的后续工作）、pre-existing unrelated debt、需要人类架构裁决、或修复风险明显大于收益的项；仅仍有后续价值的 deferred 项必须记录原因，并同步到持久 SSOT（至少 `meta/remediation_tracker_v1.json` 条目或 checked-in 的后续 prompt 文件），临时 chat prompt、review/self-review 输出与 scratch notes 不算 SSOT。
+- deferred 仅允许用于 lane 外工作、依赖后续 phase / lane（或当前 batch 之外的后续工作）、pre-existing unrelated debt、需要人类架构裁决、或修复风险明显大于收益的项；但只有在 reviewer / self-review 已明确说明该项为何不推翻 packet 前提、shared entrypoint closeout 或 authority completeness judgment 后，才可按 unrelated debt deferred。仅仍有后续价值的 deferred 项必须记录原因，并同步到持久 SSOT（至少 `meta/remediation_tracker_v1.json` 条目或 checked-in 的后续 prompt 文件），临时 chat prompt、review/self-review 输出与 scratch notes 不算 SSOT。
 - 低价值或已判定不值得跟进的 non-blocking amendments 应记录为 declined/closed，而非 deferred；不得把所有 nit 机械推进 backlog。
 
 ### 5.2 自审 (`self-review`) 门禁
@@ -79,7 +81,8 @@
 1. 实现代码本身与关键调用链 / 下游 surface。
 2. GitNexus post-change 证据（`detect_changes`，必要时 `impact` / `context`）。
 3. tests、eval fixtures、baselines、holdout gate 是否真的守住新行为。
-4. scope discipline 与 adopted / deferred amendments 是否记录完整。
+4. packet / prompt 前提是否被实际代码、shared entrypoint failure 或 authority residue 推翻；若被推翻，必须回写为 blocking issue，而不是沿用 packet 叙事。
+5. scope discipline 与 adopted / deferred amendments 是否记录完整。
 
 自审若发现 blocking issue，必须先修复再进入完成态；不得以“外部三审已通过”为由跳过。
 
@@ -108,8 +111,10 @@
 
 1. `GitNexus`：实施前 freshness check + 审核前 conditional refresh
 2. `总验收命令`：列出 eval/test/build gates
-3. `Review-Swarm`：写明 mandatory reviewers（默认 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)`）、深审要求、收敛标准
-4. `Self-Review`：写明 agent 自审也是 mandatory gate，且需绑定代码 / GitNexus / eval / scope 证据
-5. `交付后必须同步`：至少写明 tracker / `AGENTS.md` 必更；`architecture-decisions` 与 `REDESIGN_PLAN` 何时需要更新、何时明确不更新；以及 amendments / deferred 的持久 SSOT 去向
-6. `版本控制门禁`：说明 commit/push 只有在收敛后且已获授权时才允许
-7. `SOTA preflight / archive`：写明 canonical archive path（默认 `~/.autoresearch-lab-dev/sota-preflight/...`）以及当前 `worktree` 副本 / 指针路径
+3. `Packet assumptions`：列出本批依赖的前提（例如“前置 lane 已收口”“某 failures 属于 lane 外 debt”），并为每条前提附上 exact evidence；若没有 exact evidence，只能标成待验证假设，不能写成既定事实
+4. `Review-Swarm`：写明 mandatory reviewers（默认 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)`）、深审要求、收敛标准，以及 reviewer 必须显式回答“packet 对 blocker / debt / out-of-scope 的分类是否成立”
+5. `Self-Review`：写明 agent 自审也是 mandatory gate，且需绑定代码 / GitNexus / eval / scope 证据，并显式复核 packet assumptions 是否被推翻
+6. `Authority completeness`：若任务涉及 shared/canonical authority 迁移，prompt 必须明确要求 `map -> artifact`、`artifact -> map`、`no inline duplicate authority`、`shared entrypoint acceptance` 四项检查
+7. `交付后必须同步`：至少写明 tracker / `AGENTS.md` 必更；`architecture-decisions` 与 `REDESIGN_PLAN` 何时需要更新、何时明确不更新；以及 amendments / deferred 的持久 SSOT 去向
+8. `版本控制门禁`：说明 commit/push 只有在收敛后且已获授权时才允许
+9. `SOTA preflight / archive`：写明 canonical archive path（默认 `~/.autoresearch-lab-dev/sota-preflight/...`）以及当前 `worktree` 副本 / 指针路径
