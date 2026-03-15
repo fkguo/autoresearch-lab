@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.3-draft",
-  "updated_at": "2026-03-15T15:11:31+08:00",
+  "updated_at": "2026-03-16T00:02:53+08:00",
   "note": "v1.9.3-draft: v1.9.2 + semantic-authority boundary clarification. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Batch A-E are now completed in the current worktree, and Batch F downstream recovery has confirmed the residual batch2 closeout was fully absorbed by `NEW-05a-idea-core-domain-boundary` / semantic Batch A rather than remaining as a separate code batch. `batch3` remains a separate later prompt and was not started in this bounded closeout run. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. Formal review for Batch F later converged with 0 blocking via that approved fallback, and self-review also passed with 0 blocking. 163 items.",
   "phases": {
     "0": {
@@ -863,15 +863,14 @@
           "note": "Batch 4B: Span interface in shared/span.ts + SpanCollector + ActiveSpan JSONL writer in orchestrator/tracing.ts. ~150 LOC total."
         },
         "NEW-RT-04": {
-          "status": "done",
+          "status": "in_progress",
           "assignee": "gpt-5-codex",
           "title": "Durable execution",
           "complexity": "medium",
           "depends_on": [
             "NEW-RT-01"
           ],
-          "note": "Retro-closeout completed (2026-03-12): existing `RunManifestManager` / crash-recovery semantics were real, but live `AgentRunner` execution had not been persisting checkpoints. This pass added bounded `manifestManager` + `checkpointRecorder` wiring through both normal tool execution and incomplete-tool-use recovery, plus `packages/orchestrator/tests/agent-runner-manifest.test.ts` to lock both paths. Acceptance commands passed; GitNexus post-change evidence refreshed successfully (`npx gitnexus analyze` up to date, `detect_changes` LOW, `impact(AgentRunner)` LOW); formal review converged with 0 blocking and self-review 0 blocking. No new commit hash recorded because commit was not authorized.",
-          "completed_at": "2026-03-12"
+          "note": "2026-03-15 bounded repair downgraded the old 2026-03-12 retro-closeout claim. `RunManifestManager` / checkpoint / resume foundations and targeted tests remain real, but current source + GitNexus still show no shared entrypoint / production caller for `AgentRunner` or `RunManifestManager`. This item therefore remains open as library-level durable-execution groundwork, pending a real runtime surface. Scoped evidence in the repair batch: `pnpm --filter @autoresearch/orchestrator test -- tests/run-manifest.test.ts tests/agent-runner-manifest.test.ts`, `pnpm --filter @autoresearch/orchestrator build`, `git diff --check`, `npx gitnexus analyze --force`, `context(AgentRunner)`, `context(RunManifestManager)`, `detect_changes` LOW. Formal review finally completed with `Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)` at 0 blocking after a successful direct Gemini rerun; self-review also found 0 blocking. No commit hash recorded because commit was not authorized."
         },
         "NEW-CONN-02": {
           "status": "done",
@@ -928,8 +927,8 @@
             "C-02",
             "NEW-R15-impl"
           ],
-          "note": "Retro-closeout completed (2026-03-12): design-only item was already delivered in `meta/docs/computation-mcp-design.md` and related compute-lane contracts. This pass reality-audited the design against the live schema/workflow surfaces, confirmed the domain-neutral task/capability-first framing, and added the missing schema-level acceptance coverage without starting `NEW-COMP-02` runtime/provider execution work. Acceptance commands passed; formal review (Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)) converged with 0 blocking; self-review 0 blocking. No new commit hash recorded because commit was not authorized.",
-          "completed_at": "2026-03-12"
+          "note": "Retro-closeout re-judgment completed on 2026-03-15. The bounded repair aligned `meta/docs/computation-mcp-design.md` with the live authority for `hep_run_ingest_skill_artifacts`: risk level is `write`, `_confirm` is intentionally absent, and the design doc now explains why `C-02 containment + run-local append semantics` are sufficient while destructive confirmation remains reserved for execution surfaces like `hep_run_execute_manifest`. New focused regression coverage in `packages/hep-mcp/tests/contracts/ingestSkillArtifactsContract.test.ts` pins `write` risk, required fields, and no `_confirm`. Scoped acceptance passed: `pnpm --filter @autoresearch/hep-mcp test -- tests/core/ingestSkillArtifacts.test.ts tests/contracts/ingestSkillArtifactsContract.test.ts`, `git diff --check`, `npx gitnexus analyze --force`, `context(ingestSkillArtifacts)`, `detect_changes` LOW. Canonical baseline failures in `tests/toolContracts.test.ts` / `pnpm --filter @autoresearch/hep-mcp build` remain the same pre-existing sibling-package import debt and were explicitly kept out of scope. Formal review finally completed with `Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)` at 0 blocking after a successful direct Gemini rerun; self-review also found 0 blocking. No commit hash recorded because commit was not authorized.",
+          "completed_at": "2026-03-15"
         },
         "NEW-WF-01": {
           "status": "done",
