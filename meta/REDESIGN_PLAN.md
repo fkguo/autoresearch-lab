@@ -122,7 +122,7 @@ Phase 2B (Pipeline 连通 + 深度集成):
   ├─ NEW-05a Stage 3 idea-engine TS 增量重写开始
   ├─ NEW-WF-01 Workflow schema 设计 (~100 LOC) ✅
   ├─ NEW-COMP-01 Computation MCP 安全设计 (~200 LOC) ✅
-  ├─ NEW-RT-04 Durable execution (~200 LOC) ✅
+  ├─ NEW-RT-04 Durable execution (~200 LOC) [reopened: shared entrypoint pending]
   ├─ NEW-ARXIV-01 arxiv-mcp 独立 MCP (~1700 LOC) ← Phase 2 early add
   ├─ NEW-HEPDATA-01 hepdata-mcp 独立 MCP (~800 LOC) ← Phase 2 early add
   ├─ UX-02 ✅ Computation contract (升级)
@@ -1504,6 +1504,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 ### NEW-RT-04: Durable Execution (Phase 2 late)
 
 > **来源**: Scope Audit 三模型收敛 — 欠工程化 Gap #4 (Durable Execution)
+> **2026-03-15 bounded repair**: 2026-03-12 retro-closeout claim was downgraded. Current worktree has `RunManifestManager` + `AgentRunner` checkpoint/resume library foundations and passing targeted tests, but no live shared entrypoint / production caller wires `AgentRunner` or `RunManifestManager` today. Keep this item open until a real runtime surface consumes it.
 
 **依赖**: NEW-RT-01
 **估计**: ~200 LOC
@@ -1511,8 +1512,8 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **内容**: RunManifest `last_completed_step` + `resume_from` + checkpoint at step boundaries。
 
 **验收**:
-- [x] AgentRunner 崩溃后可从 `last_completed_step` 恢复
-- [x] `resume_from` 跳过已完成步骤
+- [ ] AgentRunner 崩溃后可从 `last_completed_step` 恢复
+- [ ] `resume_from` 跳过已完成步骤
 
 ### NEW-CONN-02: Review Feedback next_actions (Phase 2)
 
@@ -1554,7 +1555,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **依赖**: NEW-IDEA-01
 **估计**: ~150 LOC
 
-**内容**: `hep_run_create_from_idea` 接收 IdeaHandoffC2 URI, 创建 project + run, stage thesis/claims 为 outline seed, 返回 hint-only `next_actions` (inspire_search + build_evidence + build_evidence_index)。纯 staging，无网络调用。
+**内容**: `hep_run_create_from_idea` 接收 IdeaHandoffC2 URI, 创建 project + run, stage thesis/claims 为 outline seed, 返回 hint-only `next_actions` (`hep_run_plan_computation` + `inspire_search` + `hep_project_build_evidence`)。纯 staging，无网络调用。
 
 **验收**:
 - [x] 从 IdeaHandoffC2 URI 创建 run
@@ -3152,7 +3153,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06 | 23 (21 done, 1 pending, 1 cut) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-19/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05~R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-ARXIV-01, NEW-HEPDATA-01, NEW-05a Stage 3 (start) | 44 (26 done, 18 pending) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-19/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05~R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-ARXIV-01, NEW-HEPDATA-01, NEW-05a Stage 3 (start) | 44 (25 done, 19 pending) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 50 (33 done, 17 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (0 done, 8 pending) |
 | **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (0 done, 14 pending, 8 design_complete) |

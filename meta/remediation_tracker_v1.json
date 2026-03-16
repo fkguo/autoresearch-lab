@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.3-draft",
-  "updated_at": "2026-03-12T13:26:50+08:00",
+  "updated_at": "2026-03-16T09:58:46+08:00",
   "note": "v1.9.3-draft: v1.9.2 + semantic-authority boundary clarification. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Batch A-E are now completed in the current worktree, and Batch F downstream recovery has confirmed the residual batch2 closeout was fully absorbed by `NEW-05a-idea-core-domain-boundary` / semantic Batch A rather than remaining as a separate code batch. `batch3` remains a separate later prompt and was not started in this bounded closeout run. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. Formal review for Batch F later converged with 0 blocking via that approved fallback, and self-review also passed with 0 blocking. 163 items.",
   "phases": {
     "0": {
@@ -325,14 +325,14 @@
         },
         "NEW-R03b": {
           "title": "Python 异常处理规范化",
-          "status": "pending",
+          "status": "in_progress",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "H-01"
           ],
           "source": "deep-refactoring-analysis",
-          "note": "v1.8.0: 不引入 AutoresearchError。采用标准 Python 域特定异常 + McpError 错误码映射参考。"
+          "note": "v1.8.0: 不引入 AutoresearchError。采用标准 Python 域特定异常 + McpError 错误码映射参考。2026-03-15: NEW-R03b Batch A 已完成 target implementation（7 个 active runtime / RPC / eval boundary files + 相邻 tests + file-scoped broad-catch gate），formal review-swarm `Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)` 收敛，self-review 0 blocking；GitNexus pre-change `analyze` 与 post-change `analyze --force` 成功。原同日 acceptance blocker（`packages/hep-autoresearch/tests -q` 因缺失 scaffold template `project_charter.md` 触发 17 个与 Batch A 无关的 init/scaffold failures）已被 UX-01 + UX-05 template-sync follow-up 清除：`PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m pytest packages/hep-autoresearch/tests -q` 现为 203 passed。post-change GitNexus `detect_changes` 已恢复，但 `impact` / `context` follow-up 仍报 `Transport closed`，因此 exact verification 继续以 direct source inspection + exact tests 为准。2026-03-15 enhanced rereview minimal follow-up 在当前 worktree 补齐了 `packages/hep-autoresearch/src/hep_autoresearch/scaffold_templates/project_charter.md` / `research_plan.md` 并把 `packages/hep-autoresearch/.gitignore` 的 legacy scaffold ignore block 锚定到 package root；scaffold exact slice `5 passed`，scaffold smokes 全过，`packages/hep-autoresearch/tests` 仍为 `203 passed`，`packages/idea-core/tests -q` exit `0`（`116` collected），NEW-R03b targeted tests `28 passed`，broad-catch gate `PASS`，`git diff --check` 通过。GitNexus rerun `npx gitnexus analyze --force` 成功，`detect_changes` 仍为 `LOW`，`context(ensure_project_scaffold)` 对齐到预期 authority path，但 `impact(ensure_project_scaffold)` 继续 `Transport closed`，所以 closeout 继续以 direct source inspection + exact tests 为准。enhanced rereview `swarm-r2` 现为 `0 blocking`（Gemini + Kimi = `CONVERGED`，Opus = `CONVERGED_WITH_AMENDMENTS`），self-review 也确认 shared scaffold blocker 已在当前 worktree 清除且未重开 NEW-R03b boundary files。由于本任务未获 commit authorization，条目暂维持 `in_progress` 而非 `done`。"
         },
         "NEW-R04": {
           "title": "Zotero 工具整合 (~2300 LOC 去重)",
@@ -374,7 +374,7 @@
           ],
           "source": "user-stories-ux-gaps",
           "completed_at": "2026-03-14",
-          "note": "Standalone closeout complete: ensure_project_scaffold is the shared scaffold authority for hepar init and research-team scaffold; canonical minimal root surface is project_charter.md/project_index.md/research_plan.md/research_notebook.md/research_contract.md/.mcp.json.example; minimal vs full scaffold behavior and bounded naming audit are locked by tests/smokes; formal review converged at 0 blocking and self-review found 0 blocking issues."
+          "note": "Standalone closeout complete: ensure_project_scaffold is the shared scaffold authority for hepar init and research-team scaffold; canonical minimal root surface is project_charter.md/project_index.md/research_plan.md/research_notebook.md/research_contract.md/.mcp.json.example; minimal vs full scaffold behavior and bounded naming audit are locked by tests/smokes; formal review converged at 0 blocking and self-review found 0 blocking issues. 2026-03-15 template-sync follow-up completed the previously incomplete authority migration: added missing project_charter/research_plan templates plus template-backed AGENTS/docs support files, removed inline scaffold prose from project_scaffold.py, stripped host/provider-local default links from minimal project_index.md, and added bidirectional anti-drift coverage in test_scaffold_template_sync.py. Validation on the current worktree: exact scaffold slice 17 passed, packages/hep-autoresearch/tests 203 passed, formal review-swarm R2 0 blocking, self-review 0 blocking."
         },
         "UX-06": {
           "title": "研究会话入口协议",
@@ -863,15 +863,14 @@
           "note": "Batch 4B: Span interface in shared/span.ts + SpanCollector + ActiveSpan JSONL writer in orchestrator/tracing.ts. ~150 LOC total."
         },
         "NEW-RT-04": {
-          "status": "done",
+          "status": "in_progress",
           "assignee": "gpt-5-codex",
           "title": "Durable execution",
           "complexity": "medium",
           "depends_on": [
             "NEW-RT-01"
           ],
-          "note": "Retro-closeout completed (2026-03-12): existing `RunManifestManager` / crash-recovery semantics were real, but live `AgentRunner` execution had not been persisting checkpoints. This pass added bounded `manifestManager` + `checkpointRecorder` wiring through both normal tool execution and incomplete-tool-use recovery, plus `packages/orchestrator/tests/agent-runner-manifest.test.ts` to lock both paths. Acceptance commands passed; GitNexus post-change evidence refreshed successfully (`npx gitnexus analyze` up to date, `detect_changes` LOW, `impact(AgentRunner)` LOW); formal review converged with 0 blocking and self-review 0 blocking. No new commit hash recorded because commit was not authorized.",
-          "completed_at": "2026-03-12"
+          "note": "2026-03-15 bounded repair downgraded the old 2026-03-12 retro-closeout claim. `RunManifestManager` / checkpoint / resume foundations and targeted tests remain real, but current source + GitNexus still show no shared entrypoint / production caller for `AgentRunner` or `RunManifestManager`. This item therefore remains open as library-level durable-execution groundwork, pending a real runtime surface. Scoped evidence in the repair batch: `pnpm --filter @autoresearch/orchestrator test -- tests/run-manifest.test.ts tests/agent-runner-manifest.test.ts`, `pnpm --filter @autoresearch/orchestrator build`, `git diff --check`, `npx gitnexus analyze --force`, `context(AgentRunner)`, `context(RunManifestManager)`, `detect_changes` LOW. Formal review finally completed with `Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)` at 0 blocking after a successful direct Gemini rerun; self-review also found 0 blocking. No commit hash recorded because commit was not authorized."
         },
         "NEW-CONN-02": {
           "status": "done",
@@ -928,8 +927,8 @@
             "C-02",
             "NEW-R15-impl"
           ],
-          "note": "Retro-closeout completed (2026-03-12): design-only item was already delivered in `meta/docs/computation-mcp-design.md` and related compute-lane contracts. This pass reality-audited the design against the live schema/workflow surfaces, confirmed the domain-neutral task/capability-first framing, and added the missing schema-level acceptance coverage without starting `NEW-COMP-02` runtime/provider execution work. Acceptance commands passed; formal review (Opus + Gemini-3.1-Pro-Preview + OpenCode(kimi-for-coding/k2p5)) converged with 0 blocking; self-review 0 blocking. No new commit hash recorded because commit was not authorized.",
-          "completed_at": "2026-03-12"
+          "note": "Retro-closeout re-judgment completed on 2026-03-15. The bounded repair aligned `meta/docs/computation-mcp-design.md` with the live authority for `hep_run_ingest_skill_artifacts`: risk level is `write`, `_confirm` is intentionally absent, and the design doc now explains why `C-02 containment + run-local append semantics` are sufficient while destructive confirmation remains reserved for execution surfaces like `hep_run_execute_manifest`. New focused regression coverage in `packages/hep-mcp/tests/contracts/ingestSkillArtifactsContract.test.ts` pins `write` risk, required fields, and no `_confirm`. Scoped acceptance passed: `pnpm --filter @autoresearch/hep-mcp test -- tests/core/ingestSkillArtifacts.test.ts tests/contracts/ingestSkillArtifactsContract.test.ts`, `git diff --check`, `npx gitnexus analyze --force`, `context(ingestSkillArtifacts)`, `detect_changes` LOW. The standalone bounded repair on 2026-03-16 then rechecked the residual `tests/toolContracts.test.ts` / `pnpm --filter @autoresearch/hep-mcp build` failures and confirmed they were not a new `hep-mcp` import-contract bug: the clean worktree simply lacked `pnpm install` plus prerequisite `dist/` outputs for `@autoresearch/shared`, `@autoresearch/orchestrator`, and the sibling provider packages. After `pnpm install --frozen-lockfile`, `pnpm --filter @autoresearch/shared build`, `pnpm --filter @autoresearch/orchestrator build`, and the five provider prerequisite builds, both canonical gates passed without touching handler/import logic, so the residual issue closed as environment/baseline recovery rather than a new generic-entrypoint lane. Formal review on that standalone repair converged with 0 blocking (`Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)`); the only directly related low-risk amendment was adopted in the same batch by adding the pre-existing missing `../pdg-mcp` and `../zotero-mcp` project references to `packages/hep-mcp/tsconfig.json`, which improves tsconfig completeness without changing the bounded closeout conclusion. Self-review also found 0 blocking. No commit hash recorded because commit was not authorized.",
+          "completed_at": "2026-03-15"
         },
         "NEW-WF-01": {
           "status": "done",
