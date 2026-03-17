@@ -901,7 +901,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 |---|---|
 | (新) shared scaffold contract / module | 作为唯一的“新建项目规则”权威来源，定义最小项目骨架、文件名、按需创建目录与文档角色 |
 | `hep-autoresearch/src/.../project_scaffold.py` | 改为调用 shared scaffold contract / module，不再拥有单独的一套脚手架规则 |
-| `research-team scripts/bin/scaffold_research_workflow.sh` | 同样改为调用 shared scaffold contract / module；默认只创建最小骨架，其他目录按需生成 |
+| `research-team scripts/bin/scaffold_research_workflow.sh` | 同样改为调用 shared scaffold contract / module；默认只创建最小骨架，其他目录按需生成；provider-local `.hep/` 仅允许通过显式 opt-in 添加 |
 | 脚手架与模板层 | 直接把 `PROJECT_CHARTER` / `PROJECT_MAP` / `PREWORK` / `INITIAL_INSTRUCTION` / `INNOVATION_LOG` 等旧名改成长期可保留的新名字，并完成一次有边界的脚手架命名审计 |
 
 **依赖**: UX-01 (notebook 分离)
@@ -909,6 +909,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 **验收**:
 - [x] `hepar init` 与 `research-team scaffold` 产出的默认核心项目结构一致
 - [x] 默认最小骨架至少围绕 `research_notebook.md`、`research_contract.md`、`project_charter.md`、`project_index.md`、`research_plan.md`、`.mcp.json.example`
+- [x] `.mcp.json.example` 保持 provider-neutral placeholder；HEP provider bundle 不得作为 generic 默认脚手架预建内容
 - [x] `prompts/`、`knowledge_base/`、`computation/`、`team/` 等按需创建，不再默认铺满
 - [x] 脚手架面不再创建或要求 `Draft_Derivation.md`、`PROJECT_MAP.md`、`PREWORK.md`、`INITIAL_INSTRUCTION.md`、`INNOVATION_LOG.md`
 - [x] 对 `knowledge_base/`、`prompts/`、`team/`、`research_team_config.json`、`references/`、`.hep/` 直达项目根目录的名字完成一次有边界的审计，并给出“直接改 / 暂不改”的明确结论
