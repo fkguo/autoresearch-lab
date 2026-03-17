@@ -122,7 +122,7 @@ Phase 2B (Pipeline 连通 + 深度集成):
   ├─ NEW-05a Stage 3 idea-engine TS 增量重写开始
   ├─ NEW-WF-01 Workflow schema 设计 (~100 LOC) ✅
   ├─ NEW-COMP-01 Computation MCP 安全设计 (~200 LOC) ✅
-  ├─ NEW-RT-04 Durable execution (~200 LOC) [reopened: shared entrypoint pending]
+  ├─ NEW-RT-04 Durable execution (~200 LOC) ✅ [shared tool-surface closeout on 2026-03-17]
   ├─ NEW-ARXIV-01 arxiv-mcp 独立 MCP (~1700 LOC) ← Phase 2 early add
   ├─ NEW-HEPDATA-01 hepdata-mcp 独立 MCP (~800 LOC) ← Phase 2 early add
   ├─ UX-02 ✅ Computation contract (升级)
@@ -1505,6 +1505,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 > **来源**: Scope Audit 三模型收敛 — 欠工程化 Gap #4 (Durable Execution)
 > **2026-03-15 bounded repair**: 2026-03-12 retro-closeout claim was downgraded. Current worktree has `RunManifestManager` + `AgentRunner` checkpoint/resume library foundations and passing targeted tests, but no live shared entrypoint / production caller wires `AgentRunner` or `RunManifestManager` today. Keep this item open until a real runtime surface consumes it.
+> **2026-03-17 closeout complete**: bounded repair alone was not enough; the final closeout came from promoting durable execution onto the real shared tool surface `orch_run_execute_agent`. `packages/orchestrator/src/orch-tools/index.ts` now registers that tool in `ORCH_TOOL_SPECS`, `packages/orchestrator/src/orch-tools/agent-runtime.ts` invokes `executeDelegatedAgentRuntime()`, and hep-mcp consumes the shared catalog through `packages/hep-mcp/src/tools/orchestrator/tools.ts` -> `packages/hep-mcp/src/tools/registry/projectExtensions.ts` -> `packages/hep-mcp/src/tools/dispatcher.ts`. That dispatcher now supplies host `createMessage` plus loopback `callTool`, so `AgentRunner` / `RunManifestManager` are exercised through a genuine non-test shared runtime path. `packages/orchestrator/src/agent-runner.ts` + `agent-runner-ops.ts` consult `RunManifestManager.shouldSkipStep()` during recovery, and the host-path contract `packages/hep-mcp/tests/contracts/orchRunExecuteAgent.test.ts` proves manifest persistence plus crash/re-entry resume that reports `resume_from` / `skipped_step_ids` and does not re-execute completed tool-use blocks. Formal review-swarm converged in R2 with 0 blocking (`Opus` `CONVERGED_WITH_AMENDMENTS`, `Gemini-3.1-Pro-Preview` `CONVERGED`, `OpenCode(kimi-for-coding/k2p5)` `CONVERGED`), self-review found 0 blocking, and scope stayed bounded to `NEW-RT-04` without expanding into `NEW-05a`, `NEW-07`, `EVO-13`, or provider-local runtime wrappers. GitNexus reindex succeeded but MCP reads still returned `Transport closed`, so final exact verification remained direct source inspection + passing scoped acceptance.
 
 **依赖**: NEW-RT-01
 **估计**: ~200 LOC
@@ -1512,8 +1513,8 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **内容**: RunManifest `last_completed_step` + `resume_from` + checkpoint at step boundaries。
 
 **验收**:
-- [ ] AgentRunner 崩溃后可从 `last_completed_step` 恢复
-- [ ] `resume_from` 跳过已完成步骤
+- [x] AgentRunner 崩溃后可从 `last_completed_step` 恢复
+- [x] `resume_from` 跳过已完成步骤
 
 ### NEW-CONN-02: Review Feedback next_actions (Phase 2)
 
