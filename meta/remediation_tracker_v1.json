@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.3-draft",
-  "updated_at": "2026-03-19T20:59:18+08:00",
+  "updated_at": "2026-03-20T00:46:38+08:00",
   "note": "v1.9.3-draft: v1.9.2 + semantic-authority boundary clarification. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Batch A-E are now completed in the current worktree, and Batch F downstream recovery has confirmed the residual batch2 closeout was fully absorbed by `NEW-05a-idea-core-domain-boundary` / semantic Batch A rather than remaining as a separate code batch. `batch3` remains a separate later prompt and was not started in this bounded closeout run. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. Formal review for Batch F later converged with 0 blocking via that approved fallback, and self-review also passed with 0 blocking. 163 items.",
   "phases": {
     "0": {
@@ -1544,10 +1544,12 @@
         },
         "L-06": {
           "title": "适配器注册表扩展",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
-          "depends_on": []
+          "assignee": "gpt-5-codex",
+          "depends_on": [],
+          "completed_at": "2026-03-20",
+          "note": "2026-03-20 bounded closeout in `/Users/fkg/Coding/Agents/autoresearch-lab-l06-new07` narrowed the adapter registry from a hardcoded builtin surface to the smallest plugin seam needed for Phase 4. `packages/hep-autoresearch/src/hep_autoresearch/toolkit/adapters/{adapter_plugin.py,shell_plugin.py,registry.py}` now compose builtin adapter plugins fail-closed, reject duplicate adapter ids / capability mismatches, and keep the current shell adapter as the only concrete authority rather than opening Python/Docker/runtime scope early. Shared acceptance for the paired `L-06` + `NEW-07` batch passed on the current worktree: `bash meta/scripts/codegen.sh`, `python3.12 -m pytest packages/hep-autoresearch/tests/test_adapter_registry.py packages/hep-autoresearch/tests/test_agent_registry.py packages/hep-autoresearch/tests/test_a2a_adapter.py -q`, `pnpm --filter @autoresearch/shared build`, and `git diff --check`. Formal review-swarm converged with `0` blocking in `meta/.review/2026-03-19-l06-new07/swarm-r2/` using `Opus + Gemini-3.1-Pro-Preview + OpenCode(zhipuai-coding-plan/glm-5)`, and formal self-review in `meta/.review/2026-03-19-l06-new07/self_review.md` also passed with `0` blocking. `npx gitnexus analyze --force` refreshed the worktree index successfully, but GitNexus MCP `impact` / `context` / `detect_changes` still returned `Transport closed`, so exact verification remained direct source inspection plus the passing scoped acceptance. No Python/Docker adapters, adapter-autodiscovery expansion, or `EVO-13` runtime work was started."
         },
         "L-07": {
           "title": "性能基准 SLO",
@@ -1558,12 +1560,14 @@
         },
         "NEW-07": {
           "title": "多 Agent 编排抽象 + A2A 适配层",
-          "status": "pending",
+          "status": "done",
           "complexity": "high",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "L-06"
-          ]
+          ],
+          "completed_at": "2026-03-20",
+          "note": "2026-03-20 scoped closeout on top of `L-06` landed the minimum `NEW-07` surface required before `EVO-13`: checked-in `meta/schemas/{agent_card_v1,agent_message_v1}.schema.json`, generated TS/Python bindings, runtime modules `packages/hep-autoresearch/src/hep_autoresearch/toolkit/{agent_contracts.py,agent_registry.py,agent_bindings.py,a2a_client.py,a2a_adapter.py,a2a_http.py,a2a_dispatch.py}`, builtin cards `packages/hep-autoresearch/src/hep_autoresearch/toolkit/agent_cards/{hep-mcp.json,idea-engine.json}`, and targeted tests `packages/hep-autoresearch/tests/{test_agent_registry.py,test_a2a_adapter.py,a2a_test_support.py}`. The implementation remains fail-closed: adapter disabled by default, loopback-only default binding, non-loopback requires explicit allowlist, bearer auth required when enabled, ERR-01 envelope + UUIDv4 `trace_id` enforced, `agent_message_v1` now locks `payload` vs `error` mutual exclusivity both in schema and Python validation, request size is capped, and only `hep-mcp` is currently dispatchable while `idea-engine` is discovery-only. Acceptance passed on the current worktree: `bash meta/scripts/codegen.sh`, `python3.12 -m pytest packages/hep-autoresearch/tests/test_adapter_registry.py packages/hep-autoresearch/tests/test_agent_registry.py packages/hep-autoresearch/tests/test_a2a_adapter.py -q`, `pnpm --filter @autoresearch/shared build`, and `git diff --check`. Formal review-swarm converged with `0` blocking in `meta/.review/2026-03-19-l06-new07/swarm-r2/`; after the user-approved fallback from the hung `OpenCode(kimi-for-coding/k2p5)` attempt in `swarm-r1`, the converged reviewer trio for this batch was `Opus + Gemini-3.1-Pro-Preview + OpenCode(zhipuai-coding-plan/glm-5)`. This closeout absorbed all directly related low-risk amendments from swarm-r2: schema exclusivity, request-size bound, constant-time auth compare, negative-path tests, synchronous correlation-key documentation, and the final 200-LOC hygiene split. Formal self-review in `meta/.review/2026-03-19-l06-new07/self_review.md` passed with `0` blocking and deferred only non-lane MCP process overhead plus generated TS index-signature looseness. No lifecycle/health/timeout/cascade-stop surface, multi-agent scheduling, operator shell expansion, repo-root product shell, or second project-state authority was added; `EVO-13` remains unstarted."
         }
       }
     },
