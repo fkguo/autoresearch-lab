@@ -712,9 +712,9 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [x] CI 在 `standard` 和 `full` 模式下冒烟测试通过 *(Phase 2 Batch 2, 2026-02-26)*
 - [x] 错误信封解析 golden test 通过 *(CI workflow covers pnpm -r test + make contract-test)*
 
-### M-22: GateSpec 通用抽象 (原 §7.8 M-14) — deferred → Phase 3
+### M-22: GateSpec 通用抽象 (原 §7.8 M-14) — Phase 3
 
-> **Scope Audit 收敛 (3/3)**: Defer to Phase 3。Phase 1 H-04 已提供足够的 gate registry。通用 GateSpec 抽象在多类型 gate (approval/quality/convergence) 需要统一策略时才有价值。
+> **Authority normalization (2026-03-20)**: GateSpec v1 is now the generic authority contract, not an approval-only stopgap. Shared taxonomy aligns to `approval | quality | convergence`; budget remains observability/policy rather than a first-class generic gate until a concrete caller proves otherwise.
 
 **依赖**: H-04 (Gate Registry)
 **关联**: C-01 (审批超时)
@@ -722,7 +722,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 **修改文件**:
 | 文件 | 修改内容 |
 |---|---|
-| `autoresearch-meta/schemas/gate_spec_v1.schema.json` | `GateSpec { gate_id, gate_type: "approval"|"quality"|"convergence", scope, policy, fail_behavior: "fail-open"|"fail-closed", audit_required: bool }` |
+| `meta/schemas/gate_spec_v1.schema.json` | `GateSpec { gate_id, gate_type: "approval"|"quality"|"convergence", scope, policy, fail_behavior: "fail-open"|"fail-closed", audit_required: bool }` |
 
 **验收检查点**:
 - [ ] 所有组件的 gate 可映射到 `GateSpec v1`
@@ -2536,7 +2536,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | L-02 | 3 个孤儿技能未打包 | review-swarm, deep-learning-lab, md-toc-latex-unescape → 打包或标记 `internal-only` | manifest 中无未声明技能 |
 | L-03 | SKILL.md frontmatter 不一致 | 统一 frontmatter template: `name`, `description`, 可选 `metadata` | lint 检查所有 SKILL.md frontmatter |
 | L-04 | Checkpoint 过期竞争条件 | 与 H-05 合并：使用 `AdvisoryLock` TTL 机制 | 时钟偏移 ±30s 内不误判 |
-| L-05 | Gate vs Approval 语义混淆 | run_card schema: `gates` → `required_approvals` 重命名 + 迁移 | 新 run_card 使用 `required_approvals` |
+| L-05 | Gate vs Approval 语义混淆 | approval-facing run_card / adapter / manifest surfaces: `required_gates` → `required_approvals`, `gate_resolution_*` → `approval_resolution_*`; keep research-loop `gate_conditions` generic | 新 approval-facing run_card/manifest/docs 使用 approval 语义命名 |
 | L-06 | 适配器注册表有限 | 按需扩展：`PythonAdapter`, `DockerAdapter` 接口定义 | 适配器注册表支持插件式扩展 |
 | L-07 | 缺乏性能基准 | `autoresearch-meta/docs/slo.md`: 关键操作 SLO 定义 | SLO 文档存在 |
 | NEW-07 | 多 Agent 编排缺乏抽象层 | 见下方详述 | A2A Agent Card 注册 + 跨 Agent 调用可通过集成测试 |
@@ -3154,13 +3154,13 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | Phase | 缺陷 ID | 数量 |
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
-| **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06 | 23 (21 done, 1 pending, 1 cut) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-19/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05~R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-ARXIV-01, NEW-HEPDATA-01, NEW-05a Stage 3 (start) | 44 (25 done, 19 pending) |
-| **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 50 (33 done, 17 pending) |
-| **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (0 done, 8 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (0 done, 14 pending, 8 design_complete) |
+| **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06 | 23 (22 done, 1 pending, 1 cut) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-19/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05~R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-ARXIV-01, NEW-HEPDATA-01, NEW-05a Stage 3 (start) | 49 (38 done, 11 pending) |
+| **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 51 (37 done, 14 pending) |
+| **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (2 done, 6 pending) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (3 done, 11 pending, 8 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09 | 1（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **160** (152 既有 + 8 新增) — **92 done** |
+| **总计** | **Phase 0–5 remediation items only** | **160** (152 既有 + 8 新增) — **116 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 与 `NEW-R09` 作为 bookkeeping rows 单列展示但不计入 160。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）现已完成 closeout，Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
