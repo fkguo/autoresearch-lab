@@ -2858,6 +2858,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 **产品入口非目标 (2026-03-09)**: `EVO-13` 的目标是单项目 / team-local runtime unification，而不是 packaged end-user agent。若未来需要统一的用户入口，应在 `P5A` 收束后以独立 leaf package 形式引入；不得把 `EVO-13` 直接扩张为 repo-root super-agent 或 orchestrator-internal 产品壳。
 
+**2026-03-20 首个 bridge slice**: 当前首批实现以 `packages/orchestrator/src/orch-tools/agent-runtime.ts` 的 `orch_run_execute_agent` 为 team-local bridge 入口，在不复制 `ResearchWorkspace` / task graph / event log SSOT 的前提下，为 delegated runtime 增加 `TeamExecutionState`、delegation permission matrix、checkpoint/restore binding、以及 `cancel` / `cascade_stop` intervention 语义；cross-run scheduler / fleet health 仍明确留在 `EVO-14`。
+
 **验收**:
 - 并行 team 执行中 kill 进程后可从 checkpoint 恢复，已完成角色不重跑
 - `stage_gated` 策略: 阶段内并行 + 阶段间门禁 + 持久化均正常
