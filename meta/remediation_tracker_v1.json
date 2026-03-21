@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.3-draft",
-  "updated_at": "2026-03-21T11:46:20Z",
+  "updated_at": "2026-03-21T13:04:36Z",
   "note": "v1.9.3-draft: v1.9.2 + semantic-authority boundary clarification. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Batch A-E are now completed in the current worktree, and Batch F downstream recovery has confirmed the residual batch2 closeout was fully absorbed by `NEW-05a-idea-core-domain-boundary` / semantic Batch A rather than remaining as a separate code batch. `batch3` remains a separate later prompt and was not started in this bounded closeout run. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. Formal review for Batch F later converged with 0 blocking via that approved fallback, and self-review also passed with 0 blocking. 163 items.",
   "phases": {
     "0": {
@@ -353,7 +353,7 @@
           "depends_on": [],
           "source": "deep-refactoring-analysis",
           "decision_gate": "Phase 1 kickoff: cancel if NEW-05a is rewrite-from-scratch",
-          "note": "Scope Audit 3/3 cut: hep-autoresearch 整体退役."
+          "note": "Scope Audit 3/3 cut: hep-autoresearch 整体退役；`hepar` 作为同一 Pipeline A Python CLI surface 的 installable alias，默认随 package 一起退役，除非后续有明确 repoint 决策。若未来生命周期继续推进到 deprecated / retired / repointed，残余 docs/help/skills sweep 应走已登记的 future cleanup slice `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md`，而不是继续把 lifecycle 对齐只留在聊天或临时 review 产物里。"
         },
         "UX-01": {
           "title": "研究笔记与机器合同分离",
@@ -1853,7 +1853,7 @@
         "NEW-R11"
       ],
       "source": "deep-refactoring-analysis",
-      "note": "NEW-R09 cut. Remaining: NEW-R10 (P2), NEW-R11 (P3)."
+      "note": "NEW-R09 cut because hep-autoresearch / hepar are treated as one transitional Pipeline A Python CLI surface slated for retirement together. The future lifecycle doc/help cleanup is separately registered in `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md` and should trigger only when Pipeline A status advances beyond the current transitional state. Remaining: NEW-R10 (P2), NEW-R11 (P3)."
     }
   }
 }

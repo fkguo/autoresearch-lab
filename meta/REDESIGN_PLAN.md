@@ -150,17 +150,17 @@ Phase 4 (长期演进):
 Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ P5A: 单用户 / 单项目端到端闭环 + 统一执行收束 (`EVO-01/02/03/06/07/09/10/11/12/13/14`)
   ├─ P5B: 社区 / 发布 / 跨实例 / 研究进化外层 (`EVO-04/05/08/15/16/17/18/19/20/21`)
-  ├─ idea-core Python 退役 + hep-autoresearch 退役 (Pipeline A 退役)
+  ├─ idea-core Python 退役 + hep-autoresearch 退役 (Pipeline A 退役；默认包含 `hepar` CLI alias)
   ├─ EVO-01~03 idea→compute→writing 循环 (依赖: UX-02, UX-04, NEW-R15-impl, NEW-COMP-01, NEW-IDEA-01, NEW-LOOP-01)
   ├─ EVO-04~EVO-21
   │
 Pipeline A/B 统一时间线:
-  Pipeline A = hep-autoresearch (Python CLI, hepar) — 现有编排器
+  Pipeline A = hep-autoresearch (Python CLI, installable alias `hepar`) — 现有编排器
   Pipeline B = orchestrator (TS MCP) — 新编排器 (NEW-05a/NEW-R15)
   Phase 2:   NEW-IDEA-01 + NEW-COMP-01 → Pipeline A 能力暴露为 MCP (供 Pipeline B 消费)
   Phase 2B:  NEW-CONN-01~04 → 所有阶段通过 hint-only next_actions 连通
   Phase 3:   NEW-COMP-02 (generic computation execution core + first host adapter), NEW-CONN-05 (交叉检验)
-  Phase 4+:  Pipeline A (hepar CLI) 退役, Pipeline B 成为唯一编排器
+  Phase 4+:  Pipeline A (`hep-autoresearch` package CLI + `hepar` alias) 退役, Pipeline B 成为唯一编排器
 
 NEW-R01 God-file 拆分 (跟踪伞) — 跨 Phase 1-3, 子项: NEW-R10/R11 (NEW-R09 cut)
 ```
@@ -250,7 +250,7 @@ autoresearch/                    # private monorepo (personal GitHub)
 | 阶段 2 (Phase 1-2) | 新编排器逐步接管 hep-autoresearch 的功能 (state machine, approval gates, ledger) | 中——功能迁移需验证等价 |
 | 阶段 3 (Phase 2-3) | idea-core 迁移至 TS `packages/idea-engine/`：搜索引擎、operator 系统、domain pack、评估、HEPAR 编排 | 中——~6,800 行迁移，依赖 ajv/proper-lockfile/json-canonicalize |
 | 阶段 4 (Phase 3) | idea-generator 验证脚本迁移至 TS (JSON Schema 文件本身语言无关，保持不动) | 低——仅 370 行脚本 |
-| 阶段 5 (Phase 4-5) | EVO-13/14/15 直接在 TS 编排器上实现；hep-autoresearch + Python idea-core 退役 | 低——此时 TS 组件已成熟 |
+| 阶段 5 (Phase 4-5) | EVO-13/14/15 直接在 TS 编排器上实现；hep-autoresearch（含 `hepar` alias）+ Python idea-core 退役 | 低——此时 TS 组件已成熟 |
 
 **修改文件**:
 
