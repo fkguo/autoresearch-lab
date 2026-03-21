@@ -13,6 +13,17 @@
 4. 相关架构 / memory 文档
 5. 目标代码与相邻测试
 
+### 1.0 默认工作区选择
+
+若当前任务不是并行 lane，且不需要保留一个额外的隔离工作区，默认直接在主仓 `main` worktree 实施，不额外创建 batch worktree。
+
+只有当满足以下任一条件时，才默认创建与主仓平行的本地 `worktree`：
+
+1. 当前存在并行 lane / 并行分支；
+2. 需要把未收敛实现与主工作区物理隔离；
+3. 人类明确要求使用独立 `worktree`；
+4. batch prompt 已显式指定非主 `worktree` 路径。
+
 ### 1.1 SOTA preflight 产出与归档
 
 若该实现任务要求做 SOTA / benchmark / best-practice preflight，则默认遵循 **archive-first**：
