@@ -117,6 +117,10 @@
 
 - 默认不执行；需要人类在当前任务中明确授权。
 - 一旦授权，也只能在上述完成态满足后执行。
+- 若正在提交某个 implementation batch，而该 batch 对应的 canonical prompt 文件（即应被 checked in 的 `meta/docs/prompts/...` prompt）已在当前 `worktree` 本地存在但尚未随实现入库（例如未跟踪、遗漏于前序提交），默认必须与该 batch 的实现同次 commit 提交；只有在人类明确说明该 prompt 不属于本批 canonical deliverable，或该文件只是临时 / 替代 prompt 而非本批 canonical prompt 时，才允许排除。
+- 若人类在当前任务中同时明确授权“合入 `main` + 清理该 batch `worktree`”，默认应在同轮 closeout 内连续完成，但只有在 completion gate、commit gate、以及下述 worktree 清理前 migration/archive 门禁全部满足后才允许执行。
+- 合入 `main` 前必须再次确认目标分支状态与待交付范围：只允许带着本批应交付内容进入 merge；若出现 merge conflict、目标分支非预期脏改动、或无法确认本批边界，必须停止并记录原因，而不是继续半自动合并。
+- 清理该 batch `worktree` 前，必须先完成既有 Serena memory 迁移与 SOTA preflight 迁档门禁；只有在 merge 已完成到人类指定的长期分支（默认 `main`）时，才可执行目录清理。若人类明确要求保留未合入 worktree，则不得清理。
 - `git push` 前必须再次确认工作树只包含本批应交付内容。
 - `.review/` 产物保持 gitignored，不进入提交。
 
@@ -129,5 +133,6 @@
 5. `Self-Review`：写明 agent 自审也是 mandatory gate，且需绑定代码 / GitNexus / eval / scope 证据，并显式复核 packet assumptions 是否被推翻
 6. `Authority completeness`：若任务涉及 shared/canonical authority 迁移，prompt 必须明确要求 `map -> artifact`、`artifact -> map`、`no inline duplicate authority`、`shared entrypoint acceptance` 四项检查
 7. `交付后必须同步`：至少写明 tracker / `AGENTS.md` 必更；`architecture-decisions` 与 `REDESIGN_PLAN` 何时需要更新、何时明确不更新；以及 amendments / deferred 的持久 SSOT 去向
-8. `版本控制门禁`：说明 commit/push 只有在收敛后且已获授权时才允许
-9. `SOTA preflight / archive`：写明 canonical archive path（默认 `~/.autoresearch-lab-dev/sota-preflight/...`）以及当前 `worktree` 副本 / 指针路径
+8. `版本控制门禁`：说明 commit/push 只有在收敛后且已获授权时才允许；若本批对应的 canonical prompt 文件已在当前 `worktree` 存在但尚未入库，必须与同批实现同次 commit 提交，除非人类明确排除或该文件并非本批 canonical prompt
+9. `Post-closeout merge / cleanup`：若人类授权合入 `main` 并清理 batch worktree，说明 merge 只可在 completion + commit gate 满足后执行，且清理前必须先完成 Serena memory / SOTA archive 迁移门禁；若 merge 冲突或边界不明，必须停止而非半自动推进
+10. `SOTA preflight / archive`：写明 canonical archive path（默认 `~/.autoresearch-lab-dev/sota-preflight/...`）以及当前 `worktree` 副本 / 指针路径
