@@ -84,6 +84,7 @@
 - 凡当前 batch 直接相关、高价值、低风险、可独立验证且不依赖后续 phase / lane 的 amendments，默认必须本轮吸收；不得仅因 `non-blocking` 就顺延。
 - deferred 仅允许用于 lane 外工作、依赖后续 phase / lane（或当前 batch 之外的后续工作）、pre-existing unrelated debt、需要人类架构裁决、或修复风险明显大于收益的项；但只有在 reviewer / self-review 已明确说明该项为何不推翻 packet 前提、shared entrypoint closeout 或 authority completeness judgment 后，才可按 unrelated debt deferred。仅仍有后续价值的 deferred 项必须记录原因，并同步到持久 SSOT（至少 `meta/remediation_tracker_v1.json` 条目或 checked-in 的后续 prompt 文件），临时 chat prompt、review/self-review 输出与 scratch notes 不算 SSOT。
 - 低价值或已判定不值得跟进的 non-blocking amendments 应记录为 declined/closed，而非 deferred；不得把所有 nit 机械推进 backlog。
+- 若本轮实际暴露出历史遗留隐患（例如 shared package `src/dist` 漂移依赖、旧生成产物 anti-drift 缺口、host-path surface 与源码边界不一致等），也不得让其继续潜伏：要么本轮直接修复；要么在 closeout 前登记为明确命名的后续 cleanup slice，并写入持久 SSOT。禁止只留在临时 review/self-review/chat 结论中。
 
 ### 5.2 自审 (`self-review`) 门禁
 
@@ -121,8 +122,9 @@
 6. 若本批改变了 phase 约束、lane 边界、依赖关系、unblock 顺序或 closeout 叙事，`meta/REDESIGN_PLAN.md` 已同步；否则明确说明“无设计层变更，不更新 REDESIGN_PLAN”；
 7. 若本批包含 SOTA preflight，则 canonical archive 已落到稳定本地目录（默认 `~/.autoresearch-lab-dev/sota-preflight/...`），且 worktree 清理前已确认可回溯；
 8. review amendments 与 deferred 原因已记录，且仍有后续价值的 deferred 项已同步到持久 SSOT。
-9. 完成汇报已给出**条件化的下一批建议**：必须基于本批 closeout 的实际结果，说明推荐的下一个 prompt / batch 是什么、为什么是它、以及为什么不是相邻但当前不该启动的 lane。
-10. review-health telemetry 已按 `meta/docs/review-health-metrics.md` 记录到持久 SSOT，或明确说明本次为何不适用。
+9. 本轮新发现但未当场修复的历史遗留隐患，已登记为明确命名的 cleanup slice，并同步到持久 SSOT；若无此类隐患，应明确说明“无新增待登记 legacy hazard”。
+10. 完成汇报已给出**条件化的下一批建议**：必须基于本批 closeout 的实际结果，说明推荐的下一个 prompt / batch 是什么、为什么是它、以及为什么不是相邻但当前不该启动的 lane。
+11. review-health telemetry 已按 `meta/docs/review-health-metrics.md` 记录到持久 SSOT，或明确说明本次为何不适用。
 
 `git commit` / `git push` 规则：
 
