@@ -56,7 +56,7 @@
 
 ## 5. Review-Swarm / Self-Review 门禁
 
-实现 prompt 默认必须包含正式 `review-swarm` 收尾，且审核必须深入而非蜻蜓点水。默认 reviewer 固定为 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)`；若其中任一模型本地不可用，必须记录失败原因并由人类明确确认 fallback reviewer。至少要求 reviewer：
+实现 prompt 默认必须包含正式 `review-swarm` 收尾，且审核必须深入而非蜻蜓点水。默认 reviewer 固定为 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)`；若其中任一模型本地不可用，必须记录失败原因并由人类明确确认 fallback reviewer。至少要求 reviewer：
 
 1. 检查实现代码本身，而非只看 diff 摘要。
 2. 检查调用链、关键 execution flows、下游消费者。
@@ -86,6 +86,18 @@
 
 自审若发现 blocking issue，必须先修复再进入完成态；不得以“外部三审已通过”为由跳过。
 
+### 5.3 Review-Health Telemetry
+
+为避免只凭“最近基本都是 0 blocking”主观判断审查质量，每个 formal closeout 都应按 `meta/docs/review-health-metrics.md` 记录最小 per-batch telemetry。
+
+最低要求：
+
+1. 在持久 SSOT 中记录 `review_rounds`、`first_round_blocking`、`final_zero_blocking`
+2. 记录 `amendments_total` 及其 `adopted / deferred / declined_closed` disposition
+3. 记录 `reviewer_disagreement`、`packet_assumption_breach`、`self_review_caught_new_issue`
+4. 若出现 reviewer 运行故障，记录失败原因以及是否通过 same-model rerun 或 fallback 解决
+5. `reopened_later` 与 `post_closeout_escape` 可在后续事实出现时回填，但不应省略该字段定义
+
 ## 6. 完成态与版本控制门禁
 
 只有在以下条件全部满足后，实施项才可视为完成：
@@ -99,6 +111,7 @@
 7. 若本批包含 SOTA preflight，则 canonical archive 已落到稳定本地目录（默认 `~/.autoresearch-lab-dev/sota-preflight/...`），且 worktree 清理前已确认可回溯；
 8. review amendments 与 deferred 原因已记录，且仍有后续价值的 deferred 项已同步到持久 SSOT。
 9. 完成汇报已给出**条件化的下一批建议**：必须基于本批 closeout 的实际结果，说明推荐的下一个 prompt / batch 是什么、为什么是它、以及为什么不是相邻但当前不该启动的 lane。
+10. review-health telemetry 已按 `meta/docs/review-health-metrics.md` 记录到持久 SSOT，或明确说明本次为何不适用。
 
 `git commit` / `git push` 规则：
 
@@ -112,7 +125,7 @@
 1. `GitNexus`：实施前 freshness check + 审核前 conditional refresh
 2. `总验收命令`：列出 eval/test/build gates
 3. `Packet assumptions`：列出本批依赖的前提（例如“前置 lane 已收口”“某 failures 属于 lane 外 debt”），并为每条前提附上 exact evidence；若没有 exact evidence，只能标成待验证假设，不能写成既定事实
-4. `Review-Swarm`：写明 mandatory reviewers（默认 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(kimi-for-coding/k2p5)`）、深审要求、收敛标准，以及 reviewer 必须显式回答“packet 对 blocker / debt / out-of-scope 的分类是否成立”
+4. `Review-Swarm`：写明 mandatory reviewers（默认 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)`）、深审要求、收敛标准，以及 reviewer 必须显式回答“packet 对 blocker / debt / out-of-scope 的分类是否成立”
 5. `Self-Review`：写明 agent 自审也是 mandatory gate，且需绑定代码 / GitNexus / eval / scope 证据，并显式复核 packet assumptions 是否被推翻
 6. `Authority completeness`：若任务涉及 shared/canonical authority 迁移，prompt 必须明确要求 `map -> artifact`、`artifact -> map`、`no inline duplicate authority`、`shared entrypoint acceptance` 四项检查
 7. `交付后必须同步`：至少写明 tracker / `AGENTS.md` 必更；`architecture-decisions` 与 `REDESIGN_PLAN` 何时需要更新、何时明确不更新；以及 amendments / deferred 的持久 SSOT 去向
