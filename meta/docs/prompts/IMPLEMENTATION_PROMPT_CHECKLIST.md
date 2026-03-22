@@ -65,6 +65,18 @@
 3. prompt 中必须列出本批 acceptance commands。
 4. 对 shared schema / type / contract 变更，必须补跑相邻 package 的 test/build。
 
+### 4.1 Fallback Discipline
+
+若本批实现新增 fallback、兼容分支、degraded path 或“保底”逻辑，prompt、review 与 self-review 至少必须回答：
+
+1. 这条 fallback 防的具体失败模式是什么？
+2. 该失败模式的依据是什么：现有 contract、tests / fixtures、历史 artifact，还是外部 provider / host 边界？
+3. 为什么不能直接修主路径，而要保留 fallback？
+4. 这条 fallback 是否引入了第二套 authority / 默认语义？
+5. 哪条 acceptance / test 明确覆盖了它，且失败时如何可观测（error code、log、diagnostic）？
+
+若这些问题答不清，默认不要加入该 fallback；优先收紧主路径，并返回明确的 fail-closed / unsupported / invalid 状态。
+
 ## 5. Review-Swarm / Self-Review 门禁
 
 实现 prompt 默认必须包含正式 `review-swarm` 收尾，且审核必须深入而非蜻蜓点水。默认 reviewer 固定为 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)`；若其中任一模型本地不可用，必须记录失败原因并由人类明确确认 fallback reviewer。至少要求 reviewer：
