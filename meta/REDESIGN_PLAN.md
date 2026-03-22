@@ -2867,23 +2867,44 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 ### EVO-14: 跨 Run 并行调度 + Agent 生命周期
 
-**现状**: Orchestrator CLI 一次只处理一个 run。无跨 run 资源调度、无 **fleet-level** agent 健康监控、无动态扩缩。
+**2026-03-22 rebaseline**:
+- 当前 live authority 已经是 TS-first，而不是旧 Python `run_scheduler.py` / `agent_lifecycle.py` 文件面。
+- shared seam 由 `@autoresearch/shared` 的 orchestrator tool names 提供；generic tool authority 由 `@autoresearch/orchestrator` 的 `ORCH_TOOL_SPECS` 提供；当前 host adapter / dispatcher authority 由 `packages/hep-mcp/` 通过共享 host path 暴露。
+- `EVO-13` 已经覆盖 **team-local** runtime / recovery / live-status/replay / assignment-local timeout 边界；`EVO-14` 只负责 **cross-run / fleet-level** visibility、queue、scheduler、resource 和 global lifecycle 语义，不能回切 `executeUnifiedTeamRuntime` 的 team-local 语义。
+- 当前真实现状是：每个 project root 只有一个 `.autoresearch/state.json` current-run authority，历史 runs 由 `.autoresearch/ledger.jsonl` 推导；cross-run aggregation / fleet visibility 尚未存在。
 
-**修改内容**:
+**Batch 分层**:
+
+| Batch | 范围 | 说明 |
+|---|---|---|
+| Batch 1 | Fleet visibility read model | 只做 read-only `orch_fleet_status`，基于显式 `project_roots` 聚合现有 run-level truth（state / ledger / approval packets），不引入持久 fleet registry、queue、scheduler、worker、global health |
+| Batch 2 | Queue / claim substrate | 再引入 persistent fleet registry、queue item / claim / lease / ownership 等持久 contract，但仍不启动实际 scheduler |
+| Batch 3 | Scheduler / worker / resource semantics | 在 queue substrate 稳定后，再进入 background worker、resource budgeting、global health、reassignment 等真正调度语义 |
+
+**Batch 1 修改内容**:
 
 | 文件 | 变更 |
 |---|---|
-| `hep-autoresearch/src/hep_autoresearch/toolkit/run_scheduler.py` | (新文件) Run 调度器: FIFO + 优先级队列，资源感知 (CPU/GPU/token budget)，最大并行 run 数可配置 |
-| `hep-autoresearch/src/hep_autoresearch/toolkit/agent_lifecycle.py` | (新文件) Agent 生命周期管理: 心跳 (30s 间隔)、超时检测 (3 次心跳失败 → 标记 unhealthy)、优雅关闭 (SIGTERM → 完成当前 WorkOrder → 退出) |
-| `autoresearch-meta/schemas/run_schedule_v1.schema.json` | 调度队列 schema: run_id, priority, resource_requirements, status, scheduled_at |
-| `autoresearch-meta/schemas/agent_health_v1.schema.json` | Agent 健康状态 schema: agent_id, last_heartbeat, status (healthy/unhealthy/terminated), current_work_order |
+| `packages/shared/src/tool-names.ts` | 新增共享 tool seam `orch_fleet_status` |
+| `packages/orchestrator/src/orch-tools/{schemas,run-read-model,fleet-status,index}.ts` | 新增 fleet visibility tool schema、run-level read-model helper、fleet aggregator 与 tool registry wiring |
+| `packages/orchestrator/src/orch-tools/{create-status-list,approval}.ts` | 复用 read-model helper，避免第二套 run/approval parsing authority |
+| `packages/hep-mcp/src/{tool-names,tool-risk}.ts` | host adapter / risk map 暴露 `orch_fleet_status` |
+| `packages/orchestrator/tests/orch-fleet-status.test.ts` | 锁定 dedupe/filter/error-localization/read-only aggregation |
+| `packages/hep-mcp/tests/contracts/orchFleetStatus.test.ts` | 锁定真实 host path 合约与 alias compatibility |
 
-**依赖**: EVO-13 (统一编排引擎)
+**Batch 1 约束**:
+- 只允许 read-only cross-run / fleet visibility；不得偷带 queue/claim/lease、background scheduler、resource slot、global agent-pool health、reassignment。
+- 不读取 `team-execution-state.json`，避免把 EVO-13 `live_status` / `replay` 误升格为 fleet authority。
+- 不新增新的 checked-in fleet JSON schema authority；Batch 1 只在 orchestrator tool schema 层锁定输入 contract。
+- 不修改 `executeUnifiedTeamRuntime`、`executeTeamRuntimeFromToolParams`、`handleOrchRunExecuteAgent` 的 runtime semantics；这些文件只做 regression verification。
 
-**验收**:
-- 2 个 run 可并行执行，资源不冲突
-- Agent 心跳超时后调度器自动将其 WorkOrder 重新分配
-- `hepar status` 展示所有活跃 run + agent 健康状态
+**依赖**: EVO-13 (统一编排引擎，team-local 语义已锁定)
+
+**Batch 1 验收**:
+- `orch_fleet_status` 可跨显式 `project_roots` 聚合 current run、run history 与 current-run approvals，单个 project root 出错时只在该项目 `errors[]` 记录，不让整个 tool fail
+- 现有 run-level status / approval contract 继续通过
+- 现有 EVO-13 team recovery host-path contract 继续通过
+- freshness / host risk / tool-count checks 继续通过
 
 ### EVO-15: Agent-arXiv — 多 Agent 自主研究社区基础设施
 
@@ -3139,7 +3160,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [ ] EVO-12: 技能健康报告 + `--auto-safe` 安装路径 + 退役标记
 - [ ] EVO-12a: 技能自生成 — agent trace 模式检测 + 技能提案 + scope extension
 - [ ] EVO-13: 并行团队执行 (TS) + 持久化 checkpoint + 崩溃恢复
-- [ ] EVO-14: 跨 Run 并行调度 + Agent 心跳/超时/重分配
+- [ ] EVO-14: Fleet visibility → queue substrate → scheduler / lifecycle（cross-run only）
 - [ ] EVO-15: Agent-arXiv 存储 + 搜索 + 引用 + 诚信门禁 + 进化仪表板
 - [ ] EVO-16: Agent 社区自主研究实验完成至少 1 轮循环
 - [ ] EVO-17: REP SDK 独立发布 + 子路径导出 + RDI gate (Track A) (**详设完成**: `track-a-evo17` design doc, 4 JSON Schemas)
