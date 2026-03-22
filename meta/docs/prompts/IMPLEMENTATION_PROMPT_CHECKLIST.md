@@ -131,7 +131,7 @@
 3. `self-review` 已完成且无未处理 blocking issue；
 4. 必需 SSOT 已同步：`meta/remediation_tracker_v1.json` 与 `AGENTS.md` 当前进度摘要；
 5. 若本批产出新的长期稳定架构不变量，`.serena/memories/architecture-decisions.md` 已同步；否则明确说明“无新增稳定不变量，不更新 memory”；
-6. 若本批改变了 phase 约束、lane 边界、依赖关系、unblock 顺序或 closeout 叙事，`meta/REDESIGN_PLAN.md` 已同步；否则明确说明“无设计层变更，不更新 REDESIGN_PLAN”；
+6. 若本批改变了 phase 约束、lane 边界、依赖关系、unblock 顺序或 closeout 叙事，`meta/REDESIGN_PLAN.md` 已同步；此外，只要本轮 closeout 会让 `meta/REDESIGN_PLAN.md` 中已有 item / batch / lane 的进度复选框、batch 表、完成态标题、当前现状描述或验收勾选变得过时，也必须同轮同步更新；只有在逐段检查相关 plan 区域并确认不会产生进度漂移时，才可明确说明“已检查，REDESIGN_PLAN 无需更新”；
 7. 若本批改变了任何 package / CLI / pipeline surface 的生命周期状态（如 `current` / `transitional` / `retired` / `repointed`），已同步更新相关 authoritative docs：至少 `meta/remediation_tracker_v1.json`、`AGENTS.md`、必要时 `.serena/memories/architecture-decisions.md`，以及仍把该 surface 当作当前默认入口来介绍的用户文档；否则明确说明“无生命周期状态变更，不触发生命周期同步”；
 8. 若本批包含 SOTA preflight，则 canonical archive 已落到稳定本地目录（默认 `~/.autoresearch-lab-dev/sota-preflight/...`），且 worktree 清理前已确认可回溯；
 9. review amendments 与 deferred 原因已记录，且仍有后续价值的 deferred 项已同步到持久 SSOT。
@@ -158,7 +158,7 @@
 4. `Review-Swarm`：写明 mandatory reviewers（默认 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)`）、深审要求、收敛标准，以及 reviewer 必须显式回答“packet 对 blocker / debt / out-of-scope 的分类是否成立”
 5. `Self-Review`：写明 agent 自审也是 mandatory gate，且需绑定代码 / GitNexus / eval / scope 证据，并显式复核 packet assumptions 是否被推翻
 6. `Authority completeness`：若任务涉及 shared/canonical authority 迁移，prompt 必须明确要求 `map -> artifact`、`artifact -> map`、`no inline duplicate authority`、`shared entrypoint acceptance` 四项检查
-7. `交付后必须同步`：至少写明 tracker / `AGENTS.md` 必更；`architecture-decisions` 与 `REDESIGN_PLAN` 何时需要更新、何时明确不更新；以及 amendments / deferred 的持久 SSOT 去向
+7. `交付后必须同步`：至少写明 tracker / `AGENTS.md` 必更；`architecture-decisions` 与 `REDESIGN_PLAN` 何时需要更新、何时明确不更新；对 `REDESIGN_PLAN` 需显式要求检查进度复选框、batch 表、完成态标题、当前现状与验收勾选是否因本轮 closeout 而过时；以及 amendments / deferred 的持久 SSOT 去向
 8. `生命周期状态同步`：若本批改变了某个 package / CLI / pipeline surface 的当前/过渡/退役语义，prompt 必须明确要求同步更新相关 authoritative docs 与仍把它当作当前默认入口的用户文档，并区分“现在还能用”与“长期应退役/改挂载”的表述
 9. `版本控制门禁`：说明 commit/push 只有在收敛后且已获授权时才允许；若本批对应的 canonical prompt 文件已在当前 `worktree` 存在但尚未入库，必须与同批实现同次 commit 提交，除非人类明确排除或该文件并非本批 canonical prompt
 10. `Post-closeout merge / cleanup`：若人类授权合入 `main` 并清理 batch worktree，说明 merge 只可在 completion + commit gate 满足后执行，且清理前必须先完成 Serena memory / SOTA archive 迁移门禁；若 merge 冲突或边界不明，必须停止而非半自动推进
