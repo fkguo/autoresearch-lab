@@ -883,7 +883,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 - `autoresearch init` 继续保持 thin composition：shared scaffold authority 仍在 `packages/project-contracts/`，不引入第二套 scaffold authority
 - `hepar` / `hep-autoresearch` 现在只作为过渡中的 Pipeline A legacy surface 保留，用于尚未 repoint 的 `run` / `doctor` / `bridge` 等命令；两者 lifecycle 语义继续一起移动
 - formal review-swarm 在当前 worktree 以 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)` 收敛到 `0` blocking；唯一直接相关 amendment 是把 README 中残留的 `hep-autopilot` 明确并入同一条 legacy lifecycle 语义，其余 reviewer 建议在 self-review 中被登记为非阻塞的 defer / decline
-- deeper tutorial / workflow / help sweep 继续后置到 `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md`
+- checked-in post-repoint doc/CLI cleanup prompt `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md` 已在同日执行：touched operator-facing README / tutorial / workflow / help surfaces 现统一写明 `autoresearch` = canonical lifecycle entrypoint，`hepar` / `hep-autoresearch` / `hep-autopilot` = 同一条 transitional legacy surface，`run` / `doctor` / `bridge` 仍是 unrepointed commands；本批不引入 alias、fallback wrapper、第二套 authority，也不顺手推进 run-shell parity
 
 **变更**:
 

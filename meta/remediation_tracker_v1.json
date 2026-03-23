@@ -353,7 +353,7 @@
           "depends_on": [],
           "source": "deep-refactoring-analysis",
           "decision_gate": "Phase 1 kickoff: cancel if NEW-05a is rewrite-from-scratch",
-          "note": "Scope Audit 3/3 cut: hep-autoresearch 整体退役；`hepar` 作为同一 Pipeline A Python CLI surface 的 installable alias，默认随 package 一起退役，除非后续有明确 repoint 决策。2026-03-23 Pipeline A repoint Batch 1 已把 `@autoresearch/orchestrator` `autoresearch` 立为 canonical generic lifecycle entrypoint（`init/status/approve/pause/resume/export`），并将 `hepar` / `hep-autoresearch` 在 touched surfaces 上降为过渡 legacy surface；更深的 docs/help/skills sweep 仍应走已登记的 future cleanup slice `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md`，而不是继续把 lifecycle 对齐只留在聊天或临时 review 产物里。"
+          "note": "Scope Audit 3/3 cut: hep-autoresearch 整体退役；`hepar` 作为同一 Pipeline A Python CLI surface 的 installable alias，默认随 package 一起退役，除非后续有明确 repoint 决策。2026-03-23 Pipeline A repoint Batch 1 已把 `@autoresearch/orchestrator` `autoresearch` 立为 canonical generic lifecycle entrypoint（`init/status/approve/pause/resume/export`），并将 `hepar` / `hep-autoresearch` 在 touched surfaces 上降为过渡 legacy surface。2026-03-23 post-repoint doc/CLI cleanup batch 随后已执行 `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md`：operator-facing README / tutorial / workflow / help wording 现已统一写明 `autoresearch` = canonical lifecycle entrypoint，`hepar` / `hep-autoresearch` / `hep-autopilot` = 同一条 transitional legacy surface，而 `run` / `doctor` / `bridge` 仍是 unrepointed commands；本批同时吸收了直出用户提示 `run hep-autoresearch init` -> `run autoresearch init` 的 web hint drift。剩余 retirement / repoint 工作继续留给后续 unrepointed-command slices，而不是再把 lifecycle authority 漂回双入口叙事。"
         },
         "UX-01": {
           "title": "研究笔记与机器合同分离",
@@ -1855,7 +1855,7 @@
         "NEW-R11"
       ],
       "source": "deep-refactoring-analysis",
-      "note": "NEW-R09 cut because hep-autoresearch / hepar are treated as one transitional Pipeline A Python CLI surface slated for retirement together. The future lifecycle doc/help cleanup is separately registered in `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md` and should trigger only when Pipeline A status advances beyond the current transitional state. Remaining: NEW-R10 (P2), NEW-R11 (P3)."
+      "note": "NEW-R09 cut because hep-autoresearch / hepar are treated as one transitional Pipeline A Python CLI surface slated for retirement together. The post-repoint lifecycle doc/help cleanup is now checked in and executed via `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md`; touched operator-facing surfaces no longer present `hepar` / `hep-autoresearch` as the default generic lifecycle entrypoint, while unrepointed commands remain explicitly on the legacy surface. Remaining: NEW-R10 (P2), NEW-R11 (P3)."
     }
   }
 }

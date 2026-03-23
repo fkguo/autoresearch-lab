@@ -1,51 +1,49 @@
 # Prompt: 2026-03-21 `Pipeline A` Retirement Doc/CLI Cleanup
 
-> **作用**: 这是一个未来的治理 / 文档 cleanup slice，不是当前要立即启动的实现批次。它只在 `hep-autoresearch` / `hepar` 的生命周期状态从“当前仍可用的过渡态”继续推进到 `deprecated` / `retired` / `repointed` 时启用，用来清理残余说明页、help 文案、skills/docs 入口叙事与默认入口表述，避免仓库继续同时存在“已经退役”和“仍是默认入口”的冲突文案。
+> **作用**: 这是 2026-03-23 立即执行的 post-repoint operator-facing cleanup slice。`@autoresearch/orchestrator` 的 `autoresearch` 已成为 canonical generic lifecycle entrypoint，但 repoint 之后仍有少量 doc / tutorial / workflow / help wording 会误导 operator 继续把 `hepar` / `hep-autoresearch` 当作默认 generic 入口。本批只做最小同步收口，不重开 runtime / CLI capability 设计。
 
-## 触发条件
+## 当前 authority map
 
-满足以下任一条件时再启动本 prompt：
+- generic lifecycle authority = `autoresearch`
+- scaffold authority = `project-contracts`
+- transitional Pipeline A legacy lifecycle surface = `hepar` / `hep-autoresearch` / `hep-autopilot`
+- unrepointed commands = `run` / `doctor` / `bridge`
 
-1. `meta/REDESIGN_PLAN.md` 或 tracker 已把 `Pipeline A` 的生命周期推进到明确的 `deprecated` / `retired` / `repointed`
-2. `hep-autoresearch` / `hepar` 的实际运行时 authority 已不再是推荐默认入口
-3. 某个 closeout 已经改变 package / CLI 生命周期语义，并触发 `IMPLEMENTATION_PROMPT_CHECKLIST.md` 的生命周期同步门禁
+## 当前批次前提
 
-若上述条件尚未满足，则本 prompt 只作为已登记的 future cleanup slice 保留，不应提前大扫除。
+本批前提已经满足：
+
+1. `autoresearch` 已 live，且当前只覆盖 `init/status/approve/pause/resume/export`
+2. `autoresearch init` 仍是对既有 scaffold authority 的 thin composition，不是第二套 scaffold authority
+3. `hepar` / `hep-autoresearch` / `hep-autopilot` 仍是同一条 transitional Pipeline A legacy surface
+4. `run` / `doctor` / `bridge` 仍未 repoint，因此本批必须只收口 operator-facing wording，不能顺手做 run-shell parity
 
 ## 问题定义
 
-当前仓库允许同时存在两类文案：
+当前问题不是 retirement 要不要发生，而是：lifecycle verbs 已经 repoint 到 `autoresearch`，但仓库里仍有少量 operator-facing surface 把 `hepar` / `hep-autoresearch` / 旧脚本路径写成默认 generic lifecycle 入口，或把 legacy / unrepointed commands 与 canonical lifecycle authority 混写。若不立即收口，operator 会被现有 README / tutorial / workflow / help wording 误导成“双入口都可以”。
 
-- **现状文案**：说明 `hep-autoresearch` / `hepar` 目前仍可使用
-- **目标架构文案**：说明 `Pipeline A` 将随 TS orchestrator 收束而退役
-
-这类双状态在主 SSOT 已可共存，但一旦生命周期继续推进，如果残余页面、README、tutorial、skill docs、help 文案、脚手架说明或历史 memo 不同步，就会再次出现语义漂移。
-
-本 prompt 的目标不是决定要不要退役，而是在退役 / repoint 决策已经明确后，做一次 **source-grounded lifecycle doc sweep**，把所有仍在暗示“默认入口 = hepar / hep-autoresearch”的残余 surface 统一收口。
+本 prompt 的目标是做一次 **source-grounded post-repoint doc/help cleanup**，把所有仍在暗示“默认 generic lifecycle 入口 = hepar / hep-autoresearch”的残余 surface 统一改成当前真实语义。
 
 ## In Scope
 
-1. 扫描并分类所有 `hep-autoresearch` / `hepar` / `Pipeline A` 相关文案 surface：
-   - root governance/docs
-   - package README / tutorials / workflows
-   - relevant skill docs
-   - CLI help / doctor / update scripts / user-facing warnings
-   - scaffold/readme comments
-2. 把残余 surface 归类为：
-   - 现役过渡说明（保留，但必须带 lifecycle banner）
-   - 历史/归档说明（移动到 archive/legacy 语义）
-   - 默认入口说明（必须改写、删除或 repoint）
-3. 若 `hepar` 名字被保留但改挂到 TS orchestrator，需要显式写清：
-   - 这是 repoint 后的新 authority
-   - 不再等同于旧 Python CLI
-4. 补充最小 grep / contract / docs acceptance，确保不会再留下明显默认入口冲突
+1. 只处理 repoint 之后仍会误导 operator 的 doc / tutorial / workflow / help wording：
+   - canonical prompt 本身
+   - package README / docs index / beginner tutorial
+   - workflow docs
+   - operator-facing help / warning text
+2. 所有 touched surface 必须明确写成：
+   - `autoresearch` = canonical lifecycle entrypoint
+   - `hepar` / `hep-autoresearch` / `hep-autopilot` = transitional legacy Pipeline A surface
+   - `run` / `doctor` / `bridge` = unrepointed commands
+3. 对仍然使用 legacy surface 的 workflow / help 示例，必须写清这是 unrepointed command 语境，不能再暗示 lifecycle verbs 也默认走 legacy surface
+4. 补充最小 grep / CLI acceptance，确保不会再留下明显默认入口冲突
 
 ## Out Of Scope
 
 1. 不在本批决定 retirement / repoint 本身的架构结论
-2. 不在本批重写 TS orchestrator product shell / CLI 设计
-3. 不在本批做 Python runtime 删除、package removal、shim removal，除非当前 retirement batch 已明确要求
-4. 不顺手做 unrelated docs polish
+2. 不在本批引入 alias、fallback wrapper、hidden alias、第二套 authority 或 mutation seam
+3. 不在本批推进 `run` / `doctor` / `bridge` runtime repoint、run-shell parity、HEP provider-pack cleanup、EVO-14、EVO-15
+4. 不做全仓大清洗或 unrelated docs polish
 
 ## 建议读取
 
@@ -54,17 +52,17 @@
 3. `meta/REDESIGN_PLAN.md`
 4. `.serena/memories/architecture-decisions.md`
 5. `meta/docs/prompts/IMPLEMENTATION_PROMPT_CHECKLIST.md`
-6. 当时实际受影响的 README / tutorial / workflows / skills / CLI docs
+6. 当前实际受影响的 README / tutorial / workflows / help surface
 
 ## 建议输出
 
-1. 一份“当前 vs 目标” lifecycle map
-2. 一份残余 surface 分类清单
-3. 更新后的 docs/help/skill text
+1. 一份“canonical lifecycle vs transitional legacy vs unrepointed commands” map
+2. 一份最小 touched-surface 清单
+3. 更新后的 docs / workflow / help text
 4. tracker closeout note，明确：
-   - 哪些页面改为 transitional/deprecated/retired/repointed
-   - 哪些页面被归档
-   - 是否仍保留 `hepar` 作为名字；若保留，它现在指向什么 authority
+   - 哪些页面已同步到 canonical lifecycle authority map
+   - 哪些 surface 仍保留 legacy command 语义
+   - 为什么本批仍未碰 `run` / `doctor` / `bridge` repoint
 
 ## 建议 acceptance
 
@@ -72,15 +70,27 @@
 
 ```bash
 git diff --check
-rg -n "hepar|hep-autoresearch|Pipeline A" AGENTS.md meta/REDESIGN_PLAN.md meta/remediation_tracker_v1.json .serena/memories/architecture-decisions.md packages/hep-autoresearch packages/hep-autoresearch/docs skills
+node packages/orchestrator/dist/cli.js --help
+PYTHONPATH=packages/hep-autoresearch/src python3 -m hep_autoresearch.orchestrator_cli --help
+rg -n "hep-autoresearch init|hep-autoresearch status|hep-autoresearch approve|hepar status|hepar approve|run hep-autoresearch init" \
+  packages/hep-autoresearch/README.zh.md \
+  packages/hep-autoresearch/docs/INDEX.md \
+  packages/hep-autoresearch/docs/BEGINNER_TUTORIAL.md \
+  packages/hep-autoresearch/docs/BEGINNER_TUTORIAL.zh.md \
+  packages/hep-autoresearch/docs/WORKFLOWS.md \
+  packages/hep-autoresearch/workflows/paper_reviser.md \
+  packages/hep-autoresearch/workflows/paper_reviser.zh.md \
+  packages/hep-autoresearch/docs/ORCHESTRATOR_INTERACTION.zh.md \
+  packages/hep-autoresearch/src/hep_autoresearch/web/app.py
+pytest packages/hep-autoresearch/tests/test_doctor_entrypoints_cli.py -q
 ```
 
-若当时存在对应的 CLI help / docs snapshot / smoke tests，也应补跑。
+如实现时改动了额外 user-facing hint，可补最小 targeted test；否则不要为了“名字统一”制造无意义测试 churn。
 
 ## 完成判据
 
 只有当以下问题都能被明确回答时，才算完成：
 
-1. `hepar` 现在到底还是旧 Python CLI、已经 retired、还是 repoint 到新 TS orchestrator？
-2. 仓库中是否仍有任何主入口文档把 `hepar` / `hep-autoresearch` 当作默认长期 authority？
-3. “当前仍可用”与“长期将退役/已退役”是否在所有主入口 docs 上被一致地区分？
+1. `autoresearch` 是否已在所有 touched operator-facing surface 上被写成 canonical lifecycle entrypoint？
+2. `hepar` / `hep-autoresearch` / `hep-autopilot` 是否在所有 touched surface 上被一致降格为同一条 transitional legacy surface？
+3. `run` / `doctor` / `bridge` 是否仍被明确标成 unrepointed commands，而没有被本批顺手 repoint？
