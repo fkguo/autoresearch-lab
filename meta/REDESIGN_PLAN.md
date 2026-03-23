@@ -2846,7 +2846,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - 当前 live authority 已经是 TS-first，而不是旧 Python `run_scheduler.py` / `agent_lifecycle.py` 文件面。
 - shared seam 由 `@autoresearch/shared` 的 orchestrator tool names 提供；generic tool authority 由 `@autoresearch/orchestrator` 的 `ORCH_TOOL_SPECS` 提供；当前 host adapter / dispatcher authority 由 `packages/hep-mcp/` 通过共享 host path 暴露。
 - `EVO-13` 已经覆盖 **team-local** runtime / recovery / live-status/replay / assignment-local timeout 边界；`EVO-14` 只负责 **cross-run / fleet-level** visibility、queue、scheduler、resource 和 global lifecycle 语义，不能回切 `executeUnifiedTeamRuntime` 的 team-local 语义。
-- 当前真实现状是：cross-root read-only fleet visibility、per-project queue authority、per-project worker/resource authority、manual stale-claim adjudication、operator stale-signal diagnostics、显式 lease/expiry contract、以及 worker claim-acceptance gate 都已存在于当前代码现实；仍未进入 auto takeover / auto reassignment / daemonized scheduling / second fleet authority/read surface / cross-root mutation orchestration。
+- 当前真实现状是：cross-root read-only fleet visibility、per-project queue authority、per-project worker/resource authority、manual stale-claim adjudication、operator stale-signal diagnostics、显式 lease/expiry contract、worker claim-acceptance gate、以及显式 drained-worker unregister contract 都已存在于当前代码现实；仍未进入 auto takeover / auto reassignment / daemonized scheduling / second fleet authority/read surface / cross-root mutation orchestration。
 
 **Batch 分层**:
 
@@ -2859,6 +2859,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | Batch 5 | done | Operator stale-signal status / audit contract | 扩展 `orch_fleet_status` 为 read-only stale-signal diagnostics 与 attention counters，不把 stale visibility 升格为 mutation authority |
 | Batch 6 | done | Lease authority & explicit expiry contract | 把 lease authority 固定到 queue claim，自显式 `lease_expires_at` 推导 expiry，并仅在 `orch_fleet_worker_poll` 内做 bounded renewal / auto-release |
 | Batch 7 | done | Worker claim acceptance gate | 为 worker registry 增加显式 `accepts_claims` + dedicated mutation tool；`orch_fleet_worker_poll` 在 heartbeat / renew / same-project expiry sweep 后 gate 新 claim，但不触碰已有 lease / ownership |
+| Batch 8 | done | Drained worker unregister contract | 增加显式 `orch_fleet_worker_unregister`；仅在 `accepts_claims=false` 且 `active_claim_count=0` 时删除 worker registry 记录并写 audit-only ledger，不触碰 queue / lease / scheduler authority |
 
 **当前 batch 级进度**:
 
@@ -2869,7 +2870,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [x] Batch 5: Operator stale-signal status / audit contract
 - [x] Batch 6: Lease authority & explicit expiry contract
 - [x] Batch 7: Worker claim acceptance gate（当前 worktree 已实现并通过 acceptance / GitNexus 复核；formal review 已以既定 reviewer lineup 收敛到 0 blocking；Opus/OpenCode 评审产物保留了实质源码级结论，但偏离 strict-JSON wrapper 契约，此点仅作 informational 记录）
-- [ ] 后续 batch：auto takeover / auto reassignment / daemonized scheduling / broader fleet lifecycle（仍待后续 planning 锁定最小切片，不是 `EVO-15`）
+- [x] Batch 8: Drained worker unregister contract（当前 worktree 已实现并通过 acceptance / GitNexus 复核；final formal review 在 `meta/.review/2026-03-23-evo14-batch8-r2/` 以 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)` 收敛到 0 blocking；self-review 仅额外吸收了新测试文件 200-LOC guardrail 修正，不改变 runtime authority 语义）
+- [ ] 后续 batch：在 Batch 8 之后再单独规划 explicit manual reassignment / broader lifecycle automation；仍不得提前滑入 takeover / daemon / second-authority，也不是 `EVO-15`
 
 **Batch 1（已完成）修改内容**:
 
