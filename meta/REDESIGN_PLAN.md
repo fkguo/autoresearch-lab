@@ -2868,7 +2868,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [x] Batch 4: Manual stale-claim adjudication
 - [x] Batch 5: Operator stale-signal status / audit contract
 - [x] Batch 6: Lease authority & explicit expiry contract
-- [x] Batch 7: Worker claim acceptance gate（当前 worktree 已实现并通过 acceptance / GitNexus 复核；formal review 已以既定 reviewer lineup 收敛到 0 blocking，wrapper-format 噪音仅作 informational 记录）
+- [x] Batch 7: Worker claim acceptance gate（当前 worktree 已实现并通过 acceptance / GitNexus 复核；formal review 已以既定 reviewer lineup 收敛到 0 blocking；Opus/OpenCode 评审产物保留了实质源码级结论，但偏离 strict-JSON wrapper 契约，此点仅作 informational 记录）
 - [ ] 后续 batch：auto takeover / auto reassignment / daemonized scheduling / broader fleet lifecycle（仍待后续 planning 锁定最小切片，不是 `EVO-15`）
 
 **Batch 1（已完成）修改内容**:
