@@ -877,6 +877,14 @@ branches:     candidate → pending, active → running, abandoned → completed
 - 真实研究项目根目录与真实运行中间产物默认必须在开发仓外；repo 内仅允许显式 gitignored `maintainer_fixture` 工作区（如 `skills/research-team/skilldev`、`skills/research-team/.tmp/`），不得作为 real-project authority
 - formal review-swarm 在 R1 以 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)` 收敛到 0 blocking；随后吸收了唯一直接相关的低风险 amendment：`project-contracts` 库级 `ensure_project_scaffold()` / `sync_research_contract()` 默认即 `real_project`，不再允许未来 caller 省略 policy 后静默跳过 root/output guard；新增 `test_scaffold_and_contract_sync_default_to_real_project_policy` 锁定该默认行为。post-amendment re-review 与 self-review 继续保持 0 blocking，Gemini R2 则通过 same-model direct rerun 补齐了 runner hang after output write 的 reviewer runtime failure
 
+**2026-03-23 follow-up（`Pipeline A` repoint Batch 1: canonical lifecycle entrypoint）**:
+- `@autoresearch/orchestrator` 现在提供 canonical generic lifecycle bin `autoresearch`
+- 本批只 repoint `init/status/approve/pause/resume/export`；`autoresearch` 不新增 `hepar` / `hep-autoresearch` alias，也不假装提供 `run`
+- `autoresearch init` 继续保持 thin composition：shared scaffold authority 仍在 `packages/project-contracts/`，不引入第二套 scaffold authority
+- `hepar` / `hep-autoresearch` 现在只作为过渡中的 Pipeline A legacy surface 保留，用于尚未 repoint 的 `run` / `doctor` / `bridge` 等命令；两者 lifecycle 语义继续一起移动
+- formal review-swarm 在当前 worktree 以 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)` 收敛到 `0` blocking；唯一直接相关 amendment 是把 README 中残留的 `hep-autopilot` 明确并入同一条 legacy lifecycle 语义，其余 reviewer 建议在 self-review 中被登记为非阻塞的 defer / decline
+- deeper tutorial / workflow / help sweep 继续后置到 `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md`
+
 **变更**:
 
 | 文件 | 变更 |
