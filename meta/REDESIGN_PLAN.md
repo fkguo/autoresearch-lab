@@ -825,7 +825,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 > **新增 (2026-02-22, 2026-03-14 重述)**: User Story 分析发现 `Draft_Derivation.md` 同时承担人类笔记和机器合同两个角色，格式受 `REPRO_CAPSULE` / tier tags / headline 格式主导，人类阅读体验差；当前仓库又已明确无向后兼容负担，因此 UX-01 应直接把项目根目录的错误命名正名，而不是继续保留旧名。
 
-**状态**: done (2026-03-14 standalone closeout)
+**状态**: done (2026-03-14 standalone closeout; 2026-03-23 authority-extraction + external-root follow-up closed)
 
 **现状**: `Draft_Derivation.md` 被 research-team、`context_pack.py`、`revision.py` 多方引用，既是人类编辑的研究笔记入口，又是机器检查器的输入，导致人类内容和机器结构互相污染。
 
@@ -869,6 +869,13 @@ branches:     candidate → pending, active → running, abandoned → completed
 - `hepar init` (`project_scaffold.py`) 创建 CHARTER, MAP, PLAN, PREWORK, `Draft_Derivation`, `AGENTS`, `docs/*`, `kb` 结构
 - `research-team scaffold` 创建同一批 + `prompts/`, `team` config, `INNOVATION_LOG` 等
 - 两者独立运行，模板内容略有不同
+
+**2026-03-23 follow-up（`UX-05` authority extraction / `Pipeline A repoint` pre-slice）**:
+- shared scaffold / contract authority 已从 `packages/hep-autoresearch` 抽离到中立 Python 包 `packages/project-contracts/`
+- `research-team` public scaffold / contract-refresh 入口固定消费 `project-contracts`，并显式以 `real_project` 模式 fail-close
+- `hepar init` 仅保留为过渡 consumer；本批不做完整 `hepar` 迁移、generic entrypoint repoint、alias 设计或 lifecycle sweep
+- 真实研究项目根目录与真实运行中间产物默认必须在开发仓外；repo 内仅允许显式 gitignored `maintainer_fixture` 工作区（如 `skills/research-team/skilldev`、`skills/research-team/.tmp/`），不得作为 real-project authority
+- formal review-swarm 在 R1 以 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)` 收敛到 0 blocking；随后吸收了唯一直接相关的低风险 amendment：`project-contracts` 库级 `ensure_project_scaffold()` / `sync_research_contract()` 默认即 `real_project`，不再允许未来 caller 省略 policy 后静默跳过 root/output guard；新增 `test_scaffold_and_contract_sync_default_to_real_project_policy` 锁定该默认行为。post-amendment re-review 与 self-review 继续保持 0 blocking，Gemini R2 则通过 same-model direct rerun 补齐了 runner hang after output write 的 reviewer runtime failure
 
 **变更**:
 
