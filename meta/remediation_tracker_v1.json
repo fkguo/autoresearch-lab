@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.4-draft",
-  "updated_at": "2026-03-23T08:22:00Z",
-  "note": "v1.9.4-draft: v1.9.3 + semantic-authority boundary clarification + generic-authority broadening. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Batch A-E are now completed in the current worktree, and Batch F downstream recovery has confirmed the residual batch2 closeout was fully absorbed by `NEW-05a-idea-core-domain-boundary` / semantic Batch A rather than remaining as a separate code batch. `batch3` remains a separate later prompt and was not started in this bounded closeout run. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. Formal review for Batch F later converged with 0 blocking via that approved fallback, and self-review also passed with 0 blocking. 167 items. 2026-03-22 governance repair restored tracker JSON legality after an unescaped EVO-14 Batch 4 telemetry/reviewer-failure fragment inside `EVO-14.note`; existing closeout/evidence content was preserved, and `meta/REDESIGN_PLAN.md` plus current code reality were rechecked with no further drift requiring plan updates. That repair itself did not start `EVO-14` Batch 7, `EVO-15`, or any new fleet scheduler/takeover/reassignment semantics. Later on 2026-03-22, Batch 7 implementation began separately under canonical prompt `meta/docs/prompts/prompt-2026-03-22-evo14-batch7-worker-claim-acceptance-gate.md`; the current tracker now records that batch as formally closed on the current worktree with 0 blocking review convergence, and it still does not start `EVO-15` or broader takeover/reassignment/daemon semantics.",
+  "updated_at": "2026-03-23T16:03:27Z",
+  "note": "v1.9.4-draft: v1.9.3 + semantic-authority boundary clarification + generic-authority broadening. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Batch A-E are now completed in the current worktree, and Batch F downstream recovery has confirmed the residual batch2 closeout was fully absorbed by `NEW-05a-idea-core-domain-boundary` / semantic Batch A rather than remaining as a separate code batch. `batch3` remains a separate later prompt and was not started in this bounded closeout run. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. Formal review for Batch F later converged with 0 blocking via that approved fallback, and self-review also passed with 0 blocking. 169 items. 2026-03-22 governance repair restored tracker JSON legality after an unescaped EVO-14 Batch 4 telemetry/reviewer-failure fragment inside `EVO-14.note`; existing closeout/evidence content was preserved, and `meta/REDESIGN_PLAN.md` plus current code reality were rechecked with no further drift requiring plan updates. That repair itself did not start `EVO-14` Batch 7, `EVO-15`, or any new fleet scheduler/takeover/reassignment semantics. Later on 2026-03-22, Batch 7 implementation began separately under canonical prompt `meta/docs/prompts/prompt-2026-03-22-evo14-batch7-worker-claim-acceptance-gate.md`; the current tracker now records that batch as formally closed on the current worktree with 0 blocking review convergence, and it still does not start `EVO-15` or broader takeover/reassignment/daemon semantics.",
   "phases": {
     "0": {
       "name": "止血",
@@ -395,7 +395,7 @@
           "depends_on": [
             "H-16a"
           ],
-          "note": "done. discoveryHints.ts helper + integrated in inspire_search, inspire_research_navigator, inspire_deep_research, hep_import_from_zotero.",
+          "note": "done. discoveryHints.ts helper + integrated in inspire_search, inspire_discover_papers, inspire_field_survey, inspire_deep_research, hep_import_from_zotero. Earlier navigator-specific wording is superseded by M-24.",
           "completed_at": "2026-02-25"
         }
       }
@@ -509,7 +509,7 @@
             "H-16a"
           ],
           "completed_at": "2026-02-26",
-          "note": "Phase 2 Batch 2. No-op on TS side — inspire_field_survey already consolidated as mode of inspire_research_navigator."
+          "note": "Phase 2 Batch 2 historical closeout: at that point `inspire_field_survey` had been consolidated into `inspire_research_navigator`. This note is superseded by M-24 (2026-03-23), which restores dedicated first-class discovery/survey/topic/network surfaces as the current public truth."
         },
         "M-05": {
           "title": "Token 计数标准化",
@@ -560,6 +560,29 @@
           ],
           "completed_at": "2026-02-26",
           "note": "Phase 2 Batch 3. make release target: pnpm build → codegen → check_version_sync.sh. Catches pyproject.toml vs package.json version mismatch."
+        },
+        "M-24": {
+          "title": "INSPIRE navigator public surface cleanup",
+          "status": "done",
+          "complexity": "medium",
+          "assignee": "gpt-5-codex",
+          "depends_on": [
+            "H-16a",
+            "M-02"
+          ],
+          "completed_at": "2026-03-24",
+          "note": "2026-03-24 standalone cleanup closeout under canonical prompt `meta/docs/prompts/prompt-2026-03-23-m24-inspire-navigator-public-surface-cleanup.md`. Removed `inspire_research_navigator` from shared constants, hep-mcp registry/runtime/catalog/docs surfaces, restored dedicated `inspire_discover_papers` / `inspire_field_survey` / `inspire_topic_analysis` / `inspire_network_analysis` / `inspire_find_connections` / `inspire_trace_original_source` as the `standard` public surface, deleted low-value public `experts` / `analyze` entrypoints, tightened dedicated public schemas to fail closed on facade-era top-level params without introducing top-level unions, and repointed `packages/hep-autoresearch` literature-gap consumer + stub/tests to dedicated tools with no fallback. Acceptance passed on the current worktree: `git diff --check`; `pnpm --filter @autoresearch/shared build`; `pnpm --filter @autoresearch/hep-mcp build`; `pnpm --filter @autoresearch/hep-mcp catalog`; `pnpm --filter @autoresearch/hep-mcp docs:tool-counts:sync`; `pnpm --filter @autoresearch/hep-mcp docs:tool-counts:check`; targeted hep-mcp tests (`tests/research`, `tests/tools.test.ts`, `tests/toolContracts.test.ts`, `tests/docs/docToolDrift.test.ts`, `tests/contracts/nextActionsExposure.test.ts`, `tests/smoke-no-toplevel-union.test.ts`); and `python -m pytest` plus `uv run --project packages/hep-autoresearch --no-sync pytest packages/hep-autoresearch/tests/test_literature_gap_cli.py -q`. The exact prompt-planned `uv run --project packages/hep-autoresearch pytest ...` command still fails in this repo environment because `uv` dependency resolution hits an unrelated `project-contracts` constraint before test execution; this was recorded as environment noise rather than an M-24 code-path failure. Formal review-swarm on the current worktree converged at 0 blocking with the required trio (`Opus` = `CONVERGED`, `Gemini-3.1-Pro-Preview` = `CONVERGED`, `OpenCode(zhipuai-coding-plan/glm-5)` = `CONVERGED_WITH_AMENDMENTS`); all reviewer outputs had non-blocking JSON-preface contract noise only. The two OpenCode amendments were both declined/closed after source review because (1) the catalog `commit` field intentionally reflects the checked-in baseline on a dirty worktree and will update naturally on any future authorized commit, and (2) `docs/ARCHITECTURE.md` already marks the navigator-consolidation section as historical/superseded while recording the M-24 reversal in version history. Self-review then found 0 blocking, repaired the same-worktree tracker JSON syntax drift near `M-02`, and rechecked `meta/REDESIGN_PLAN.md` with no further factual update needed beyond the already-landed M-24 superseded-note changes. Follow-up `M-25` remains pending for the still-similar `inspire_critical_research` public-surface cleanup. Review health telemetry: {\"review_rounds\":1,\"first_round_blocking\":false,\"final_zero_blocking\":true,\"reviewer_disagreement\":true,\"amendments_total\":2,\"amendments_adopted\":0,\"amendments_deferred\":0,\"amendments_declined_closed\":2,\"packet_assumption_breach\":false,\"self_review_caught_new_issue\":false,\"reopened_later\":false,\"post_closeout_escape\":false}. No commit hash recorded because commit was not authorized."
+        },
+        "M-25": {
+          "title": "INSPIRE critical research public surface cleanup",
+          "status": "pending",
+          "complexity": "medium",
+          "assignee": null,
+          "depends_on": [
+            "H-16a",
+            "M-24"
+          ],
+          "note": "Follow-up cleanup slice registered by M-24 closeout. `inspire_critical_research` still exposes a large mode/option bag with tool-selection ambiguity similar in shape to the old navigator facade; evaluate whether it should be split into smaller first-class tools or otherwise narrowed without top-level unions."
         },
         "trace-jsonl": {
           "title": "全链路 trace_id + JSONL 日志",

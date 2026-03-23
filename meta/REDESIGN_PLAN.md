@@ -929,7 +929,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 ### NEW-CONN-01: Discovery next_actions hints (Pipeline 连通性) ✅ (已实现)
 
-> **状态**: done。`packages/hep-mcp/src/tools/utils/discoveryHints.ts` 提供 `discoveryNextActions()` / `deepResearchAnalyzeNextActions()` / `zoteroImportNextActions()`。已集成到 `inspire_search`、`inspire_research_navigator`、`inspire_deep_research`、`hep_import_from_zotero` 四个 handler。
+> **状态**: done。`packages/hep-mcp/src/tools/utils/discoveryHints.ts` 提供 `discoveryNextActions()` / `deepResearchAnalyzeNextActions()` / `zoteroImportNextActions()`。当前已集成到 `inspire_search`、`inspire_discover_papers`、`inspire_field_survey`、`inspire_deep_research`、`hep_import_from_zotero`。此前面向 `inspire_research_navigator` 的叙述已被 M-24 supersede。
 
 > **来源**: `meta/docs/pipeline-connectivity-audit.md` — Island 3 (Literature Discovery 无 next_actions)
 > **Phase**: 1 (Pipeline 连通性子项，~100 LOC)
@@ -1110,16 +1110,18 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 ### M-02: 遗留工具名迁移 ✅
 
+> **Superseded note (2026-03-23, M-24)**: 这一批记录的是“曾经把 dedicated discovery/survey 调用收敛到 `inspire_research_navigator`”的历史状态，不再代表当前公开 tool surface。当前 canonical surface 已恢复 dedicated first-class tools；consumer 也应直接调用 `inspire_field_survey` / `inspire_topic_analysis` / `inspire_network_analysis`。
+
 **依赖**: H-16a (工具名常量)
 
 **修改文件**:
 | 文件 | 修改内容 |
 |---|---|
-| `hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` | 移除 `inspire_field_survey` 调用，统一为 `inspire_research_navigator` |
+| `hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` | 历史上曾移除 `inspire_field_survey` 调用并统一为 `inspire_research_navigator`；该叙述已被 M-24 supersede |
 | `hep-research-mcp/src/tools/registry.ts` | 可选：添加 deprecated alias 映射 + 警告日志 |
 
 **验收检查点**:
-- [x] 代码中无遗留工具名引用 *(confirmed: 0 TS references to inspire_field_survey; already consolidated as mode of inspire_research_navigator, Phase 2 Batch 2)*
+- [x] 历史 closeout：Phase 2 当时的 consolidate 迁移完成；当前公开 truth 见 M-24，不再以 `inspire_research_navigator` 作为 canonical surface
 - [x] 别名调用触发 deprecation 警告 *(N/A — no alias needed, tool already removed)*
 
 ### M-05: Token 计数标准化 ✅
