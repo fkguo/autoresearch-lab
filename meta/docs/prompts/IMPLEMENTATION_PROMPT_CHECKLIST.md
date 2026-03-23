@@ -77,6 +77,8 @@
 
 若这些问题答不清，默认不要加入该 fallback；优先收紧主路径，并返回明确的 fail-closed / unsupported / invalid 状态。
 
+Fallback discipline 同样适用于 batch 规划、closeout 建议与对话引导：若最优主路径已明确，且不存在可复现 blocker、现有 contract 要求或用户明确要求，prompt、review 与 self-review 也应显式避免无故保留或主动提供次优 operational path；“给用户更多可选项”本身不是默认正当性。
+
 ## 5. Review-Swarm / Self-Review 门禁
 
 实现 prompt 默认必须包含正式 `review-swarm` 收尾，且审核必须深入而非蜻蜓点水。默认 reviewer 固定为 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)`；若其中任一模型本地不可用，必须记录失败原因并由人类明确确认 fallback reviewer。至少要求 reviewer：
