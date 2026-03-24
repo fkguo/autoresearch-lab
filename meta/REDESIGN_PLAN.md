@@ -126,7 +126,7 @@ Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ P5B: 社区 / 发布 / 跨实例 / 研究进化外层 (`EVO-04/05/08/15/16/17/18/19/20/21`)
   ├─ EVO-01/02/03/13 ✅
   ├─ EVO-14 in_progress; EVO-06/07/12a design_complete; EVO-09/10/11 pending
-  ├─ EVO-04/05/08/15/16 pending; EVO-20 ✅; EVO-17/18/19/21 design_complete
+  ├─ EVO-04/05/08/15/16 pending; EVO-17 ✅; EVO-20 ✅; EVO-18/19/21 design_complete
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (未来目标；当前仍保留过渡 Python surfaces，默认包含 `hepar` CLI alias)
   │
 Pipeline A/B 统一时间线:
@@ -3246,7 +3246,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [ ] EVO-14: Fleet visibility → queue substrate → scheduler / lifecycle（cross-run only）
 - [ ] EVO-15: Agent-arXiv 存储 + 搜索 + 引用 + 诚信门禁 + 进化仪表板
 - [ ] EVO-16: Agent 社区自主研究实验完成至少 1 轮循环
-- [ ] EVO-17: REP SDK 独立发布 + 子路径导出 + RDI gate (Track A) (**详设完成**: `track-a-evo17` design doc, 4 JSON Schemas)
+- [x] EVO-17: REP SDK 独立发布 + 子路径导出 + RDI gate (Track A) (**详设完成**: `track-a-evo17` design doc, 4 JSON Schemas)
 - [ ] EVO-18: REP 信号引擎 + 策略选择器 (Track A 研究进化) (**详设完成**: `track-a-evo18` design doc, 1 JSON Schema)
 - [ ] EVO-19: GEP/Evolver Track B 集成 + Gene Library + blast_radius + Contract 守卫
 - [x] EVO-20: 跨周期记忆图谱 — 信号频率持久化 + Gene 命中率 + TTL 衰减
@@ -3264,9 +3264,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (41 done, 9 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (5 done, 1 in_progress, 9 pending, 7 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (6 done, 1 in_progress, 9 pending, 6 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **171** — **124 done** |
+| **总计** | **Phase 0–5 remediation items only** | **171** — **126 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 171。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。

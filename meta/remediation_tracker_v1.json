@@ -1805,9 +1805,9 @@
         },
         "EVO-17": {
           "title": "REP SDK — 独立发布的研究进化协议 (Track A)",
-          "status": "design_complete",
+          "status": "done",
           "complexity": "high",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "H-18",
             "NEW-07"
@@ -1818,7 +1818,8 @@
             "meta/schemas/research_outcome_v1.schema.json",
             "meta/schemas/research_event_v1.schema.json",
             "meta/schemas/rep_envelope_v1.schema.json"
-          ]
+          ],
+          "note": "2026-03-24 EVO-17 first deliverable closeout completed on lane `/Users/fkg/Coding/Agents/autoresearch-lab-rep-sdk` with implementation commit `4275999` (`Add agent-native rep-sdk core package`). This bounded Track A first deliverable is the standalone, paper-free, agent-native `@autoresearch/rep-sdk` core package only: REP research asset/envelope types, canonical SHA-256 content addressing, package-local schema/runtime validation, RDI fail-closed gate, local JSONL `FileTransport`, and thin `client` / `server` library surfaces. Acceptance passed on the lane worktree: `git diff --check`; `pnpm --filter @autoresearch/rep-sdk lint`; `pnpm --filter @autoresearch/rep-sdk test`; `pnpm --filter @autoresearch/rep-sdk build`; `cd packages/rep-sdk && npm pack --dry-run`. Formal review converged from the correct worktree context with `Opus = CONVERGED`, `Gemini-3.1-Pro-Preview = CONVERGED`, and `OpenCode(zhipuai-coding-plan/glm-5) = CONVERGED` via same-model embedded-source normalization after the workspace pass remained gate-fragile; formal self-review also passed with 0 blocking. This marks EVO-17 done only as the bounded Track A first deliverable and does not claim EVO-18, broader reproducibility/publication/productization, or later Track A follow-up slices."
         },
         "EVO-18": {
           "title": "REP 信号引擎 (Track A)",
