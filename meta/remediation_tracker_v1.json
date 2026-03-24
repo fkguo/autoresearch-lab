@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.4-draft",
-  "updated_at": "2026-03-24T04:48:43Z",
+  "updated_at": "2026-03-24T15:39:02Z",
   "note": "v1.9.4-draft: v1.9.3 + semantic-authority boundary clarification + generic-authority broadening. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Batch A-E are now completed in the current worktree, and Batch F downstream recovery has confirmed the residual batch2 closeout was fully absorbed by `NEW-05a-idea-core-domain-boundary` / semantic Batch A rather than remaining as a separate code batch. `batch3` remains a separate later prompt and was not started in this bounded closeout run. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. Formal review for Batch F later converged with 0 blocking via that approved fallback, and self-review also passed with 0 blocking. 170 items. 2026-03-22 governance repair restored tracker JSON legality after an unescaped EVO-14 Batch 4 telemetry/reviewer-failure fragment inside `EVO-14.note`; existing closeout/evidence content was preserved, and `meta/REDESIGN_PLAN.md` plus current code reality were rechecked with no further drift requiring plan updates. That repair itself did not start `EVO-14` Batch 7, `EVO-15`, or any new fleet scheduler/takeover/reassignment semantics. Later on 2026-03-22, Batch 7 implementation began separately under canonical prompt `meta/docs/prompts/prompt-2026-03-22-evo14-batch7-worker-claim-acceptance-gate.md`; the current tracker now records that batch as formally closed on the current worktree with 0 blocking review convergence, and it still does not start `EVO-15` or broader takeover/reassignment/daemon semantics.",
   "phases": {
     "0": {
@@ -1045,10 +1045,12 @@
         },
         "M-15": {
           "title": "技能依赖隔离",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
-          "depends_on": []
+          "assignee": "gpt-5-codex",
+          "depends_on": [],
+          "note": "Standalone bounded closeout completed (2026-03-24) on lane `skills-platform`. Implementation commit `dd25c38` adds the approved M-15 first slice inside `packages/skills-market/**` only: skill-pack-only `runtime.python` metadata (`isolated-venv` + package list), thin-wrapper refactor of the installer/validator into bounded Python modules, skill-local `.venv` provisioning for opted-in skills, base-interpreter fallback when the installer itself runs inside a venv, fail-closed staged install cleanup, `.market_install.json` `python_runtime` provenance, marker-based/idempotent `SKILL.md` runtime notes, initial rollout for `auto-relay` and `hep-calc`, and targeted docs/tests. Acceptance passed on the current lane worktree: `python3 packages/skills-market/scripts/validate_market.py`; `python3 -m pytest packages/skills-market/tests/test_validate_market.py packages/skills-market/tests/test_install_skill.py -q`. Formal source-grounded review converged with 0 blocking on the required trio (`Opus` = `CONVERGED_WITH_AMENDMENTS`, with directly related low-risk amendments adopted in-batch; `Gemini-3.1-Pro-Preview` = `CONVERGED`; `OpenCode(zhipuai-coding-plan/glm-5)` = `CONVERGED`), and final self-review rechecked `git diff --check` plus post-review GitNexus refresh/`detect_changes` (`risk_level=low`). Scope remained bounded: no Node/TS runtime isolation, no compatibility/export mirror updates, and no spillover into `M-16`, `M-17`, `M-22`, or other skills-platform follow-up slices.",
+          "completed_at": "2026-03-24"
         },
         "M-16": {
           "title": "环境可复现",

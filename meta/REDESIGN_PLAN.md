@@ -114,7 +114,7 @@ Phase 3 (扩展性 + 计算连通 + 单研究者研究循环前置):
   ├─ RT-05, NEW-RT-06, NEW-RT-07, NEW-DISC-01 ✅
   ├─ NEW-SEM-01~13、NEW-SEM-06-INFRA/06b/06d/06e/06f ✅
   ├─ NEW-SKILL-01 pending
-  ├─ M-22 GateSpec 通用抽象、M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17、L-08 pending
+  ├─ M-22 GateSpec 通用抽象、M-03/M-04/M-07~M-10/M-12/M-13/M-16~M-17、L-08 pending
   ├─ NEW-06/NEW-R11/NEW-R12, UX-03/UX-04, RT-01/RT-04 ✅
   │
 Phase 4 (长期演进):
