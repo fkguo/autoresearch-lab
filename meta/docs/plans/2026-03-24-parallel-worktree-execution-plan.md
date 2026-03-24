@@ -31,10 +31,25 @@ The current tracker also still supports the intended Wave 1 dependency shape:
 ## Planning Goals
 
 - Keep `main` clean and integration-only for the whole Wave 1 effort.
-- Open `5` concurrent worktrees, each with one mergeable first deliverable.
+- Keep the Wave 1 plan at `5` lanes total, but open only `4` lanes immediately and defer the fifth until one active lane reaches review/merge-ready.
 - Avoid worktree ownership overlap on the same primary package domain.
 - Keep blocked follow-ups listed as "next on the same lane after merge", not bundled into the initial branch.
 - Favor dependency-unlocking lanes over lower-leverage cleanup or documentation-only backlog items.
+
+## Wave 1 Launch Order
+
+Open these lanes immediately:
+
+- `codex/trace-jsonl`
+- `codex/skills-platform`
+- `codex/rep-sdk`
+- `codex/memory-graph`
+
+Defer this lane until one open-now lane reaches `reviewing` or `merge_ready`:
+
+- `codex/idea-engine-evolution`
+
+This launch order keeps the original Wave 1 dependency-unlocking plan, but lowers simultaneous governance pressure and reduces the risk of opening an unnecessary fifth active lane before the first merges start to form.
 
 ## Wave 1 Worktrees
 
@@ -277,6 +292,115 @@ When multiple lanes close in quick succession, the later lane should rebase onto
 - Use sibling worktree directories under `/Users/fkg/Coding/Agents/`
 - Do not create nested worktrees inside the repository
 - Do not use `~/.config/superpowers/...`
+
+### Coordinator protocol
+
+This plan also defines the minimum operator-facing coordination contract for the Wave 1 parallel lanes. The coordinator thread owns the board below; worker threads report state back using the shared report template.
+
+#### Coordinator lane board columns
+
+| Lane | Branch | Worktree | First deliverable | Owned paths | Status | Head | Acceptance | Review | Governance touch | Blocker | Next action |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| coordinator | `main` | `/Users/fkg/Coding/Agents/autoresearch-lab` | coordination only | no implementation | active | current `main` HEAD | n/a | n/a | no | none | receive worker updates |
+| trace-jsonl | `codex/trace-jsonl` | `/Users/fkg/Coding/Agents/autoresearch-lab-trace-jsonl` | `trace-jsonl` | tracing/logging seam | not_started | - | - | - | closeout_only | - | start lane planning |
+| skills-platform | `codex/skills-platform` | `/Users/fkg/Coding/Agents/autoresearch-lab-skills-platform` | `M-15` | `packages/skills-market/**` | not_started | - | - | - | closeout_only | - | start lane planning |
+| rep-sdk | `codex/rep-sdk` | `/Users/fkg/Coding/Agents/autoresearch-lab-rep-sdk` | `EVO-17` | new `packages/rep-sdk/` | not_started | - | - | - | closeout_only | - | start lane planning |
+| memory-graph | `codex/memory-graph` | `/Users/fkg/Coding/Agents/autoresearch-lab-memory-graph` | `EVO-20` | `packages/shared/src/memory-graph*` | not_started | - | - | - | closeout_only | - | start lane planning |
+| idea-engine-evolution | `codex/idea-engine-evolution` | `/Users/fkg/Coding/Agents/autoresearch-lab-idea-engine-evolution` | `EVO-09` | `packages/idea-engine/**` | deferred_open | - | - | - | closeout_only | wait_for_slot | open after one lane reaches review/merge-ready |
+
+#### Shared status enum
+
+- `not_started`
+- `planning`
+- `plan_ready`
+- `implementing`
+- `acceptance_passed`
+- `reviewing`
+- `merge_ready`
+- `merged`
+- `blocked`
+- `deferred_open`
+
+#### Worker status report template
+
+```text
+[lane]: rep-sdk
+[branch]: codex/rep-sdk
+[worktree]: /Users/fkg/Coding/Agents/autoresearch-lab-rep-sdk
+[status]: plan_ready
+[head]: <commit-or-none>
+[scope]: EVO-17 first deliverable only
+[acceptance]: not_run | passed | failed
+[review]: not_run | converged | blocked
+[governance_touch]: no
+[blocker]: none | <one-line blocker>
+[next_action]: <one-line next step>
+```
+
+#### Coordinator expectations
+
+- Keep this board in the main coordination thread rather than inside any worker lane.
+- Update the relevant row whenever a worker reports a status transition.
+- Do not treat the worker report template as optional; use it to keep branch, worktree, acceptance, and review state comparable across lanes.
+- Keep `AGENTS.md`, `meta/remediation_tracker_v1.json`, and `meta/REDESIGN_PLAN.md` out of worker implementation churn; only touch them during closeout after code and acceptance are stable.
+- Open `codex/idea-engine-evolution` only after one open-now lane reaches `reviewing` or `merge_ready`, unless a new checked-in plan explicitly changes the gate.
+
+#### Coordination gates
+
+Worker lanes do not need to return to the coordinator after every chat turn. They should advance locally inside their owned scope until they hit one of the coordination gates below.
+
+Workers must report back to the coordinator when any of the following happens:
+
+- `plan_ready`: the lane has a concrete plan and is ready for implementation
+- `blocked`: a real blocker prevents safe forward progress
+- `scope_change_needed`: owned paths or initial scope are no longer sufficient
+- `acceptance_passed`: implementation is complete and lane acceptance is green
+- `reviewing`: formal review has started
+- `merge_ready`: the lane is ready for rebase / merge sequencing
+- `governance_touch_requested`: the lane is about to edit `AGENTS.md`, `meta/remediation_tracker_v1.json`, or `meta/REDESIGN_PLAN.md`
+
+This keeps worker lanes autonomous during normal execution, while still forcing explicit coordination at the points where scope, governance, review, or merge order can drift.
+
+#### Worker reminder obligation
+
+Each active worker lane should treat the coordination gates above as a mandatory reminder contract:
+
+- when a gate is reached, emit a status report using the shared worker template
+- if the gate is `blocked`, `scope_change_needed`, `merge_ready`, or `governance_touch_requested`, stop and wait for coordinator direction before proceeding
+- if the gate is `plan_ready`, `acceptance_passed`, or `reviewing`, report immediately and continue only if no coordinator intervention is required by the lane's scope rules
+
+The coordinator should not have to infer from silence whether a lane is ready for review, merge sequencing, or scope reallocation. Active worker threads are responsible for surfacing those transitions explicitly.
+
+#### Default auto-advance rule
+
+Inside a worker lane's approved scope, the default is to keep moving without waiting for per-step coordinator approval.
+
+Unless a coordination gate is hit, a worker lane should automatically continue through:
+
+- planning
+- implementation
+- lane acceptance
+- bounded implementation commit
+- formal review from the lane's own worktree
+
+After each of those steps, the lane should report the reached gate if one applies, but it should not stop merely to ask whether it may perform the next in-scope step.
+
+The worker must stop and wait only when:
+
+- a coordination gate explicitly requires coordinator direction
+- a governance-file edit is the next step
+- a cross-lane path conflict appears
+- the lane needs scope expansion or merge sequencing
+
+#### Commit and review preconditions
+
+Worker lanes must not treat acceptance, formal review, and governance closeout as a single step.
+
+- After lane acceptance passes, create a bounded implementation commit for the accepted first deliverable before requesting governance sync.
+- Formal review must run from the lane's own worktree context, or otherwise use source packets that explicitly point at that lane's worktree paths. Do not launch formal review from `/Users/fkg/Coding/Agents/autoresearch-lab` when the implementation lives in a sibling worktree.
+- A source-access failure caused by launching review from the wrong worktree is a coordination/setup failure, not a substantive blocking verdict on the implementation itself.
+- `merge_ready` should normally mean: bounded implementation commit exists, acceptance is green, and formal review has either converged or is ready to rerun from the correct worktree context without further code changes.
+- Governance-file edits (`AGENTS.md`, `meta/remediation_tracker_v1.json`, `meta/REDESIGN_PLAN.md`) remain closeout-only after the implementation commit exists and the lane has cleared the correct-worktree review gate.
 
 ## Verification Notes
 
