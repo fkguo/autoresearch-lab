@@ -353,7 +353,7 @@
           "depends_on": [],
           "source": "deep-refactoring-analysis",
           "decision_gate": "Phase 1 kickoff: cancel if NEW-05a is rewrite-from-scratch",
-          "note": "Scope Audit 3/3 cut: hep-autoresearch 整体退役；`hepar` 作为同一 Pipeline A Python CLI surface 的 installable alias，默认随 package 一起退役，除非后续有明确 repoint 决策。2026-03-23 Pipeline A repoint Batch 1 已把 `@autoresearch/orchestrator` `autoresearch` 立为 canonical generic lifecycle entrypoint（`init/status/approve/pause/resume/export`），并将 `hepar` / `hep-autoresearch` 在 touched surfaces 上降为过渡 legacy surface。2026-03-23 post-repoint doc/CLI cleanup batch 随后已执行 `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md`：operator-facing README / tutorial / workflow / help wording 现已统一写明 `autoresearch` = canonical lifecycle entrypoint，`hepar` / `hep-autoresearch` / `hep-autopilot` = 同一条 transitional legacy surface，而 `run` / `doctor` / `bridge` 仍是 unrepointed commands；本批同时吸收了直出用户提示 `run hep-autoresearch init` -> `run autoresearch init` 的 web hint drift。剩余 retirement / repoint 工作继续留给后续 unrepointed-command slices，而不是再把 lifecycle authority 漂回双入口叙事。"
+          "note": "Scope Audit 3/3 cut: hep-autoresearch 整体退役；`hepar` 作为同一 Pipeline A Python CLI surface 的 installable alias，默认随 package 一起退役，除非后续有明确 repoint 决策。2026-03-23 Pipeline A repoint Batch 1 已把 `@autoresearch/orchestrator` `autoresearch` 立为 canonical generic lifecycle entrypoint（`init/status/approve/pause/resume/export`），并将 `hepar` / `hep-autoresearch` 在 touched surfaces 上降为过渡 legacy surface。2026-03-23 post-repoint doc/CLI cleanup batch 随后已执行 `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md`：operator-facing README / tutorial / workflow / help wording 现已统一写明 `autoresearch` = canonical lifecycle entrypoint，`hepar` / `hep-autoresearch` / `hep-autopilot` = 同一条 transitional legacy surface，而 `run` / `doctor` / `bridge` 仍是 unrepointed commands；本批同时吸收了直出用户提示 `run hep-autoresearch init` -> `run autoresearch init` 的 web hint drift。剩余 retirement / repoint 工作继续留给后续 unrepointed-command slices，而不是再把 lifecycle authority 漂回双入口叙事。2026-03-24 planning-completeness correction: post-repoint doc cleanup 本来也是最合适的地方去登记下一条 bounded `Pipeline A run-surface repoint / parity / delete` follow-up；当时 batch scope 保持 wording-only 是对的，但 follow-up pointer 漏记，现已在 checked-in plan 中补记。"
         },
         "UX-01": {
           "title": "研究笔记与机器合同分离",
@@ -681,12 +681,13 @@
         },
         "NEW-R10": {
           "title": "service.py 拆分 (条件性)",
-          "status": "pending",
+          "status": "cut",
           "complexity": "high",
           "assignee": null,
           "depends_on": [],
           "source": "deep-refactoring-analysis",
-          "decision_gate": "Phase 3 kickoff: cancel if idea-engine TS migration started"
+          "decision_gate": "Phase 3 kickoff: cancel if idea-engine TS migration started",
+          "note": "2026-03-24 decision-gate cut: `NEW-05a-stage3` is `done`, and `packages/idea-engine/` now owns the live TS `search.step` surface. Reopening Python `idea-core` `service.py` decomposition would restore Python as primary authority on a path that has already moved into TS. Keep remaining Python only for transitional parity / legacy surfaces; future search/evolution work should continue on `packages/idea-engine/`. 2026-03-24 planning-completeness correction: the missing follow-up is not a new Python decomposition project but a later same-lane `idea-core retire-all` closeout that removes parity / bridge fallback after TS acceptance is complete."
         },
         "NEW-R14": {
           "title": "hep-mcp 内部包拆分",
@@ -1724,7 +1725,8 @@
           "assignee": null,
           "depends_on": [
             "EVO-01"
-          ]
+          ],
+          "note": "Execute on the live `packages/idea-engine/` `search.step` path. Any Python touches should stay limited to parity fixtures / regression alignment; this lane should shrink, not expand, the remaining `idea-core` transitional surface."
         },
         "EVO-10": {
           "title": "进化提案自动闭环",
@@ -1743,7 +1745,8 @@
           "depends_on": [
             "EVO-01",
             "EVO-09"
-          ]
+          ],
+          "note": "Follow `EVO-09` on the same TS `idea-engine` lane. Do not reopen Python-first authority; remaining `idea-core` parity / MCP bridge cleanup belongs to the eventual same-lane retire-all closeout after TS behavior is accepted."
         },
         "EVO-12": {
           "title": "技能生命周期自动化",
@@ -1909,7 +1912,7 @@
         "NEW-R11"
       ],
       "source": "deep-refactoring-analysis",
-      "note": "NEW-R09 cut because hep-autoresearch / hepar are treated as one transitional Pipeline A Python CLI surface slated for retirement together. The post-repoint lifecycle doc/help cleanup is now checked in and executed via `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md`; touched operator-facing surfaces no longer present `hepar` / `hep-autoresearch` as the default generic lifecycle entrypoint, while unrepointed commands remain explicitly on the legacy surface. Remaining: NEW-R10 (P2), NEW-R11 (P3)."
+      "note": "NEW-R09 cut because hep-autoresearch / hepar are treated as one transitional Pipeline A Python CLI surface slated for retirement together. The post-repoint lifecycle doc/help cleanup is now checked in and executed via `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md`; touched operator-facing surfaces no longer present `hepar` / `hep-autoresearch` as the default generic lifecycle entrypoint, while unrepointed commands remain explicitly on the legacy surface. 2026-03-24 decision-gate alignment then also cut NEW-R10 because `NEW-05a-stage3` established the live TS `idea-engine` `search.step` authority. Remaining: NEW-R11 (P3)."
     }
   }
 }

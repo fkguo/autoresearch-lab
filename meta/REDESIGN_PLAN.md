@@ -102,14 +102,14 @@ Phase 2B (Pipeline 连通 + 深度集成):
   ├─ M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl (仅 M-20 仍 pending)
   ├─ NEW-02/NEW-03/NEW-04 pending
   ├─ NEW-CONN-02/03/04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-RT-01/02/03/04 ✅
-  ├─ NEW-05a Stage 3 idea-engine TS 增量重写开始
+  ├─ NEW-05a Stage 3：idea-engine TS `search.step` / authority-seam baseline 启动
   ├─ NEW-ARXIV-01 arxiv-mcp 独立 MCP (~1700 LOC) ← Phase 2 early add
   ├─ NEW-HEPDATA-01 hepdata-mcp 独立 MCP (~800 LOC) ← Phase 2 early add
   ├─ UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01 ✅
-  ├─ NEW-R07/NEW-R15-impl ✅; NEW-R05/06/08/10/14 pending
+  ├─ NEW-R07/NEW-R15-impl ✅; NEW-R05/06/08/14 pending; NEW-R10 cut
   │
 Phase 3 (扩展性 + 计算连通 + 单研究者研究循环前置):
-  ├─ NEW-05a Stage 3 续: idea-engine TS 重写完成 ✅
+  ├─ NEW-05a Stage 3 续：idea-engine TS `search.step` / authority-seam baseline 完成 ✅
   ├─ NEW-COMP-02, NEW-CONN-05, NEW-OPENALEX-01, NEW-RT-05, NEW-LOOP-01 ✅
   ├─ RT-05, NEW-RT-06, NEW-RT-07, NEW-DISC-01 ✅
   ├─ NEW-SEM-01~13、NEW-SEM-06-INFRA/06b/06d/06e/06f ✅
@@ -127,7 +127,7 @@ Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ EVO-01/02/03/13 ✅
   ├─ EVO-14 in_progress; EVO-06/07/12a design_complete; EVO-09/10/11 pending
   ├─ EVO-04/05/08/15/16 pending; EVO-17/18/19/20/21 design_complete
-  ├─ idea-core Python 退役 + hep-autoresearch 退役 (Pipeline A 退役；默认包含 `hepar` CLI alias)
+  ├─ idea-core Python 退役 + hep-autoresearch 退役 (未来目标；当前仍保留过渡 Python surfaces，默认包含 `hepar` CLI alias)
   │
 Pipeline A/B 统一时间线:
   Pipeline A = hep-autoresearch (Python CLI, installable alias `hepar`) — 现有编排器
@@ -137,7 +137,7 @@ Pipeline A/B 统一时间线:
   Phase 3:   NEW-COMP-02 + NEW-CONN-05 + NEW-OPENALEX-01 + NEW-DISC-01 + NEW-SEM lane + NEW-LOOP-01 → generic compute/discovery/loop substrate 已落地
   Phase 4+:  Pipeline A (`hep-autoresearch` package CLI + `hepar` alias) 退役, Pipeline B 成为唯一编排器
 
-NEW-R01 God-file 拆分 (跟踪伞) — 跨 Phase 1-3, 子项: NEW-R10/R11 (NEW-R09 cut)
+NEW-R01 God-file 拆分 (跟踪伞) — 跨 Phase 1-3, 子项: NEW-R11（NEW-R09 / NEW-R10 cut）
 ```
 
 ---
@@ -155,18 +155,19 @@ NEW-R01 God-file 拆分 (跟踪伞) — 跨 Phase 1-3, 子项: NEW-R10/R11 (NEW-
 
 **目标结构**:
 ```
-autoresearch/                    # private monorepo (personal GitHub)
+autoresearch-lab/                # private monorepo (personal GitHub)
 ├── packages/
-│   ├── hep-research-mcp/       # TS MCP server (~130K lines)
-│   ├── orchestrator/           # TS 新编排器 (NEW-05a, 从零构建)
-│   ├── idea-engine/            # TS idea 引擎 (NEW-05a 阶段 3, idea-core 重写)
-│   ├── agent-arxiv/            # TS Agent-arXiv 服务 (EVO-15, 从零构建)
-│   ├── shared/                 # TS 共享类型 + 工具
-│   ├── hep-autoresearch/       # Python orchestrator (~29K, 渐进退役)
-│   ├── idea-core/              # Python → TS 迁移 (~11K, 阶段 2)
-│   ├── idea-generator/         # JSON Schema SSOT (~370 验证脚本 → TS)
-│   ├── skills/                 # 技能脚本 (Bash + Python + wolframscript)
-│   └── skills-market/          # Python marketplace
+│   ├── hep-mcp/                # TS MCP host/server
+│   ├── orchestrator/           # TS canonical generic control plane
+│   ├── idea-engine/            # TS idea-engine；live `search.step` authority
+│   ├── idea-core/              # Python 过渡 engine；未迁移方法/parity surface
+│   ├── hep-autoresearch/       # Python 过渡 Pipeline A CLI / unrepointed commands
+│   ├── shared/                 # TS shared contracts + helpers
+│   ├── agent-arxiv/            # TS Agent-arXiv 服务
+│   ├── idea-mcp/               # TS idea host adapter
+│   ├── *-mcp / literature-workflows / skills-market / project-contracts / ...
+│   └── idea-generator/         # schema + validation authority
+├── skills/                     # checked-in skill workflows
 ├── meta/                       # 原 autoresearch-meta
 │   ├── schemas/                # JSON Schema SSOT
 │   ├── scripts/                # codegen, lint, CI
@@ -197,14 +198,19 @@ autoresearch/                    # private monorepo (personal GitHub)
 
 ### NEW-05a: 编排层与 idea 引擎增量迁移至 TypeScript
 
-> **Re-scoped (v1.8.0)**: Stage 1-2 (orchestrator TS) 已完成 (929f693)。Stage 3 (idea-engine TS 重写) 独立追踪为 not_started，Phase 2-3 增量迁移。
+> **Re-scoped (2026-03-24 high-level alignment)**: Stage 1-2 (orchestrator TS) 已完成 (929f693)。Stage 3 不再应被理解为 `not_started`：当前已完成的是一个 **bounded live TS baseline**，即 `packages/idea-engine/` 上的 `search.step` / authority-seam 路径；这为后续 `EVO-09` / `EVO-11` 提供了真实 TS authority，但并不等于 Python `idea-core` 已整体退役。
 > **勘误**: 原文引用 `state-machine.ts` 不存在，实际文件为 `state-manager.ts`。
 
 **Stage 1-2**: done (929f693) — TS orchestrator 状态管理 parity (read/write/enforcement/sentinel/plan-validation), 145 tests, tsc clean.
 
-**Stage 3 (Phase 2-3, not_started)**: idea-core → idea-engine TS 增量重写。
+**Stage 3 (Phase 2-3, bounded baseline complete)**: idea-core → idea-engine TS 增量重写已建立首个 live TS authority，但未完成全部方法/命令迁移。
 - **Phase 2 先行**: NEW-IDEA-01 (idea-core MCP 桥接) 立即连通 pipeline，不被 TS 重写阻塞
-- **增量迁移顺序**: (1) store/idempotency → (2) campaign/budget → (3) operator families 逐个迁移 → (4) domain pack → data-driven manifest → (5) HEPAR orchestration
+- **当前已落地的 TS authority**: `packages/idea-engine/` 当前拥有 live `search.step` 路径所需的 store/idempotency/campaign/budget/domain-pack registry/runtime seam 与 JSON-RPC service surface
+- **当前仍保留的 Python surfaces**: `packages/idea-core/` 仍承载 parity fixtures、MCP bridge fallback、以及未迁入 TS 的方法/模块；`packages/hep-autoresearch/` / `hepar` 仍承载尚未 repoint 的 legacy commands / workflows
+- **缺失的显式 closeout 计划 (2026-03-24 planning completeness correction)**: 当前 repo 仍缺两个单独 bounded retirement slices，不能只停留在“Phase 4+ 退役”的高层口径：
+  - `Pipeline A run-surface repoint / parity / delete`: 收口 `run` / `doctor` / `bridge` 与 `autoresearch` 中剩余的 Python delegation；一旦 TS surface 通过验收，直接删除 `hep-autoresearch` / `hepar`
+  - `idea-core retire-all closeout`: 在 `packages/idea-engine/` 上完成剩余 parity / bridge 收口；一旦 TS acceptance 稳定，直接删除 Python `idea-core` fallback，而不是再开 Python-first lane
+- **后续迁移方向**: 后续 search/evolution 工作应继续落在 TS `idea-engine` 上，而不是重新把 Python `idea-core` 拉回主 authority
 - **回退/对照**: MCP 桥接作为回退
 - **Golden trace**: `idea-core/demo/m2_12_replay.py` 确保行为一致性
 - **Phase 4+**: idea-core Python 退役（与 hep-autoresearch 同步）
@@ -213,7 +219,7 @@ autoresearch/                    # private monorepo (personal GitHub)
 
 **迁移理由**:
 1. 所有主流 Agent 编排平台 (OpenCode, OpenClaw, Claude Code, Cursor) 均选择 TypeScript——Node.js 事件循环天然适合并发 Agent session 管理
-2. MCP SDK 为 TypeScript-first，生态圈最大组件 hep-research-mcp 已是 130K LOC TypeScript
+2. MCP SDK 为 TypeScript-first，生态圈最大组件 `hep-mcp` 已是大规模 TypeScript surface
 3. 统一语言后可消除 NEW-01 (跨语言代码生成) 的大部分需求
 4. 长期愿景 (Agent-arXiv) 需管理数十个并发 Agent session，TypeScript 优势显著
 
@@ -223,27 +229,28 @@ autoresearch/                    # private monorepo (personal GitHub)
 |---|---|---|
 | 阶段 1 (NEW-05 同步) | 在 monorepo 中创建 `packages/orchestrator/` (TS)，实现最小状态管理 + MCP client | 低——新代码，不影响现有 |
 | 阶段 2 (Phase 1-2) | 新编排器逐步接管 hep-autoresearch 的功能 (state machine, approval gates, ledger) | 中——功能迁移需验证等价 |
-| 阶段 3 (Phase 2-3) | idea-core 迁移至 TS `packages/idea-engine/`：搜索引擎、operator 系统、domain pack、评估、HEPAR 编排 | 中——~6,800 行迁移，依赖 ajv/proper-lockfile/json-canonicalize |
+| 阶段 3 (Phase 2-3) | `packages/idea-engine/` 已建立 `search.step` / authority-seam live TS baseline；剩余方法 parity、legacy bridge 收口与 Python 退役继续后续推进 | 中——仍需持续收口，不能误读为“所有 Python 已消失” |
 | 阶段 4 (Phase 3) | idea-generator 验证脚本迁移至 TS (JSON Schema 文件本身语言无关，保持不动) | 低——仅 370 行脚本 |
 | 阶段 5 (Phase 4-5) | EVO-13/14/15 直接在 TS 编排器上实现；hep-autoresearch（含 `hepar` alias）+ Python idea-core 退役 | 低——此时 TS 组件已成熟 |
 
-**修改文件**:
+**当前已落地的代表性文件**:
 
 | 文件 | 变更 |
 |---|---|
-| `packages/orchestrator/` | (新 TS package) 最小编排骨架: StateManager, LedgerWriter, McpClient, ApprovalGate |
-| `packages/orchestrator/src/mcp-client.ts` | TypeScript MCP stdio client (替代 Python 版 mcp_stdio_client.py) |
-| `packages/orchestrator/src/state-machine.ts` | 研究循环编排内核（阶段枚举仅作 UX labels；执行走 event/task graph 而非固定 ingest→reproduce→revision→computation 线性阶段） |
-| `packages/idea-engine/` | (新 TS package，阶段 3) idea-core 的 TS 重写: 搜索引擎、operator 接口、domain pack、评估维度、HEPAR 编排 |
-| `packages/idea-engine/src/operators.ts` | SearchOperator 接口 + HEP operator 实现 (anomaly abduction, symmetry, limit explorer) |
-| `packages/idea-engine/src/store.ts` | 文件级 JSON 存储 + proper-lockfile 并发控制 |
-| `packages/idea-engine/src/rpc-server.ts` | JSON-RPC 2.0 stdio server (与 Python 版协议兼容，平滑切换) |
-| `pnpm-workspace.yaml` | 新增 orchestrator + idea-engine packages |
+| `packages/orchestrator/src/{cli.ts,cli-lifecycle.ts,state-manager.ts,ledger-writer.ts,mcp-client.ts}` | 当前 TS lifecycle/control-plane authority |
+| `packages/idea-engine/` | 当前 TS idea engine package；已拥有 live `search.step` 入口 |
+| `packages/idea-engine/src/service/search-step-service.ts` | live `search.step` 实现 |
+| `packages/idea-engine/src/service/{search-step-campaign.ts,idempotency.ts}` | `search.step` 的 campaign / idempotency / budget path |
+| `packages/idea-engine/src/service/{domain-pack-registry.ts,hep-domain-pack.ts,hep-search-runtime.ts,hep-librarian-recipe-book.ts}` | provider-neutral seam + 当前 provider-local runtime / recipe authority |
+| `packages/idea-engine/src/{store/engine-store.ts,rpc/jsonrpc.ts,service/rpc-service.ts}` | 当前 TS store + JSON-RPC service surface |
 
-**验收检查点**:
-- [ ] TS 编排器可启动 MCP server 并调用工具
-- [ ] TS 编排器可管理 state.json + ledger.jsonl (与 Python 版格式兼容)
-- [ ] Python orchestrator_cli 和 TS orchestrator 可对同一 run 目录交替操作 (状态兼容)
+**当前高层完成态 / 未完成态对齐**:
+- [x] TS orchestrator 已是 canonical generic lifecycle entrypoint (`autoresearch`)
+- [x] TS `idea-engine` 已拥有 live `search.step` / authority-seam baseline
+- [ ] TS `idea-engine` 尚未完成全部 Python `idea-core` 方法 parity / retire-all closeout
+- [ ] Python `idea-core` 与 `hep-autoresearch` / `hepar` 尚未整体退役
+- [ ] 仍缺一个 checked-in bounded `Pipeline A run-surface repoint / parity / delete` closeout slice
+- [ ] 仍缺一个 checked-in bounded `idea-core retire-all` closeout slice
 - [ ] TS idea-engine JSON-RPC 接口与 Python idea-core 协议兼容 (相同 method/params/response)
 - [ ] TS idea-engine 通过 Python idea-core 的全部测试用例 (协议等价验证)
 - [ ] idea-generator JSON Schema 文件不变，TS 验证脚本输出与 Python 版一致
@@ -884,6 +891,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 - `hepar` / `hep-autoresearch` 现在只作为过渡中的 Pipeline A legacy surface 保留，用于尚未 repoint 的 `run` / `doctor` / `bridge` 等命令；两者 lifecycle 语义继续一起移动
 - formal review-swarm 在当前 worktree 以 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)` 收敛到 `0` blocking；唯一直接相关 amendment 是把 README 中残留的 `hep-autopilot` 明确并入同一条 legacy lifecycle 语义，其余 reviewer 建议在 self-review 中被登记为非阻塞的 defer / decline
 - checked-in post-repoint doc/CLI cleanup prompt `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md` 已在同日执行：touched operator-facing README / tutorial / workflow / help surfaces 现统一写明 `autoresearch` = canonical lifecycle entrypoint，`hepar` / `hep-autoresearch` / `hep-autopilot` = 同一条 transitional legacy surface，`run` / `doctor` / `bridge` 仍是 unrepointed commands；本批不引入 alias、fallback wrapper、第二套 authority，也不顺手推进 run-shell parity
+- **Retrospective planning correction (2026-03-24)**: 上述 post-repoint doc cleanup 也是最合适的地方去登记下一批 `Pipeline A run-surface repoint / parity / delete` follow-up，因为它已经把 `run` / `doctor` / `bridge` 明确定义成 unrepointed commands。该 cleanup batch 保持 wording-only 是对的，但 repo 当时少了一条 checked-in follow-up pointer；现已在后续计划文档中补记。
 
 **变更**:
 
@@ -1762,20 +1770,14 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] 6 个脚本拆分至 ≤200 eLOC (或有 CONTRACT-EXEMPT + sunset)
 - [ ] CI gate 覆盖 skills 目录
 
-### NEW-R10: `service.py` 拆分 (条件性) ★深度重构
+### NEW-R10: `service.py` 拆分 — CUT ★深度重构
 
 > **来源**: `docs/2026-02-20-deep-refactoring-analysis.md` §9, NEW-R01 子项
 
-**依赖**: 无硬依赖
-**决策门禁**: Phase 3 启动时评估 — 如果 idea-engine TS 迁移已启动，此项可取消。
+> **2026-03-24 决策门禁收敛**: CUT。`NEW-05a-stage3` 已完成，`packages/idea-engine/` 已拥有 live TS `search.step` surface；继续拆分 Python `service.py` 会把已迁出的 authority 重新拉回 Python lane。
 
-**现状**: `idea-core/src/idea_core/engine/service.py` 3165 LOC → 目标拆分为 ~8 个模块。必须重命名 (CODE-01.2 banned filename `service` → `coordinator`)。
-**目标模块**: `engine/{coordinator,graph,ranking,search,formalism,evaluation}.py` 等。
-
-**验收检查点**:
-- [ ] `service.py` 重命名为 `coordinator.py`
-- [ ] 拆分后模块 ≤200 eLOC
-- [ ] 若决策门禁判定取消，标记 `cancelled:decision-gate`
+**状态**: cut
+**原因**: 后续 search/evolution authority 应继续收束到 TS `idea-engine`；Python `idea-core` 当前只保留过渡 / parity / 未迁移 surface，而不是新的主实现承载面。
 
 ### NEW-R14: hep-mcp 内部包拆分 (P2 late) ★深度重构
 
@@ -3264,7 +3266,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
 | **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (4 done, 1 in_progress, 9 pending, 8 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
-| **CUT** | NEW-R09 | 1（bookkeeping only; excluded from total） |
+| **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
 | **总计** | **Phase 0–5 remediation items only** | **171** — **122 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 171。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
