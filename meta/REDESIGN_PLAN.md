@@ -3,7 +3,7 @@
 > **版本**: 1.9.4-draft (v1.9.3 + generic-authority broadening)
 > **日期**: 2026-03-22
 > **基线**: v1.9.3-draft
-> **重构项总数**: 167 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
+> **重构项总数**: 170 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
 >
 > **v1.9.4 Changelog**:
@@ -2265,6 +2265,7 @@ paper/
 | NEW-RT-06 | Provider-Agnostic Orchestrator Routing | `packages/orchestrator/src/agent-runner.ts` + routing config | medium | NEW-RT-01 | `AgentRunner` 提取 `ChatBackend`/backend factory；JSON route key 生效；lane queue / approval gate / tracing 不回退 |
 | NEW-RT-07 | MCP Sampling Host Routing Registry | orchestrator MCP host / sampling caller | medium | NEW-MCP-SAMPLING | MCP host 依据 `module/tool/prompt_version/risk_level/cost_class` 路由；MCP server 仅发 metadata，不自选模型 |
 | NEW-DISC-01 | Federated Scholar Discovery | `packages/shared/src/discovery/`（必要时后续提升为 `packages/scholar-broker/`） | high | NEW-OPENALEX-01 | `INSPIRE + OpenAlex + arXiv` federated planning/dedup/canonicalization；shared identifiers 增加 `openalex_id`；query-plan / dedup / search-log artifacts 就绪 |
+| NEW-LITFLOW-01 | Generic Literature Workflow Extraction | `meta/recipes/` + `meta/protocols/session_protocol_v1.md` + `packages/skills-market/` + consumer skill docs | medium | M-24, NEW-DISC-01, NEW-WF-01, NEW-SKILL-WRITING | generic literature workflow authority 下沉到 checked-in workflow-pack/recipes；`research-team` 作为 consumer；`M-25` 仅保留 atomic `inspire_critical_research` cleanup |
 | NEW-LOOP-01 | Single-User Research Loop Runtime | `packages/orchestrator/src/research-loop.ts` + workspace/task graph types | high | NEW-WF-01, UX-06, NEW-RT-06 | 研究执行内核从阶段线性流转为 event/task graph；interactive/autonomous 共用 substrate；成为 `EVO-01/02/03` 前置 |
 | NEW-SEM-06-INFRA | Retrieval Backbone Substrate Decision | shared retrieval infra + eval harness | medium | NEW-RT-05 | 锁定 embedding/index substrate；明确 hosted vs local、vector store、late-interaction path；以 `hashing_fnv1a32` 为基线出具 eval protocol |
 | NEW-SEM-06b | Hybrid Candidate Generation + Strong Reranker | `hep-mcp/src/core/evidence.ts` / `evidenceSemantic.ts` / broker adapters | high | NEW-RT-05, NEW-DISC-01, NEW-SEM-06-INFRA | hybrid recall + strong reranker 在 canonicalized docs 上显著优于 `SEM-06a`；不再 hard-fork provider-local identities |
@@ -2512,6 +2513,54 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [x] 每节写作前检索 evidence (BM25 或 semantic)
 - [x] 调用 `hep_render_latex` + `hep_export_project`
 - [x] 端到端: evidence → outline → section draft → render → export
+
+### NEW-LITFLOW-01: Generic Literature Workflow Extraction ✅ Phase 3
+
+> **定位**: standalone governance-first extraction slice. This work must not be folded into `M-25`.
+> **目标**: 把 generic literature workflow authority 收束到 checked-in workflow-pack / recipe / skill-consumer surfaces，而不是任何 provider-specific MCP facade。
+
+**依赖**: `M-24`, `NEW-DISC-01`, `NEW-WF-01`, `NEW-SKILL-WRITING`
+
+**边界**:
+- 使用现有 `workflow_recipe_v1` + `meta/recipes/` 作为 checked-in workflow authority；本项**不**引入新的 literature workflow runtime schema。
+- 新 workflow-pack 推荐 package id: `literature-workflows`；`research-team` 消费该 authority，而不是拥有 generic literature workflow truth。
+- `M-25` 不再承担 generic workflow downshift umbrella；其后续 scope 仅保留 atomic `inspire_critical_research` split / narrowing work。
+
+**Authority matrix**:
+- workflow-pack / recipe authority:
+  - topic-to-reading-list / survey / landscape mapping
+  - literature-gap discovery / analysis flows
+  - deep analyze -> synthesize chains over a curated paper set
+  - any multi-provider orchestration that selects among `INSPIRE`, `OpenAlex`, `arXiv`, `Crossref`, `DataCite`, `Zotero`, or `GitHub` by capability
+- MCP atomic authority to retain:
+  - provider/source access: `inspire_search`, `inspire_search_next`, `inspire_literature`, `inspire_resolve_citekey`, `inspire_paper_source`, `inspire_parse_latex`, plus provider-local `openalex_*`, `arxiv_*`, `zotero_*`, `hepdata_*`
+  - bounded analysis operators: `inspire_topic_analysis`, `inspire_network_analysis`, `inspire_find_connections`, `inspire_trace_original_source`
+  - `inspire_critical_research` remains an atomic cleanup target; it does not become workflow authority in this slice
+  - `NEW-DISC-01` shared planner / canonicalization / dedup remains the generic atomic substrate and must not be re-hidden behind provider-specific facades
+
+**Provider reuse guidance**:
+- `INSPIRE-HEP`: best current source for survey/network/provenance-heavy flows, citation expansion, and arXiv-linked source download entry.
+- `arXiv`: reusable for known-item lookup, keyword intake, and source download; not the authority for citation graph, semantic search, or controversy analysis.
+- `Crossref`: reusable for DOI discovery, metadata completion, and BibTeX enrichment inside workflow recipes; not a graph/fulltext/source-download authority here.
+- `DataCite`: reusable for dataset/software DOI enrichment inside evidence workflows; not a canonical paper-discovery or citation-graph authority here.
+- `Zotero`: reusable as a local seed corpus / curation source; not a global discovery authority.
+- `GitHub`: reusable only for companion-code discovery inside skill-side workflows; not literature discovery authority.
+- DOI resolver remains utility edge only, never a workflow authority descriptor.
+
+**Required checked-in sync**:
+- tracker: add `NEW-LITFLOW-01`, narrow `M-25`
+- `meta/REDESIGN_PLAN.md`: add standalone subsection and Phase 3 queue row
+- `meta/protocols/session_protocol_v1.md`: stop treating `inspire_field_survey` / `inspire_deep_research` as canonical high-level entrypoints
+- `meta/recipes/`: add literature-specific workflow recipes under existing `workflow_recipe_v1`
+- `packages/skills-market/` + compatibility manifest: register `literature-workflows`; keep `research-team` as consumer
+- canonical prompt: `meta/docs/prompts/prompt-2026-03-24-new-litflow-01-generic-literature-workflow-extraction.md`
+
+**Closeout update (2026-03-24)**:
+- `NEW-LITFLOW-01` 已作为 standalone Phase 3 governance slice 收口，不再并入 `M-25`。
+- checked-in authority 已同步到 `meta/recipes/`、`meta/protocols/session_protocol_v1.md`、`packages/skills-market/`、compatibility manifest 与 `research-team` consumer docs；generic literature workflow truth 现位于 workflow-pack / recipe / skill-consumer layer，而不是 provider-specific MCP facade。
+- 新 workflow-pack `literature-workflows` 已注册，`research-team` 明确改为 consumer；`literature_fetch.py` 仅保留 source-adapter / prework helper 边界。
+- acceptance commands 全部通过；正式 reviewer trio 最终 0 blocking 收敛，self-review 0 blocking。唯一 non-blocking amendment（为 `literature-workflows.json` 增加 structured `source` locator）已在本轮吸收。
+- 后续仍有效的唯一直接 follow-up 为 `M-25`：将 `inspire_critical_research` 拆分/收窄为 bounded atomic descendants，而不重新承担 generic workflow authority。
 
 ---
 
@@ -3187,12 +3236,12 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06, NEW-R09 (cut) | 23 (22 done, 1 cut) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 49 (38 done, 11 pending) |
-| **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 51 (37 done, 14 pending) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (39 done, 12 pending) |
+| **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 52 (38 done, 14 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
 | **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (4 done, 1 in_progress, 9 pending, 8 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09 | 1（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **167** — **118 done** |
+| **总计** | **Phase 0–5 remediation items only** | **170** — **120 done** |
 
-> **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 167。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）现已完成 closeout，Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
+> **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 170。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 generic literature workflow governance extraction（`NEW-LITFLOW-01`）现已完成 closeout，Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
