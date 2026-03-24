@@ -2577,6 +2577,14 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 > **Closeout update (2026-03-24)**: 本项已在当前 worktree 完成 executable closeout。`packages/literature-workflows/` 现为唯一 checked-in literature recipe authority consumer/launcher；`meta/recipes/literature_*.json` 已升级为 semantic `action` + capability/provider resolution；`packages/hep-autoresearch` `literature-gap` 与 `skills/research-team` `workflow-plan` 已改为 launcher consumers；`inspire_discover_papers`、`inspire_field_survey`、`inspire_deep_research` 已从 `standard` / `full` 一并删除，catalog counts 收口到 `69 / 97`；高层 literature front door 已转到 launcher-backed workflows + retained bounded operators。formal `review-swarm` 最终 0 blocking 收敛：`Opus` R1 抓到了遗漏于 packet 的真实 front-door docs blockers（`docs/TOOL_CATEGORIES.md`, `docs/ARCHITECTURE.md`），修复后 `Opus` R2 = `CONVERGED_WITH_AMENDMENTS`，`Gemini-3.1-Pro-Preview` 与 `OpenCode(zhipuai-coding-plan/glm-5)` 则通过 same-model embedded-source rerun 各自补齐了 source-grounded `CONVERGED` verdict；所有直接相关低风险 amendments 已在本轮吸收。formal `self-review` 0 blocking，并额外修正了 `NEW-CONN-01` tracker note 的 stale surface drift。`M-25` 仍保持单独 lane，仅保留 `inspire_critical_research` atomic cleanup。
 
+### M-25: INSPIRE critical research public surface cleanup ✅ Phase 3
+
+> **定位**: residual atomic cleanup lane after `NEW-LITFLOW-01` / `NEW-LITFLOW-02`. This slice removes the remaining `inspire_critical_research` umbrella only; it must not rebuild a workflow facade or move generic literature workflow authority back into provider-local MCP orchestration.
+
+**依赖**: `H-16a`, `M-24`, `NEW-LITFLOW-01`
+
+> **Closeout update (2026-03-24)**: 本项已在当前 worktree 完成。`inspire_critical_research` 已从 shared/local tool names、hep-mcp registry/runtime/catalog surfaces、docs、consumer inventories 与 tests 中移除，并由五个 bounded atomic operators 直接取代：`inspire_grade_evidence`、`inspire_detect_measurement_conflicts`、`inspire_critical_analysis`、`inspire_classify_reviews`、`inspire_theoretical_conflicts`。对应 public schemas 全部收紧为 dedicated `.strict()` top-level contracts；不再保留 `mode` bag，也不再暴露 `llm_mode` / `strict_llm` / `client_llm_responses` / `next_actions` 之类 facade-era surface。`inspire_theoretical_conflicts` 现在固定为 internal MCP sampling only，review-swarm 同轮吸收了直接相关低风险 amendment：删除 dead `theoreticalConflict/lexicon.ts` helper，并将仅存的 `DebateAxis` type 移到 prompt module，从当前 critical-research surface 中彻底清掉 regex/lexicon residue。semantic judgment paths（claim extraction、evidence grading、bundle adjudication、review classification、critical questions、assumption tracking、critical analysis）均保持 LLM-first + fail-closed，不降回 heuristic authority。checked-in consumers / docs / recipes 已全部 repoint 到新 atomic surface；catalog counts 现为 `standard = 73`, `full = 101`，这是 authority 正确归位导致的净增而非回退。formal `review-swarm` 最终 0 blocking 收敛：`Opus` = `CONVERGED_WITH_AMENDMENTS`；`Gemini-3.1-Pro-Preview` 与 `OpenCode(zhipuai-coding-plan/glm-5)` 初始 runner path 没有产出 clean usable formal verdict，因此按仓库规则使用 same-model embedded-source rerun，二者最终均为 `CONVERGED_WITH_AMENDMENTS`。formal `self-review` 0 blocking，并确认本轮未冲撞 `NEW-LITFLOW-01` / `NEW-LITFLOW-02` 的 authority boundary，也无新增 durable follow-up 需要登记。
+
 ---
 
 ## Phase 4: 长期演进 (P4)
@@ -3252,11 +3260,11 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06, NEW-R09 (cut) | 23 (22 done, 1 cut) |
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (39 done, 12 pending) |
-| **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (39 done, 14 pending) |
+| **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
 | **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (4 done, 1 in_progress, 9 pending, 8 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09 | 1（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **171** — **121 done** |
+| **总计** | **Phase 0–5 remediation items only** | **171** — **122 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 171。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
