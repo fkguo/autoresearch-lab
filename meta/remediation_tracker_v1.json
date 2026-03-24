@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.4-draft",
-  "updated_at": "2026-03-24T15:39:02Z",
+  "updated_at": "2026-03-24T16:12:21Z",
   "note": "v1.9.4-draft: v1.9.3 + semantic-authority boundary clarification + generic-authority broadening. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Batch A-E are now completed in the current worktree, and Batch F downstream recovery has confirmed the residual batch2 closeout was fully absorbed by `NEW-05a-idea-core-domain-boundary` / semantic Batch A rather than remaining as a separate code batch. `batch3` remains a separate later prompt and was not started in this bounded closeout run. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. Formal review for Batch F later converged with 0 blocking via that approved fallback, and self-review also passed with 0 blocking. 170 items. 2026-03-22 governance repair restored tracker JSON legality after an unescaped EVO-14 Batch 4 telemetry/reviewer-failure fragment inside `EVO-14.note`; existing closeout/evidence content was preserved, and `meta/REDESIGN_PLAN.md` plus current code reality were rechecked with no further drift requiring plan updates. That repair itself did not start `EVO-14` Batch 7, `EVO-15`, or any new fleet scheduler/takeover/reassignment semantics. Later on 2026-03-22, Batch 7 implementation began separately under canonical prompt `meta/docs/prompts/prompt-2026-03-22-evo14-batch7-worker-claim-acceptance-gate.md`; the current tracker now records that batch as formally closed on the current worktree with 0 blocking review convergence, and it still does not start `EVO-15` or broader takeover/reassignment/daemon semantics.",
   "phases": {
     "0": {
@@ -588,15 +588,16 @@
         },
         "trace-jsonl": {
           "title": "全链路 trace_id + JSONL 日志",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "H-02",
             "H-01",
             "M-14a"
           ],
-          "note": "R7 scope: 需定义 file_edit/fix_applied/tool_call/skill_invoked event types 结构化 schema (EVO-12a 消费) + SQLite-backed trace index (Gap 5: 生产规模下 O(N) 扫描瓶颈)"
+          "completed_at": "2026-03-24",
+          "note": "Historical Phase 2 Batch 4 work had already landed the base end-to-end trace_id + JSONL transport/logging surface. The 2026-03-24 follow-up implementation commit `5b14766` did not reopen a broad trace-jsonl lane; it only aligned the live `tool_call` contract on that existing surface (`tool_name` / `params` / `result_status`, with additive optional `duration_ms`), preserved the top-level JSONL envelope, redacted logged params, and added adjacent Python/TS seam proofs for MCP trace correlation and ledger trace_id persistence. Acceptance passed on the current worktree (`PYTHONPATH=/Users/fkg/Coding/Agents/autoresearch-lab-trace-jsonl/packages/hep-autoresearch/src python -m pytest packages/hep-autoresearch/tests/test_logging_config.py packages/hep-autoresearch/tests/test_mcp_stdio_client_boundary.py packages/hep-autoresearch/tests/test_transition_state.py -q`; `pnpm --filter @autoresearch/hep-mcp test -- tests/contracts/jsonlStderrLogging.test.ts`; `pnpm --filter @autoresearch/hep-mcp build`; `git diff --check`), and formal review plus self-review converged with 0 blocking. Former R7 follow-up remains future bounded work only: structured schema expansion for `file_edit` / `fix_applied` / `tool_call` / `skill_invoked`, plus the SQLite-backed trace index/query surface; none of that is part of this closeout."
         },
         "NEW-02": {
           "title": "审批产物三件套",
