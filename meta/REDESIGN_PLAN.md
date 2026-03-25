@@ -125,7 +125,7 @@ Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ P5A: 单用户 / 单项目端到端闭环 + 统一执行收束 (`EVO-01/02/03/06/07/09/10/11/12/13/14`)
   ├─ P5B: 社区 / 发布 / 跨实例 / 研究进化外层 (`EVO-04/05/08/15/16/17/18/19/20/21`)
   ├─ EVO-01/02/03/13 ✅
-  ├─ EVO-09/10 ✅; EVO-14 in_progress; EVO-06/07/12a design_complete; EVO-11 pending
+  ├─ EVO-09/10/12 ✅; EVO-14 in_progress; EVO-06/07/12a design_complete; EVO-11 pending
   ├─ EVO-04/05/08/15/16 pending; EVO-17 ✅; EVO-20 ✅; EVO-18/19/21 design_complete
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (未来目标；当前仍保留过渡 Python surfaces，默认包含 `hepar` CLI alias)
   │
@@ -2900,26 +2900,40 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - 臂统计定期快照，重启后可恢复
 - 对比 softmax_ema baseline，regret 下降可度量
 
-### EVO-12: 技能生命周期自动化
+### EVO-12: 技能生命周期自动化 ✅
 
-> **EvoMap/GEP 分析更新 (2026-02-20)**: 参考 Evolver `skills_monitor.js` + GDI 退役逻辑，健康度评分维度改为 RDI。详见 `docs/2026-02-20-evomap-gep-analysis.md` §2.1, §7.1。
+> **Bounded closeout (2026-03-25, `skills-platform` lane)**: 当前完成态只覆盖 `packages/skills-market/**` 上的 install-side lifecycle authority first deliverable。它**不**宣称 usage-health / retirement 自动化已落地，也**不**提前启动 `EVO-12a`。
 
-**现状**: `skill_proposal.py` 生成技能脚手架 → 人工审核 → `install_skill.py` 手动安装。无使用频率跟踪、无自动退役、无从提案到安装的半自动路径。
+**当前真实 authority**:
 
-**修改内容**:
+`packages/skills-market/schemas/market-package.schema.json`
+→ `packages/skills-market/scripts/validate_market_runtime/package_checks.py`
+→ `packages/skills-market/scripts/install_skill_runtime/cli.py`
+→ `packages/skills-market/scripts/install_skill_runtime/install_flow.py`
+→ installed `.market_install.json` / target-root `.auto_safe_install_audit.json`
+
+**本轮完成内容**:
 
 | 文件 | 变更 |
 |---|---|
-| `hep-autoresearch/src/hep_autoresearch/toolkit/skill_lifecycle.py` | (新文件) 技能生命周期管理器: 使用频率统计 (从 ledger)、健康度评分 (success_rate × frequency)、退役建议 (30 天零使用 → 标记 deprecated)；**参考 Evolver `skills_monitor.js` 的 GDI 退役逻辑** |
-| `skills-market/scripts/install_skill.py` | 新增 `--auto-safe` 模式: 仅安装满足安全条件的技能 (deterministic=true, network=false, frequency≥N, human_pre_approved=true)，跳过 A2 但保留审计日志 |
-| `autoresearch-meta/schemas/skill_health_report_v1.schema.json` | 技能健康报告 schema: usage_count, success_rate, last_used, health_score, recommendation (keep/deprecate/retire) |
+| `packages/skills-market/schemas/market-package.schema.json` | 为 `skill-pack` 增加 `install_policy.auto_safe.human_pre_approved: true` 合约，并明确非 `skill-pack` 不允许该字段 |
+| `packages/skills-market/scripts/market_install_policy.py` | 新增共享 install-policy / auto-safe authority：shape 校验、opt-in 检测、closure 级 fail-closed 评估、拒绝原因格式化、审计文件写入 |
+| `packages/skills-market/scripts/install_skill_runtime/{cli,install_flow,package_contracts}.py` | 新增 installer `--auto-safe`，要求显式 `--package`、拒绝 `--all` / `--no-deps`、对 non-skill deps 和不合格 closure 原子 fail-closed，并把 `install_mode` / `auto_safe_evaluation` 写入 receipt |
+| `packages/skills-market/scripts/validate_market_runtime/package_checks.py` | validator 与 installer 共享同一 policy authority，校验 immutable `source.ref` 与当前受支持 runtime 边界 |
+| `packages/skills-market/{README.md,docs/SYMLINK_INSTALL.md}` | front-door audit：明确 `--auto-safe` 仅属于 copy-install 路径，symlink route 不在 auto-safe authority 内 |
 
-**依赖**: M-15 (技能依赖隔离)
+**依赖**: M-15 (技能依赖隔离)；本轮仅消费既有 `runtime.python.mode = \"isolated-venv\"` 边界，不回切 isolation / packaging authority。
 
-**验收**:
-- 每轮 run 结束后生成技能健康报告
-- `--auto-safe` 安装路径有完整审计日志
-- 30 天零使用技能自动标记 deprecated
+**验收事实**:
+- `git diff --check`
+- `python3 packages/skills-market/scripts/validate_market.py`
+- `python3 -m pytest packages/skills-market/tests/test_validate_market.py packages/skills-market/tests/test_install_skill.py -q`
+- `python3 -m pytest packages/skills-market/tests/test_install_skill_auto_safe.py -q`
+
+**后续边界**:
+- 推荐的同 lane 下一方向仍是 `EVO-12` slice 2：对极小量真实 `skill-pack` 做 immutable ref + `install_policy.auto_safe` onboarding
+- usage/frequency/success-rate 健康报告、deprecated/retire 建议、以及更广 skills lifecycle automation 仍是未来 slice，不由本次 closeout 声称完成
+- `EVO-12a` 仍是 trace-dependent 独立项，不因本批 closeout 被提前启动
 
 ### EVO-13: 统一编排引擎 (HEPAR + Orchestrator 合并) ✅
 
@@ -3264,7 +3278,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [x] EVO-09: live TS `packages/idea-engine/` `search.step` 失败库查询集成（first deliverable bounded closeout）
 - [x] EVO-10: 进化提案 run 完成自动触发 + 去重 + A0 自动处理（first deliverable bounded closeout）
 - [ ] EVO-11: Bandit 分发策略运行时接入，regret 下降可度量
-- [ ] EVO-12: 技能健康报告 + `--auto-safe` 安装路径 + 退役标记
+- [x] EVO-12: `skills-market` install-side lifecycle authority first deliverable (`install_policy.auto_safe` + `--auto-safe` + receipt/audit path)
 - [ ] EVO-12a: 技能自生成 — agent trace 模式检测 + 技能提案 + scope extension
 - [ ] EVO-13: 并行团队执行 (TS) + 持久化 checkpoint + 崩溃恢复
 - [ ] EVO-14: Fleet visibility → queue substrate → scheduler / lifecycle（cross-run only）
@@ -3288,9 +3302,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (41 done, 9 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (8 done, 1 in_progress, 7 pending, 6 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (9 done, 1 in_progress, 6 pending, 6 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **171** — **128 done** |
+| **总计** | **Phase 0–5 remediation items only** | **171** — **129 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 171。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
