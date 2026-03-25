@@ -2915,6 +2915,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 ### EVO-12: 技能生命周期自动化 ✅
 
 > **Bounded closeout (2026-03-25, `skills-platform` lane)**: 当前完成态只覆盖 `packages/skills-market/**` 上的 install-side lifecycle authority first deliverable。它**不**宣称 usage-health / retirement 自动化已落地，也**不**提前启动 `EVO-12a`。
+>
+> **Slice 2 follow-up (2026-03-25, same lane)**: `packages/skills-market/packages/codex-cli-runner.json` 与 `packages/skills-market/packages/auto-relay.json` 现已成为仅有的两条真实 checked-in `skill-pack` `--auto-safe` onboarding；它们保持 `source.repo = autoresearch-lab/skills`、共同 pin 到 immutable `source.ref = 52956e32da7fa9c8c523a22736081d2ac91d92e2`，并由新的 real-package rollout test 证明。此 follow-up 仍然**不**启动 broader catalog rollout、usage-health / retirement 自动化、或 `EVO-12a`。
 
 **当前真实 authority**:
 
@@ -2934,16 +2936,21 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | `packages/skills-market/scripts/validate_market_runtime/package_checks.py` | validator 与 installer 共享同一 policy authority，校验 immutable `source.ref` 与当前受支持 runtime 边界 |
 | `packages/skills-market/{README.md,docs/SYMLINK_INSTALL.md}` | front-door audit：明确 `--auto-safe` 仅属于 copy-install 路径，symlink route 不在 auto-safe authority 内 |
 
+**Slice 2 bounded follow-up**:
+- `meta/docs/prompts/prompt-2026-03-25-evo12-slice2-real-skill-pack-onboarding.md` 将 package 集合、`source.repo` 保持、immutable ref 语义、acceptance/review、以及 out-of-scope 边界固定为 checked-in canonical prompt
+- `packages/skills-market/packages/{codex-cli-runner,auto-relay}.json` 是当前仅有的真实 onboarding 集合：二者都新增 `install_policy.auto_safe.human_pre_approved: true`，共同 pin 到 immutable `source.ref = 52956e32da7fa9c8c523a22736081d2ac91d92e2`，并继续保留 `source.repo = autoresearch-lab/skills`
+- `packages/skills-market/tests/test_auto_safe_market_package_rollout.py` 以真实 package metadata + 生产 installer entrypoint 证明 `--source-root <repo>` 下的 real-package `--auto-safe` install；`auto-relay` 仅对本地 `.venv` 创建使用 bounded seam
+- `packages/skills-market/README.md` 现已把 front-door truth 收紧为“只有 `codex-cli-runner` + `auto-relay` 已 limited rollout，其余 catalog 尚未 onboarded”
+
 **依赖**: M-15 (技能依赖隔离)；本轮仅消费既有 `runtime.python.mode = \"isolated-venv\"` 边界，不回切 isolation / packaging authority。
 
 **验收事实**:
 - `git diff --check`
 - `python3 packages/skills-market/scripts/validate_market.py`
-- `python3 -m pytest packages/skills-market/tests/test_validate_market.py packages/skills-market/tests/test_install_skill.py -q`
-- `python3 -m pytest packages/skills-market/tests/test_install_skill_auto_safe.py -q`
+- `python3 -m pytest packages/skills-market/tests/test_validate_market.py packages/skills-market/tests/test_install_skill.py packages/skills-market/tests/test_install_skill_auto_safe.py packages/skills-market/tests/test_auto_safe_market_package_rollout.py -q`
 
 **后续边界**:
-- 推荐的同 lane 下一方向仍是 `EVO-12` slice 2：对极小量真实 `skill-pack` 做 immutable ref + `install_policy.auto_safe` onboarding
+- 当前只有 `codex-cli-runner` + `auto-relay` 完成 real `skill-pack` onboarding；其余 checked-in catalog 仍未 rollout 到 `--auto-safe` authority
 - usage/frequency/success-rate 健康报告、deprecated/retire 建议、以及更广 skills lifecycle automation 仍是未来 slice，不由本次 closeout 声称完成
 - `EVO-12a` 仍是 trace-dependent 独立项，不因本批 closeout 被提前启动
 
