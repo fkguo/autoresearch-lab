@@ -1,10 +1,15 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.4-draft (v1.9.3 + generic-authority broadening)
-> **日期**: 2026-03-22
-> **基线**: v1.9.3-draft
-> **重构项总数**: 170 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
+> **版本**: 1.9.5-draft (v1.9.4 + verification-kernel follow-up registration)
+> **日期**: 2026-03-25
+> **基线**: v1.9.4-draft
+> **重构项总数**: 172 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.5 Changelog**:
+> - 新增 `NEW-VER-01`：把 verification kernel 收口为 provider-neutral、typed、artifact-backed 的新 item，覆盖 compute -> writing -> review -> revision，而不是把现有 heuristic residue 继续保留为 fallback authority
+> - 锁定 `NEW-VER-01` 的 batch 顺序：`Batch 1 schema foundation` → `Batch 2 minimal producer + pass-through wiring` → `Batch 3 heuristic deletion`
+> - 明确 `NEW-VER-01` 是新的 `P5A` item，不 reopen `EVO-02` / `EVO-03` / `EVO-13`，也不扩成 runtime / scheduler / project-state redesign
 >
 > **v1.9.4 Changelog**:
 > - 泛化 `generic/provider-neutral` 边界约束：不只 computation lane；凡长期可复用的 contract / execution semantics / routing / retrieval / review / writing / result / audit abstraction，默认都应先落在 generic/provider-neutral 层，再由 provider-local / host-local 包承载薄适配层或首个示例实现
@@ -122,9 +127,10 @@ Phase 4 (长期演进):
   ├─ L-01~L-04, L-07 pending
   │
 Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
-  ├─ P5A: 单用户 / 单项目端到端闭环 + 统一执行收束 (`EVO-01/02/03/06/07/09/10/11/12/13/14`)
-  ├─ P5B: 社区 / 发布 / 跨实例 / 研究进化外层 (`EVO-04/05/08/15/16/17/18/19/20/21`)
+  ├─ P5A: 单用户 / 单项目端到端闭环 + 统一执行收束 (`EVO-01/02/03`, `NEW-VER-01`, `EVO-06/07/09/10/11/12/13/14`)
+  ├─ P5B: 社区 / 发布 / 跨实例 / 研究进化外层 (`EVO-04/05/08/12a/15/16/17/18/19/20/21`)
   ├─ EVO-01/02/03/13 ✅
+  ├─ NEW-VER-01 pending
   ├─ EVO-09/10/11/12 ✅; EVO-14 in_progress; EVO-06/07/12a design_complete
   ├─ EVO-04/17/18/20 ✅; EVO-05/08/15/16 pending; EVO-19/21 design_complete
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (未来目标；当前仍保留过渡 Python surfaces，默认包含 `hepar` CLI alias)
@@ -2671,8 +2677,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 > **前置重释 (v1.9.2)**: 真正的研究循环语义不再等到 Phase 5 才第一次出现；Phase 3 的 `NEW-LOOP-01` 先建立单研究者非线性 research loop substrate，`EVO-01/02/03` 在其上接入 compute / feedback / writing automation。
 > **范围澄清 (2026-03-08)**: 本 Phase 不是“只有社区化”。其中 `EVO-01/02/03/13/14` 仍服务于单用户 / 单项目的端到端闭环与统一执行收束；`EVO-15+` 才进入社区 / 发布 / 研究进化外层。
 > **子 lane 划分 (2026-03-08)**:
-> - `P5A`: `EVO-01/02/03/06/07/09/10/11/12/13/14`
-> - `P5B`: `EVO-04/05/08/15/16/17/18/19/20/21`
+> - `P5A`: `EVO-01/02/03`, `NEW-VER-01`, `EVO-06/07/09/10/11/12/13/14`
+> - `P5B`: `EVO-04/05/08/12a/15/16/17/18/19/20/21`
 > - 该划分是 Phase 内部阅读 / 排期 lens，不新增 `Phase 6`，也不改变现有依赖顺序；若单项目闭环收束与社区外层建设发生取舍，默认先满足 `P5A`。
 > **产品化约束 (2026-03-09)**: 即使后续提供单一 packaged end-user agent，它也应是构建在 orchestrator/runtime + root composition layer + selected providers 之上的独立 leaf package，而不是把 repo root、`packages/orchestrator/`、或某个 domain-specific CLI 直接提升为产品 agent。
 
@@ -2740,6 +2746,41 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [x] 计算结果自动出现在 writing pipeline 的 evidence 池中，映射产物通过 ART-05 完整性校验
 - [x] 审稿→修订循环可自动执行至 READY 或 max_rounds
 - [x] 每轮修订产出 `paper/v{N}/` + `changes_v{N-1}_to_v{N}.diff`
+
+### NEW-VER-01: Verification Kernel 替换 heuristic 残留
+
+> **定位 (2026-03-25)**: 这是一个新的 `P5A` item，不 reopen `EVO-02`、`EVO-03` 或 `EVO-13`。它建立在已关闭的 `NEW-COMP-02` + `EVO-03` substrate 之上，并且明确不扩成 runtime / scheduler / project-state redesign。
+> **source-grounded gap**: `packages/orchestrator/src/computation/result.ts` 与 `packages/orchestrator/src/computation/followup-bridges.ts` 已经提供 canonical compute-result + writing/review bridge substrate；`packages/hep-mcp/src/core/writing/evidence.ts` 仍只把 bridge artifacts 当作 metadata/status 输入；`packages/hep-mcp/src/tools/research/physicsValidator.ts` 仍是从 `packages/hep-mcp/src/tools/research/index.ts` 导出的 heuristic text-pattern validator。当前代码树仍缺一个横跨 compute -> writing -> review -> revision 的 provider-neutral、typed、artifact-backed verification kernel。
+
+**目标**:
+
+- 为 verification 建立 provider-neutral、typed、artifact-backed 的共享 surface，而不是继续依赖 provider-local heuristic authority。
+- 把“做了哪些检查、证据是什么、subject verdict 是什么、还缺哪些 decisive checks”变成 machine-visible artifacts。
+- 让 `physicsValidator` 进入显式删除队列，而不是被保留成长期 fallback authority。
+
+**固定 batch 顺序**:
+
+| Batch | 名称 | owned files / surfaces | 目标 |
+|---|---|---|---|
+| 1 | schema foundation | `meta/schemas/verification_{subject,check_run,subject_verdict,coverage}_v1.schema.json` + generated TS/Python bindings + canonical prompt/docs | 先把 provider-neutral verification contract authority 落地为 checked-in SSOT |
+| 2 | minimal producer + pass-through wiring | `packages/orchestrator/src/computation/{result,followup-bridges}.ts`、`packages/hep-mcp/src/core/writing/evidence.ts`、相邻 tests | 只做最小 producer emit / pass-through wiring，不重做 runtime / scheduler / project-state |
+| 3 | heuristic deletion | `packages/hep-mcp/src/tools/research/physicsValidator.ts`、`packages/hep-mcp/src/tools/research/index.ts`、相邻 tests/docs/registry surfaces | 删除 heuristic residue，并要求真实 verification producers 接管 intended value |
+
+**明确不做**:
+
+- 不重开 `EVO-02`、`EVO-03`、`EVO-13`
+- 不扩成 runtime / scheduler / project-state redesign
+- 不新增第二套 project-state SSOT
+- 不把 `physicsValidator` 改名后继续保留为 fallback authority
+
+**依赖**: `NEW-COMP-02`, `EVO-03`
+
+**最终验收**:
+
+- provider-neutral verification artifacts 覆盖 compute -> writing -> review -> revision，并能显式表达 missing decisive checks
+- `computation_result_v1` / followup bridges / writing evidence 只做最小 producer or pass-through wiring，不引入第二套 runtime/project-state authority
+- `physicsValidator` 及其导出/测试/文档残留被删除，而不是降格为长期 fallback
+- implementation closeout 继续遵守 formal three-review + self-review + tracker/plan/memory sync gate
 
 ### EVO-04: Agent 注册表 + A2A Agent Card
 
@@ -3302,6 +3343,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 ### Phase 5 验收总检查点
 
 - [ ] EVO-01~03: idea→计算→结果→论文端到端无人工干预
+- [ ] NEW-VER-01: provider-neutral verification kernel 以 `schema foundation -> minimal producer + pass-through wiring -> heuristic deletion` 顺序完成，不 reopen `EVO-02` / `EVO-03` / `EVO-13`
 - [ ] EVO-04~05: 远程 Agent 发现 + Domain Pack 独立安装
 - [ ] EVO-06~07: 科学诚信报告 + 可复现性验证通过 (**详设完成**: `track-a-evo06/07` design docs, 4 JSON Schemas)
 - [ ] EVO-08: 跨实例 idea 同步 + 溯源完整
@@ -3332,9 +3374,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (41 done, 9 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (12 done, 1 in_progress, 4 pending, 5 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, EVO-01~EVO-21, EVO-12a | 23 (12 done, 1 in_progress, 5 pending, 5 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **171** — **132 done** |
+| **总计** | **Phase 0–5 remediation items only** | **172** — **132 done** |
 
-> **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 171。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
+> **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 172。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。`NEW-VER-01` 现作为单独的 verification-kernel follow-up item 留在 `P5A`，而不是回写为 `EVO-02` / `EVO-03` / `EVO-13` reopen。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
