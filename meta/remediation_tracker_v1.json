@@ -1836,10 +1836,11 @@
             "EVO-17",
             "EVO-06"
           ],
-          "design_doc": "docs/track-a-evo18-signal-engine-design.md",
+          "design_doc": "meta/docs/track-a-evo18-signal-engine-design.md",
           "schemas": [
-            "schemas/research_signal_v1.schema.json"
-          ]
+            "meta/schemas/research_signal_v1.schema.json"
+          ],
+          "note": "2026-03-25 planning-only canonicalization completed on lane `/Users/fkg/Coding/Agents/autoresearch-lab-rep-sdk-evo18-plan` with no `packages/rep-sdk` implementation started. This repair aligns tracker/path truth with current live repo reality: `EVO-17` already owns the bounded core `@autoresearch/rep-sdk` authority, `EVO-04` first deliverable already owns bounded discovery authority at `@autoresearch/rep-sdk/discovery`, `meta/schemas/research_signal_v1.schema.json` plus `meta/docs/track-a-evo18-signal-engine-design.md` remain the current schema/design SSOT, and `EVO-20` memory graph is a live shared substrate but not a direct `rep-sdk` runtime dependency for the first `EVO-18` slice. The single checked-in implementation entrypoint is now `meta/docs/prompts/prompt-2026-03-25-evo18-rep-sdk-event-native-signals-and-selector.md`. That canonical prompt locks `EVO-18` to a bounded `rep-sdk` first deliverable: package-local `research_signal_v1` snapshot, new `@autoresearch/rep-sdk/signals` pure-library surface, and event-native core detector + selector helpers. It explicitly preserves an open, domain-neutral research-signal space: deferred detectors such as `parameter_sensitivity`, `calculation_divergence`, `known_result_match`, `integrity_violation`, and `gap_detected` are deferred because their required event enums, report/runtime seams, or shared/provider boundaries are not yet live authority, not because `EVO-18` is being narrowed to a small subset of research concerns. This planning canonicalization also records the current non-goals: no `packages/rep-sdk` runtime implementation in this lane, no direct `EVO-20` persistence integration, no `EVO-11` public handoff contract, no HTTP transport / broader Track A productization, and no `EVO-19`. The repo's GitNexus context was rechecked during planning and reported the index as 14 commits behind `HEAD`; future implementation must refresh GitNexus before coding rather than treating this planning lane as a freshness exemption."
         },
         "EVO-19": {
           "title": "GEP/Evolver Track B 集成 (Gene Library + blast_radius)",

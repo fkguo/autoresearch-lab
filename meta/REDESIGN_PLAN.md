@@ -3146,22 +3146,28 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 ### EVO-18: REP 信号引擎 (Track A — 研究进化)
 
 > **新增 (2026-02-20)**: 来自 EvoMap/GEP 分析。详见 `docs/2026-02-20-evomap-gep-analysis.md` §5.2, §7.3。
-> **详细设计 (2026-02-21)**: `docs/track-a-evo18-signal-engine-design.md` (Track A 详设文档, ~1943 行)
+> **详细设计 (2026-02-21)**: `meta/docs/track-a-evo18-signal-engine-design.md` (Track A 详设文档, ~1943 行)
+> **当前状态 (2026-03-25 planning canonicalization)**: 旧 `EVO-18` 详设把 detector、selector、`EVO-11` handoff、`EVO-20` persistence、以及未来 event taxonomy 一次性绑在一起，已经不再对齐当前 live repo reality。当前 live authority 仍以 `packages/rep-sdk` 为前门：`EVO-17` 已落 core REP package，`EVO-04` first deliverable 也已落 `@autoresearch/rep-sdk/discovery`。因此 `EVO-18` 的下一步不应再直接照搬旧全文，而应先按 checked-in canonical prompt `meta/docs/prompts/prompt-2026-03-25-evo18-rep-sdk-event-native-signals-and-selector.md` 落一个 bounded first deliverable：在 `rep-sdk` 内补 package-local `research_signal_v1` snapshot、`@autoresearch/rep-sdk/signals` pure-library surface、以及 event-native core detector + selector。该 slice 明确 **保持研究信号空间开放、domain-neutral**；defer 的是需要新增事件枚举、上游 report/runtime 或 shared/provider seam 的 detector implementation，而不是把 `EVO-18` 的研究范围写窄。它也不直接接入 `EVO-20`、不提前引入 `EVO-11` public handoff contract、不推进 HTTP transport / broader Track A productization、也不碰 `EVO-19`。
 
 **修改内容**:
 
 | 文件 | 变更 |
 |---|---|
-| `packages/rep-sdk/src/signals.ts` | Research signal 提取引擎 (移植 Evolver `signals.js` 去重 + 停滞检测框架)，信号类型: `gap_detected`, `calculation_divergence`, `known_result_match`, `integrity_violation`, `method_plateau`, `parameter_sensitivity`, `cross_check_opportunity`, `stagnation` (详见 `schemas/research_signal_v1.schema.json`) |
-| `packages/rep-sdk/src/selector.ts` | 策略选择器 (移植 Evolver `selector.js` 评分管道框架)，权重用 RDI；策略预设: explore/deepen/verify/consolidate |
+| `packages/rep-sdk/package.json` | 新增稳定 `./signals` 子路径导出，并继续保持 `@autoresearch/rep-sdk` 零内部 runtime 依赖 |
+| `packages/rep-sdk/schemas/research_signal_v1.schema.json` | package-local `ResearchSignal` schema snapshot，与 `meta/schemas/research_signal_v1.schema.json` 保持 parity |
+| `packages/rep-sdk/src/model/research-signal.ts` | `ResearchSignal` type surface，与现有 `ResearchEvent` / `ResearchStrategy` model tree 对齐 |
+| `packages/rep-sdk/src/signals/**` | bounded event-native core：current live event contract 可直接支撑的 detector、fingerprint dedup、stagnation synthesis、以及 pure-library strategy selector |
 
-**依赖**: EVO-17 (REP 信封), EVO-06 (诚信框架提供 integrity_violation 信号)
+**依赖**: EVO-17 (当前 live REP authority); `EVO-06` / `EVO-07` / `EVO-11` / `EVO-20` 的更深接线留给后续 slice
 
 **验收**:
-- 8 种 research signal (含 stagnation) 可从 ResearchEvent 流中提取
-- 信号去重 + 停滞检测 (consecutiveEmptyCycles, stagnation signal) 正常工作
-- 策略选择器可根据信号匹配最佳 ResearchStrategy
-- Memory Graph 读写操作正确执行
+- `@autoresearch/rep-sdk/signals` 可独立 `import`，且 `@autoresearch/rep-sdk` 仍无内部 runtime 依赖
+- package-local `research_signal_v1` schema snapshot 与 `meta/schemas` parity 通过
+- 当前 live event contract 足以直接支撑的 event-native detectors（至少 `method_plateau`、`cross_check_opportunity`、`stagnation`）可从 `ResearchEvent` 流中提取
+- fingerprint dedup + stagnation synthesis 正常工作，且不会递归消费 `signal_detected` / `stagnation_detected` / `diagnostic_emitted`
+- 策略选择器可基于 signals 返回 deterministic preset + score breakdown + reasoning
+
+> 说明: `parameter_sensitivity` / `calculation_divergence` / `known_result_match` / `integrity_violation` / `gap_detected` 等 detector 的 defer 边界来自当前 live contract 尚不足以安全落地这些实现，而不是因为 `EVO-18` 只服务“参数/计算”一类研究。未来应通过新增 checked-in `ResearchEvent` 事件类型或引入受约束的 domain-pack seam 来扩展 detector，而不是把单一领域假设硬编码进 core。
 
 ### EVO-19: GEP/Evolver Track B 集成 (Track B — 工具进化)
 
