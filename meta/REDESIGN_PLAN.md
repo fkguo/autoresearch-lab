@@ -125,7 +125,7 @@ Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ P5A: 单用户 / 单项目端到端闭环 + 统一执行收束 (`EVO-01/02/03/06/07/09/10/11/12/13/14`)
   ├─ P5B: 社区 / 发布 / 跨实例 / 研究进化外层 (`EVO-04/05/08/15/16/17/18/19/20/21`)
   ├─ EVO-01/02/03/13 ✅
-  ├─ EVO-14 in_progress; EVO-06/07/12a design_complete; EVO-09/10/11 pending
+  ├─ EVO-09 ✅; EVO-14 in_progress; EVO-06/07/12a design_complete; EVO-10/11 pending
   ├─ EVO-04/05/08/15/16 pending; EVO-17 ✅; EVO-20 ✅; EVO-18/19/21 design_complete
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (未来目标；当前仍保留过渡 Python surfaces，默认包含 `hepar` CLI alias)
   │
@@ -2818,19 +2818,29 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 > **EvoMap/GEP 分析更新 (2026-02-20)**: 移植 Evolver `signals.js` 的信号去重 + 停滞检测逻辑 (repair_loop_detected)，避免重复修复。详见 `docs/2026-02-20-evomap-gep-analysis.md` §6.1, §7.1。
 
-**现状**: `failure_library_index_v1` / `failure_library_query_v1` / `failure_library_hits_v1` 三个 schema 已完备，负结果记录 (`failed_approach_v1`) 已设计。但 idea-core 的 `search.step` 在生成候选 idea 时**不查询**失败库，导致 operator 可能重复探索已知死路。
+**当前状态 (2026-03-25 closeout)**: EVO-09 首个 bounded deliverable 已在 live TS `packages/idea-engine/` `search.step` authority path 收口；`search.step` JSON-RPC params / result 与 checked-in OpenRPC authority 保持不变，唯一新配置 seam 是既有 `campaign.init -> charter.extensions.failure_library`。实现不会回切 Python `idea-core` authority，也不在本轮启动 EVO-11 或 retire-all closeout。
 
-**修改内容**:
+**本轮实现**:
 
 | 文件 | 变更 |
 |---|---|
-| `idea-core/src/idea_core/engine/service.py` | `search.step` 在调用 operator 前查询 failure_library_index，将匹配的 failure_hits 注入 OperatorContext |
-| `idea-core/src/idea_core/engine/operators.py` | OperatorContext 新增 `failure_avoidance: list[FailureHit]`；operator prompt 中显式排除已知失败方向 |
-| `idea-core/src/idea_core/engine/failure_library.py` | (新文件) `FailureLibraryIndex`: 从 `failed_approach_v1.jsonl` 构建内存索引；支持 tag/failure_mode/text 匹配；**移植 Evolver `signals.js` 信号去重逻辑** (按 signal fingerprint 去重，避免重复触发相同修复) |
+| `packages/idea-engine/src/service/failure-library.ts` | 新增 helper：读取 `charter.extensions.failure_library`，校验嵌入式 `failure_library_query_v1`，加载并校验 `failure_library_index_v1`，按 `tags` + 可选 `failure_modes` / `text` 匹配，去重 exact duplicate source hits，按 `max_hits` 截断，并把 `failure_library_hits_v1` 写入 `query.output_artifact_path` |
+| `packages/idea-engine/src/service/search-step-service.ts` | 在 operator 执行前接入 failure-library helper；extension 缺失时保持既有行为不变，若显式配置但 query / index 缺失或非法，则沿用既有 `schema_validation_failed` / `reason=schema_invalid` fail-closed |
+| `packages/idea-engine/src/service/search-operator.ts` | 内部 `SearchOperatorContext` 扩展为可携带 failure-avoidance payload 与 artifact ref，但不引入第二条 authority path |
+| `packages/idea-engine/src/service/hep-search-runtime.ts` | 仅将 avoidance payload 用于 rationale / trace enrichment，确保失败规避行为可审计 |
+| `packages/idea-engine/tests/search-step-failure-library.test.ts` | 覆盖命中工件写入与 trace/rationale enrichment、无配置时行为不变、以及显式配置但 query / index 缺失或非法时 fail-closed guardrails |
 
-**依赖**: EVO-01 (计算执行闭环产生失败记录)，failure_library schemas (已存在)
+**依赖**: EVO-01 (failure-library schema / artifact path 已先就绪)
 
-**验收**: operator 生成新 idea 前自动查询失败库；已知失败方向的重复率下降 ≥50% (对比无失败库基线)。
+**Closeout evidence**:
+
+- bounded implementation commit: `b5cc1595c2f3775740a2f505905ebe53b3756500`
+- absorbed review-amendment test commit: `2dcce3ac856bf839289ee9b6f6152ba1f421d772`
+- rebased closeout head before governance sync: `8749fa5c6538250f55ffa6401d173e50120a0bcd`
+- formal review 最终 0 blocking；Gemini 通过 same-model embedded-source rerun recovered to `CONVERGED`
+- rebased acceptance passed: `pnpm --filter @autoresearch/idea-engine lint`；`pnpm --filter @autoresearch/idea-engine test` (`8 files, 38/38 tests`)
+
+**后续边界**: EVO-11 仍是同一 TS `idea-engine` lane 的 follow-up；不得借后续工作回切 Python-first authority，也不把本轮 bounded closeout 扩成 idea-core retire-all。
 
 ### EVO-10: 进化提案自动闭环
 
@@ -3237,7 +3247,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [ ] EVO-04~05: 远程 Agent 发现 + Domain Pack 独立安装
 - [ ] EVO-06~07: 科学诚信报告 + 可复现性验证通过 (**详设完成**: `track-a-evo06/07` design docs, 4 JSON Schemas)
 - [ ] EVO-08: 跨实例 idea 同步 + 溯源完整
-- [ ] EVO-09: 生成时失败库查询集成 + 重复率下降验证
+- [x] EVO-09: live TS `packages/idea-engine/` `search.step` 失败库查询集成（first deliverable bounded closeout）
 - [ ] EVO-10: 进化提案 run 完成自动触发 + 去重 + A0 自动处理
 - [ ] EVO-11: Bandit 分发策略运行时接入，regret 下降可度量
 - [ ] EVO-12: 技能健康报告 + `--auto-safe` 安装路径 + 退役标记

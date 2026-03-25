@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "plan_version": "1.9.4-draft",
-  "updated_at": "2026-03-24T16:21:07Z",
+  "updated_at": "2026-03-25T03:54:02Z",
   "note": "v1.9.4-draft: v1.9.3 + semantic-authority boundary clarification + generic-authority broadening. After the 2026-03-10 formalism follow-up, a deeper source audit found active HEP worldview / semantic authority still live in idea-core built-ins (`hep.bootstrap`, `bootstrap_default`, HEP compute rubric) and hep-mcp review/classification/grouping/challenge/conflict modules. Added a standalone semantic deep-cleanup program (`meta/docs/2026-03-10-hep-semantic-authority-deep-audit.md`, `meta/docs/prompts/prompt-2026-03-10-hep-semantic-deep-cleanup.md`) and changed ordering to semantic deep cleanup A-E -> residual batch2 closeout -> batch3 runtime/root de-HEP. Batch A-E are now completed in the current worktree, and Batch F downstream recovery has confirmed the residual batch2 closeout was fully absorbed by `NEW-05a-idea-core-domain-boundary` / semantic Batch A rather than remaining as a separate code batch. `batch3` remains a separate later prompt and was not started in this bounded closeout run. Program review policy for this doc layer: Gemini temporarily unavailable; user explicitly approved Opus + Kimi K2.5 dual-review fallback, which must be recorded rather than silently substituted. Formal review for Batch F later converged with 0 blocking via that approved fallback, and self-review also passed with 0 blocking. 170 items. 2026-03-22 governance repair restored tracker JSON legality after an unescaped EVO-14 Batch 4 telemetry/reviewer-failure fragment inside `EVO-14.note`; existing closeout/evidence content was preserved, and `meta/REDESIGN_PLAN.md` plus current code reality were rechecked with no further drift requiring plan updates. That repair itself did not start `EVO-14` Batch 7, `EVO-15`, or any new fleet scheduler/takeover/reassignment semantics. Later on 2026-03-22, Batch 7 implementation began separately under canonical prompt `meta/docs/prompts/prompt-2026-03-22-evo14-batch7-worker-claim-acceptance-gate.md`; the current tracker now records that batch as formally closed on the current worktree with 0 blocking review convergence, and it still does not start `EVO-15` or broader takeover/reassignment/daemon semantics.",
   "phases": {
     "0": {
@@ -1723,13 +1723,13 @@
         },
         "EVO-09": {
           "title": "失败库生成时查询集成",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "EVO-01"
           ],
-          "note": "Execute on the live `packages/idea-engine/` `search.step` path. Any Python touches should stay limited to parity fixtures / regression alignment; this lane should shrink, not expand, the remaining `idea-core` transitional surface."
+          "note": "2026-03-25 EVO-09 first-deliverable closeout completed on the live TS `packages/idea-engine/` `search.step` authority path in lane `idea-engine-evolution`. Bounded implementation commit = `b5cc1595c2f3775740a2f505905ebe53b3756500`; absorbed review-amendment test commit = `2dcce3ac856bf839289ee9b6f6152ba1f421d772`; rebased closeout head before governance sync = `8749fa5c6538250f55ffa6401d173e50120a0bcd`. The implementation keeps `search.step` JSON-RPC params/result unchanged, uses existing `campaign.init -> charter.extensions.failure_library` as the only configuration seam, adds the failure-library helper on the live TS authority path, threads the resulting payload / artifact ref through internal search operator context, and limits HEP runtime consumption to rationale / trace enrichment so there is no second authority path. Explicitly configured but invalid or missing query/index inputs fail closed through the existing `schema_validation_failed` / `reason=schema_invalid` path; absence of the extension preserves prior behavior. Formal review finished with 0 blocking, and Gemini recovered via same-model embedded-source rerun to `CONVERGED`. Rebasing onto `main@03a08bd8f6cb794aacf9bcf49b484eeb07c2c991` preserved passing narrow acceptance: `pnpm --filter @autoresearch/idea-engine lint` and `pnpm --filter @autoresearch/idea-engine test` (`8 files, 38/38 tests`). Scope remained bounded to EVO-09 first deliverable only; EVO-11 stays the same TS lane follow-up, and this closeout did not reopen Python-first authority or start idea-core retire-all cleanup."
         },
         "EVO-10": {
           "title": "进化提案自动闭环",
