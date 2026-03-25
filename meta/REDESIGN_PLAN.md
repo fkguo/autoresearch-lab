@@ -130,7 +130,7 @@ Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ P5A: 单用户 / 单项目端到端闭环 + 统一执行收束 (`EVO-01/02/03`, `NEW-VER-01`, `EVO-06/07/09/10/11/12/13/14`)
   ├─ P5B: 社区 / 发布 / 跨实例 / 研究进化外层 (`EVO-04/05/08/12a/15/16/17/18/19/20/21`)
   ├─ EVO-01/02/03/13 ✅
-  ├─ NEW-VER-01 pending
+  ├─ NEW-VER-01 in_progress
   ├─ EVO-09/10/11/12 ✅; EVO-14 in_progress; EVO-06/07/12a design_complete
   ├─ EVO-04/17/18/20 ✅; EVO-05/08/15/16 pending; EVO-19/21 design_complete
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (未来目标；当前仍保留过渡 Python surfaces，默认包含 `hepar` CLI alias)
@@ -2766,6 +2766,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | 2 | minimal producer + pass-through wiring | `packages/orchestrator/src/computation/{result,followup-bridges}.ts`、`packages/hep-mcp/src/core/writing/evidence.ts`、相邻 tests | 只做最小 producer emit / pass-through wiring，不重做 runtime / scheduler / project-state |
 | 3 | heuristic deletion | `packages/hep-mcp/src/tools/research/physicsValidator.ts`、`packages/hep-mcp/src/tools/research/index.ts`、相邻 tests/docs/registry surfaces | 删除 heuristic residue，并要求真实 verification producers 接管 intended value |
 
+> **Batch 1 closeout (2026-03-25)**: schema foundation 已在当前 worktree 完成。当前 checked-in authority 现包含四个 provider-neutral verification artifacts（`verification_subject_v1`、`verification_check_run_v1`、`verification_subject_verdict_v1`、`verification_coverage_v1`）、`computation_result_v1` / `writing_review_bridge_v1` 上的最小 optional `verification_refs` contract hook、以及对应 TS/Python bindings 与 shared contract tests。R1 暴露的 `workflow_recipe_v1` codegen blocker 已由 `meta/scripts/codegen-ts.ts` 的 guard-union fix + targeted regression test 吸收；Batch 2/3 尚未开始，因此本 item 整体仍为 `in_progress`。
+
 **明确不做**:
 
 - 不重开 `EVO-02`、`EVO-03`、`EVO-13`
@@ -3374,7 +3376,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (41 done, 9 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, EVO-01~EVO-21, EVO-12a | 23 (12 done, 1 in_progress, 5 pending, 5 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, EVO-01~EVO-21, EVO-12a | 23 (12 done, 2 in_progress, 4 pending, 5 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
 | **总计** | **Phase 0–5 remediation items only** | **172** — **132 done** |
