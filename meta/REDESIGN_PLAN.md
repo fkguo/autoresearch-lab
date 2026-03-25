@@ -125,7 +125,7 @@ Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ P5A: 单用户 / 单项目端到端闭环 + 统一执行收束 (`EVO-01/02/03/06/07/09/10/11/12/13/14`)
   ├─ P5B: 社区 / 发布 / 跨实例 / 研究进化外层 (`EVO-04/05/08/15/16/17/18/19/20/21`)
   ├─ EVO-01/02/03/13 ✅
-  ├─ EVO-09/10/12 ✅; EVO-14 in_progress; EVO-06/07/12a design_complete; EVO-11 pending
+  ├─ EVO-09/10/11/12 ✅; EVO-14 in_progress; EVO-06/07/12a design_complete
   ├─ EVO-04/05/08/15/16 pending; EVO-17 ✅; EVO-20 ✅; EVO-18/19/21 design_complete
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (未来目标；当前仍保留过渡 Python surfaces，默认包含 `hepar` CLI alias)
   │
@@ -2893,17 +2893,18 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 > **EvoMap/GEP 分析更新 (2026-02-20)**: Evolver `selector.js` 仅提供加权评分管道参考 (用于 RDI 排名分数计算子模块)，**不等同于 bandit 算法**。EVO-11 需自研 exploration/exploitation 更新、reward 反馈、regret 控制。详见 `docs/2026-02-20-evomap-gep-analysis.md` §7.1。
 > **GEP 扩展 (2026-02-21)**: EVO-21 将 GEP `personality.js` 策略进化能力引入 Track B，与 EVO-11 的 bandit 框架互补 — EVO-11 选择策略，EVO-21 进化策略参数。
 
-**当前状态 (2026-03-25 planning canonicalization)**: `bandit-distributor-alternatives.md` 与相关 architecture notes 已给出 policy 方向，`distributor_policy_config_v1` / `distributor_state_snapshot_v1` / `distributor_event_v1` 三个 schema 也已就绪；但 live runtime authority 仍未把这些 seam 接到 TS `packages/idea-engine/` `search.step` path。原先写在 Python `idea-core/src/...` 文件面的实现叙述现已过时：`NEW-05a-stage3` 已完成、`NEW-R10` 已 `cut`、`EVO-09` 也已在 TS `search.step` authority path 完成首个 bounded deliverable，因此 `EVO-11` 必须继续作为同一 TS `idea-engine` lane 的 follow-up，而不是重新打开 Python-first implementation lane。canonical implementation prompt: `meta/docs/prompts/prompt-2026-03-25-evo11-idea-engine-bandit-runtime.md`。
+**当前状态 (2026-03-25 first-deliverable closeout)**: EVO-11 first deliverable 已在 live TS `packages/idea-engine/` `campaign.init` + `search.step` authority path 收口。bounded SOTA preflight 结论是：`Discounted UCB-V` 作为 slice-1 更适合当前“可审计、可回放、低复杂度”的 live runtime 目标，但 distributor seam 仍保持 family-neutral，因此未来仍可在同一 TS authority 下继续接入 `Replicator MW-KL` / EVO-21 风格的更强自适应 family，而不是把 `discounted_ucb_v` 写死成唯一长期抽象。当前 runtime 已将 `distributor_policy_config_v1` / `distributor_state_snapshot_v1` / `distributor_event_v1` 三个既有 seam 接到 TS authority path；实现不会回切 Python `idea-core` authority，也不在本轮推进 `idea-core retire-all`、`Pipeline A` repoint/delete、`EVO-19` 或 `EVO-21`。canonical implementation prompt: `meta/docs/prompts/prompt-2026-03-25-evo11-idea-engine-bandit-runtime.md`。
 
 **修改内容**:
 
 | 文件 | 变更 |
 |---|---|
-| `packages/idea-engine/src/service/write-service.ts` | 在 `campaign.init` 中 materialize campaign-scoped immutable `distributor_policy_config_v1.json`，持久化 `distributor_policy_config_ref`，并在 distributor enabled 时将该 ref 暴露给 `campaign.init` result |
-| `packages/idea-engine/src/service/search-step-service.ts` | 在当前 live `search.step` path 中加载 distributor config/state，针对当前已选定 island 的 eligible operator/backend action set 执行 bandit selection，写入 `distributor_event_v1.jsonl`，执行 reward / realized_cost update，并在 distributor enabled 时把 `distributor_policy_config_ref` 回写到 `search.step` result |
+| `packages/idea-engine/src/service/write-service.ts` + `campaign-init-executor.ts` | `campaign.init` live path 在 distributor enabled 时 materialize campaign-scoped immutable `distributor_policy_config_v1.json`，持久化 `distributor_policy_config_ref`，并把该 ref 暴露给 `campaign.init` result；distributor absent 时保持原行为 |
+| `packages/idea-engine/src/service/search-step-service.ts` + `search-step-executor.ts` | `search.step` live path 加载 distributor config/state，保持既有 `next_island_index` island scheduler authoritative，仅在当前已选定 island 内执行 operator/backend bandit selection，写入 `distributor_event_v1.jsonl` / `distributor_state_snapshot_v1.json`，并在 distributor enabled 时把 `distributor_policy_config_ref` 回写到 `search.step` result |
 | `packages/idea-engine/src/service/distributor-*.ts` | (新文件，命名以实际实现为准) TS-internal distributor policy/state/event helpers；负责 built-in policy、replay metadata、state snapshot 与 fail-closed validation，不引入新的 RPC surface |
+| `packages/idea-engine/src/service/search-operator.ts` + `hep-search-runtime.ts` | 为 runtime operators 增加 immutable descriptor metadata（`operatorId` / `operatorFamily` / `backendId`），让 distributor 能在不执行 operator 的情况下枚举 eligible action-space，同时不把 HEP taxonomy/recipe/prompt authority 上提到 generic distributor layer |
 | `packages/idea-engine/tests/search-step-distributor.test.ts` | 锁定 distributor absent parity、enabled path、event logging、state recovery 与 fail-closed guardrails |
-| `packages/idea-engine/tests/distributor-policy.test.ts` | 锁定 built-in TS policy 的 determinism / replay / synthetic regret regression against `softmax_ema` baseline |
+| `packages/idea-engine/tests/distributor-policy.test.ts` | 锁定 built-in TS policy 的 determinism / replay / synthetic regret regression against `softmax_ema` baseline，并保持对稳定 hyperparameter 假设的显式说明 |
 
 **依赖**: EVO-01 (计算执行闭环提供 reward 信号), EVO-09 (失败库提供负面 reward)
 
@@ -2913,6 +2914,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - `distributor_state_snapshot_v1.json` 可恢复，重启后继续决策
 - `charter.distributor.policy_config_ref` 在本 slice 中明确 `unsupported` 且 fail closed，避免双 authority
 - distributor absent 时保持当前 `search.step` 行为不变
+- 现有 island scheduler 仍保持 authority；distributor 仅在当前已选定 island 内选择 action
 - 对比 `softmax_ema` baseline，所选 built-in TS bandit policy 的 cumulative regret 下降可度量
 
 ### EVO-12: 技能生命周期自动化 ✅
@@ -3305,7 +3307,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [ ] EVO-08: 跨实例 idea 同步 + 溯源完整
 - [x] EVO-09: live TS `packages/idea-engine/` `search.step` 失败库查询集成（first deliverable bounded closeout）
 - [x] EVO-10: 进化提案 run 完成自动触发 + 去重 + A0 自动处理（first deliverable bounded closeout）
-- [ ] EVO-11: Bandit 分发策略运行时接入，regret 下降可度量
+- [x] EVO-11: Bandit 分发策略运行时接入，regret 下降可度量
 - [x] EVO-12: `skills-market` install-side lifecycle authority first deliverable (`install_policy.auto_safe` + `--auto-safe` + receipt/audit path)
 - [ ] EVO-12a: 技能自生成 — agent trace 模式检测 + 技能提案 + scope extension
 - [ ] EVO-13: 并行团队执行 (TS) + 持久化 checkpoint + 崩溃恢复
