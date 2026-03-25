@@ -2890,23 +2890,27 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 > **EvoMap/GEP 分析更新 (2026-02-20)**: Evolver `selector.js` 仅提供加权评分管道参考 (用于 RDI 排名分数计算子模块)，**不等同于 bandit 算法**。EVO-11 需自研 exploration/exploitation 更新、reward 反馈、regret 控制。详见 `docs/2026-02-20-evomap-gep-analysis.md` §7.1。
 > **GEP 扩展 (2026-02-21)**: EVO-21 将 GEP `personality.js` 策略进化能力引入 Track B，与 EVO-11 的 bandit 框架互补 — EVO-11 选择策略，EVO-21 进化策略参数。
 
-**现状**: `bandit-distributor-alternatives.md` 设计文档详尽 (UCB-V, Thompson Sampling, EXP3, cost-aware 变体)，`distributor_policy_config_v1` / `distributor_state_snapshot_v1` / `distributor_event_v1` 三个 schema 已就绪。但零行生产代码将策略决策连接到 operator/backend 选择。
+**当前状态 (2026-03-25 planning canonicalization)**: `bandit-distributor-alternatives.md` 与相关 architecture notes 已给出 policy 方向，`distributor_policy_config_v1` / `distributor_state_snapshot_v1` / `distributor_event_v1` 三个 schema 也已就绪；但 live runtime authority 仍未把这些 seam 接到 TS `packages/idea-engine/` `search.step` path。原先写在 Python `idea-core/src/...` 文件面的实现叙述现已过时：`NEW-05a-stage3` 已完成、`NEW-R10` 已 `cut`、`EVO-09` 也已在 TS `search.step` authority path 完成首个 bounded deliverable，因此 `EVO-11` 必须继续作为同一 TS `idea-engine` lane 的 follow-up，而不是重新打开 Python-first implementation lane。canonical implementation prompt: `meta/docs/prompts/prompt-2026-03-25-evo11-idea-engine-bandit-runtime.md`。
 
 **修改内容**:
 
 | 文件 | 变更 |
 |---|---|
-| `idea-core/src/idea_core/engine/distributor.py` | (新文件) `BanditDistributor`: 实现 UCB-V baseline + Thompson Sampling 可选策略；消费 `distributor_policy_config_v1`，输出 `distributor_event_v1`。**注意**: 此为独立 bandit 实现，Evolver `selector.js` 仅用于 RDI 排名分数子模块 (§EVO-17) |
-| `idea-core/src/idea_core/engine/distributor_state.py` | (新文件) 臂统计持久化 (n, Q, σ, w, t_last)；定期快照为 `distributor_state_snapshot_v1` |
-| `idea-core/src/idea_core/engine/service.py` | `search.step` 调用 `BanditDistributor.select_arm()` 选择 operator/backend，执行后调用 `update_reward()` 闭环 |
+| `packages/idea-engine/src/service/write-service.ts` | 在 `campaign.init` 中 materialize campaign-scoped immutable `distributor_policy_config_v1.json`，持久化 `distributor_policy_config_ref`，并在 distributor enabled 时将该 ref 暴露给 `campaign.init` result |
+| `packages/idea-engine/src/service/search-step-service.ts` | 在当前 live `search.step` path 中加载 distributor config/state，针对当前已选定 island 的 eligible operator/backend action set 执行 bandit selection，写入 `distributor_event_v1.jsonl`，执行 reward / realized_cost update，并在 distributor enabled 时把 `distributor_policy_config_ref` 回写到 `search.step` result |
+| `packages/idea-engine/src/service/distributor-*.ts` | (新文件，命名以实际实现为准) TS-internal distributor policy/state/event helpers；负责 built-in policy、replay metadata、state snapshot 与 fail-closed validation，不引入新的 RPC surface |
+| `packages/idea-engine/tests/search-step-distributor.test.ts` | 锁定 distributor absent parity、enabled path、event logging、state recovery 与 fail-closed guardrails |
+| `packages/idea-engine/tests/distributor-policy.test.ts` | 锁定 built-in TS policy 的 determinism / replay / synthetic regret regression against `softmax_ema` baseline |
 
 **依赖**: EVO-01 (计算执行闭环提供 reward 信号), EVO-09 (失败库提供负面 reward)
 
 **验收**:
-- Bandit 策略可通过 `distributor_policy_config_v1` 热切换 (UCB-V ↔ Thompson)
+- `campaign.init` 在 distributor enabled 时生成并返回 `distributor_policy_config_ref`
 - 每次 arm selection + reward update 写入 `distributor_event_v1.jsonl` 审计日志
-- 臂统计定期快照，重启后可恢复
-- 对比 softmax_ema baseline，regret 下降可度量
+- `distributor_state_snapshot_v1.json` 可恢复，重启后继续决策
+- `charter.distributor.policy_config_ref` 在本 slice 中明确 `unsupported` 且 fail closed，避免双 authority
+- distributor absent 时保持当前 `search.step` 行为不变
+- 对比 `softmax_ema` baseline，所选 built-in TS bandit policy 的 cumulative regret 下降可度量
 
 ### EVO-12: 技能生命周期自动化 ✅
 

@@ -1753,7 +1753,7 @@
             "EVO-01",
             "EVO-09"
           ],
-          "note": "Follow `EVO-09` on the same TS `idea-engine` lane. Do not reopen Python-first authority; remaining `idea-core` parity / MCP bridge cleanup belongs to the eventual same-lane retire-all closeout after TS behavior is accepted."
+          "note": "2026-03-25 planning-only canonicalization: `EVO-11` must follow `EVO-09` on the same TS `idea-engine` lane, using the live `packages/idea-engine/` `search.step` authority path rather than reopening the stale Python `idea-core/src/...` file surface still present in older plan text. Canonical implementation prompt: `meta/docs/prompts/prompt-2026-03-25-evo11-idea-engine-bandit-runtime.md`. Locked boundary for the first implementation slice: runtime-synthesized `distributor_policy_config_v1.json` at `campaign.init`; `charter.distributor.policy_config_ref` unsupported/fail-closed; current-island-only operator/backend bandit selection inside TS `search.step`; no new RPC methods or schema additions; no `idea-core retire-all`, no `Pipeline A` repoint/delete, no `EVO-19`, and no `EVO-21`. Remaining `idea-core` parity / MCP bridge cleanup still belongs to the eventual same-lane retire-all closeout after TS behavior is accepted."
         },
         "EVO-12": {
           "title": "技能生命周期自动化",
