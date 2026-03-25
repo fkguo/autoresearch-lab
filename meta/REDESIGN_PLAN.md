@@ -2854,7 +2854,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 > **EvoMap/GEP 分析更新 (2026-02-20)**: 采用 Evolver 五阶段架构 (signal→select→mutate→validate→solidify)，资产模型用 REP。移植停滞检测 (`consecutiveEmptyCycles` + `repair_loop_detected`)。详见 `docs/2026-02-20-evomap-gep-analysis.md` §4.2, §6.1。
 
-**当前状态 (2026-03-25 closeout)**: EVO-10 首个 bounded deliverable 已在 lane `/Users/fkg/Coding/Agents/autoresearch-lab-trace-jsonl` 收口。live authority 仍是 Python `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py::cmd_run` 的既有 terminal settle path（`completed` / `failed`）与 `packages/hep-autoresearch/src/hep_autoresearch/toolkit/evolution_proposal.py::evolution_proposal_one()`；本轮只把自动闭环挂到这个现有 call path 上，不新增 `run_completed` ledger enum、后台 watcher/daemon、approval/reporting surface、或第二套 runtime authority。
+**当前状态 (2026-03-25 closeout + trace-hygiene follow-up)**: EVO-10 首个 bounded deliverable 已在 lane `/Users/fkg/Coding/Agents/autoresearch-lab-trace-jsonl` 收口；随后同日的 bounded hygiene lane `/Users/fkg/Coding/Agents/autoresearch-lab-trace-hygiene-evo10-split` 也已完成 `evolution_proposal.py` oversized-file split/cleanup，canonical prompt 为 `meta/docs/prompts/prompt-2026-03-25-evo10-trace-hygiene-evolution-proposal-split.md`。live authority 仍是 Python `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py::cmd_run` 的既有 terminal settle path（`completed` / `failed`）与 `packages/hep-autoresearch/src/hep_autoresearch/toolkit/evolution_proposal.py::evolution_proposal_one()`；hygiene slice 只收口 provider-local 的 analysis / render / write responsibilities，不新增 `run_completed` ledger enum、后台 watcher/daemon、approval/reporting surface、或第二套 runtime authority。
 
 **本轮实现**:
 
@@ -2874,6 +2874,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - acceptance passed on the lane worktree: `PYTHONPATH=/Users/fkg/Coding/Agents/autoresearch-lab-trace-jsonl/packages/hep-autoresearch/src python -m pytest packages/hep-autoresearch/tests/test_evolution_proposal.py packages/hep-autoresearch/tests/test_evolution_trigger.py packages/hep-autoresearch/tests/test_run_quality_metrics.py -q` (`9 passed in 0.44s`); `git diff --check`
 - formal review 最终 0 blocking；`Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)` 均收敛，OpenCode workspace pass 通过 same-model embedded-source rerun recovered to `CONVERGED_WITH_AMENDMENTS`
 - formal self-review 复核 post-amendment GitNexus (`npx gitnexus analyze --force`, `detect_changes risk_level=low`) 与 live call path，0 blocking
+- trace-hygiene follow-up acceptance passed on the current worktree: `PYTHONPATH=/Users/fkg/Coding/Agents/autoresearch-lab-trace-hygiene-evo10-split/packages/hep-autoresearch/src python -m pytest packages/hep-autoresearch/tests/test_evolution_proposal.py packages/hep-autoresearch/tests/test_evolution_trigger.py packages/hep-autoresearch/tests/test_run_quality_metrics.py -q` (`9 passed in 0.61s`); `git diff --check`
+- trace-hygiene follow-up formal review 最终 0 blocking；`Opus = CONVERGED_WITH_AMENDMENTS`（blank-line amendment absorbed）, `OpenCode(zhipuai-coding-plan/glm-5) = CONVERGED`, `Gemini-3.1-Pro-Preview = CONVERGED` after same-model rerun through the 2026-03-25 hardened `gemini-cli-runner` using the canonical lower-case alias `gemini-3.1-pro-preview`
+- trace-hygiene follow-up formal self-review 0 blocking，并明确确认：无 authority migration、无 generic/shared abstraction、`evolution_proposal.py` 仍是唯一 public front door、artifact names / return keys / `auto_handled` / dedupe / stagnation / `analysis.json`-last semantics 均未回退
 
 **验收要点**:
 - 同一 `cmd_run` 调用内，terminal run 完成后即可落出 `artifacts/runs/<run_id>/evolution_proposal/analysis.json`
@@ -2881,9 +2884,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - triage / kb-trace 类旧 `A0` 动作改为 artifact-local `auto_handled`，不创建新的 pending approval / gate authority
 - 重放同一 source run 会幂等跳过，且 trigger 成败均不改写父 run 的 `completed` / `failed` 终态
 
-**Deferred follow-up (persistent SSOT)**: `packages/hep-autoresearch/src/hep_autoresearch/toolkit/evolution_proposal.py` 仍是 pre-existing oversized file，而本批为完成 EVO-10 first deliverable 又进一步扩大了它。该问题在本轮没有被“解决”或“判定无需处理”；之所以 defer，是因为这次 closeout 刻意保持为 trigger / dedupe / A0 auto-handled 的 bounded deliverable，没有继续扩大成结构性拆分 lane。后续仍需单独执行一个 bounded split/cleanup slice 来拆分该文件的 analysis / render / write surfaces。
+**2026-03-25 trace-hygiene follow-up closeout (persistent SSOT update)**: 上述 deferred oversized-file follow-up 已在当前 worktree 的 bounded hygiene lane 中关闭。`packages/hep-autoresearch/src/hep_autoresearch/toolkit/evolution_proposal.py` 现已收口为仅保留 `EvolutionProposalInputs` 与 `evolution_proposal_one` 的 thin front door；analysis-only logic 已下沉到 `evolution_proposal_analysis.py`，render-only logic 已下沉到 `evolution_proposal_render.py`，output/write sequencing 已下沉到 `evolution_proposal_outputs.py`，而 provider-local dedupe/history support 继续保留在 `evolution_proposal_history.py`。这一 cleanup 不引入 shared/generic authority，也不改变 callers、artifact names、return keys、`auto_handled`、dedupe / stagnation semantics 或 `analysis.json`-last discipline；相邻测试只新增了一个窄回归断言来锁定 artifact-path keys。formal review / self-review 没有再暴露新的 durable EVO-10 hygiene follow-up，因此该 persistent SSOT defer 在此正式清零。
 
-**后续边界**: 本轮 closeout 只覆盖 EVO-10 first deliverable，不提前揉入 EVO-12a skill genesis、EVO-14 cross-run / fleet 调度、approval/reporting、或更大 trace cleanup。same-lane 的功能性下一方向仍是 EVO-12a 的 trace-dependent slice；而 `evolution_proposal.py` 的 split/cleanup 则是独立 hygiene follow-up，不应在本批偷带。
+**后续边界**: EVO-10 的 first deliverable 与 `evolution_proposal.py` split/cleanup hygiene follow-up 现均已收口；后续若继续推进同主题工作，功能性下一方向仍应是 EVO-12a 的 trace-dependent slice，而不是把本次已关闭的 provider-local split 重新扩成 migration / approval / fleet / broader trace lane。
 
 ### EVO-11: Bandit 分发策略运行时接入
 
