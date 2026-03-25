@@ -125,7 +125,7 @@ Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ P5A: 单用户 / 单项目端到端闭环 + 统一执行收束 (`EVO-01/02/03/06/07/09/10/11/12/13/14`)
   ├─ P5B: 社区 / 发布 / 跨实例 / 研究进化外层 (`EVO-04/05/08/15/16/17/18/19/20/21`)
   ├─ EVO-01/02/03/13 ✅
-  ├─ EVO-09 ✅; EVO-14 in_progress; EVO-06/07/12a design_complete; EVO-10/11 pending
+  ├─ EVO-09/10 ✅; EVO-14 in_progress; EVO-06/07/12a design_complete; EVO-11 pending
   ├─ EVO-04/05/08/15/16 pending; EVO-17 ✅; EVO-20 ✅; EVO-18/19/21 design_complete
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (未来目标；当前仍保留过渡 Python surfaces，默认包含 `hepar` CLI alias)
   │
@@ -2846,22 +2846,36 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 > **EvoMap/GEP 分析更新 (2026-02-20)**: 采用 Evolver 五阶段架构 (signal→select→mutate→validate→solidify)，资产模型用 REP。移植停滞检测 (`consecutiveEmptyCycles` + `repair_loop_detected`)。详见 `docs/2026-02-20-evomap-gep-analysis.md` §4.2, §6.1。
 
-**现状**: `evolution_proposal.py` 是一次性手动调用（扫描源 run → 生成提案），无周期触发、无提案去重、A0 级提案（read/analyze/plan）仍需人工审批。
+**当前状态 (2026-03-25 closeout)**: EVO-10 首个 bounded deliverable 已在 lane `/Users/fkg/Coding/Agents/autoresearch-lab-trace-jsonl` 收口。live authority 仍是 Python `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py::cmd_run` 的既有 terminal settle path（`completed` / `failed`）与 `packages/hep-autoresearch/src/hep_autoresearch/toolkit/evolution_proposal.py::evolution_proposal_one()`；本轮只把自动闭环挂到这个现有 call path 上，不新增 `run_completed` ledger enum、后台 watcher/daemon、approval/reporting surface、或第二套 runtime authority。
 
-**修改内容**:
+**本轮实现**:
 
 | 文件 | 变更 |
 |---|---|
-| `hep-autoresearch/src/hep_autoresearch/toolkit/evolution_trigger.py` | (新文件) Run 完成事件监听器：消费 ledger `run_completed` 事件，自动调用 `evolution_proposal_one()`；**采用 Evolver 五阶段架构**: signal extraction → strategy selection → mutation → validation → solidify |
-| `hep-autoresearch/src/hep_autoresearch/toolkit/evolution_proposal.py` | 新增提案去重：生成前查询已有 `analysis.json` 产物，按 (failure_class, target_file, action_type) 三元组去重；**移植 Evolver 停滞检测**: `consecutiveEmptyCycles` + `repair_loop_detected` 逻辑 |
-| `hep-autoresearch/src/hep_autoresearch/toolkit/evolution_proposal.py` | A0 提案自动执行路径：`requires_approval == "A0"` 的 triage 类提案直接标记已处理，不进入审批队列 |
+| `packages/hep-autoresearch/src/hep_autoresearch/toolkit/evolution_trigger.py` | (新文件) bounded post-terminal helper：仅消费 live `completed` / `failed` terminal statuses，若同一 source run 已有 `evolution_proposal/analysis.json` 则幂等跳过；触发失败只返回 bounded diagnostic，不反写父 run 状态 |
+| `packages/hep-autoresearch/src/hep_autoresearch/toolkit/evolution_proposal_history.py` | (新文件) 扫描既有 `artifacts/runs/*/evolution_proposal/analysis.json`，提取 `(failure_class, target_file, action_type)` 指纹与 trailing empty-cycle count |
+| `packages/hep-autoresearch/src/hep_autoresearch/toolkit/evolution_proposal.py` | 新增指纹去重与停滞检测（`consecutive_empty_cycles` + `repair_loop_detected`），并把 triage / kb-trace 类旧 `A0` 动作收口为 artifact-local `auto_handled`，不进入 pending approval |
+| `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` | 在 live `cmd_run` 的 `completed` / `failed` terminal branches 挂 bounded helper，只回填 `evolution_proposal_*` artifact refs；`completed` / `failed` ledger 语义保持不变 |
+| `packages/hep-autoresearch/tests/test_evolution_proposal.py` + `packages/hep-autoresearch/tests/test_evolution_trigger.py` | 锁定去重、stagnation、`auto_handled`、幂等跳过、trigger failure negative path、以及 completed/failed terminal branches 不改写父 run 状态 |
 
-**依赖**: trace-jsonl (ledger 事件格式统一)
+**依赖**: trace-jsonl（既有 run artifact / terminal settle substrate 已先落地；本批只消费现有 artifact 与 terminal status，不扩张 trace schema / index / query surface）
 
-**验收**:
-- Run 完成后 ≤30s 自动触发进化提案生成
-- 同一 (failure_class, target_file, action_type) 不重复生成提案
-- A0 triage 提案自动处理，A2+ 提案仍进入审批队列
+**Closeout evidence**:
+
+- bounded implementation commit: `beda2d27e54ad81c74a0545016507496f8831903`
+- acceptance passed on the lane worktree: `PYTHONPATH=/Users/fkg/Coding/Agents/autoresearch-lab-trace-jsonl/packages/hep-autoresearch/src python -m pytest packages/hep-autoresearch/tests/test_evolution_proposal.py packages/hep-autoresearch/tests/test_evolution_trigger.py packages/hep-autoresearch/tests/test_run_quality_metrics.py -q` (`9 passed in 0.44s`); `git diff --check`
+- formal review 最终 0 blocking；`Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)` 均收敛，OpenCode workspace pass 通过 same-model embedded-source rerun recovered to `CONVERGED_WITH_AMENDMENTS`
+- formal self-review 复核 post-amendment GitNexus (`npx gitnexus analyze --force`, `detect_changes risk_level=low`) 与 live call path，0 blocking
+
+**验收要点**:
+- 同一 `cmd_run` 调用内，terminal run 完成后即可落出 `artifacts/runs/<run_id>/evolution_proposal/analysis.json`
+- 同一 `(failure_class, target_file, action_type)` 不重复进入新 proposal 列表，只进入 suppressed-duplicate 记录
+- triage / kb-trace 类旧 `A0` 动作改为 artifact-local `auto_handled`，不创建新的 pending approval / gate authority
+- 重放同一 source run 会幂等跳过，且 trigger 成败均不改写父 run 的 `completed` / `failed` 终态
+
+**Deferred follow-up (persistent SSOT)**: `packages/hep-autoresearch/src/hep_autoresearch/toolkit/evolution_proposal.py` 仍是 pre-existing oversized file，而本批为完成 EVO-10 first deliverable 又进一步扩大了它。该问题在本轮没有被“解决”或“判定无需处理”；之所以 defer，是因为这次 closeout 刻意保持为 trigger / dedupe / A0 auto-handled 的 bounded deliverable，没有继续扩大成结构性拆分 lane。后续仍需单独执行一个 bounded split/cleanup slice 来拆分该文件的 analysis / render / write surfaces。
+
+**后续边界**: 本轮 closeout 只覆盖 EVO-10 first deliverable，不提前揉入 EVO-12a skill genesis、EVO-14 cross-run / fleet 调度、approval/reporting、或更大 trace cleanup。same-lane 的功能性下一方向仍是 EVO-12a 的 trace-dependent slice；而 `evolution_proposal.py` 的 split/cleanup 则是独立 hygiene follow-up，不应在本批偷带。
 
 ### EVO-11: Bandit 分发策略运行时接入
 
@@ -3248,7 +3262,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [ ] EVO-06~07: 科学诚信报告 + 可复现性验证通过 (**详设完成**: `track-a-evo06/07` design docs, 4 JSON Schemas)
 - [ ] EVO-08: 跨实例 idea 同步 + 溯源完整
 - [x] EVO-09: live TS `packages/idea-engine/` `search.step` 失败库查询集成（first deliverable bounded closeout）
-- [ ] EVO-10: 进化提案 run 完成自动触发 + 去重 + A0 自动处理
+- [x] EVO-10: 进化提案 run 完成自动触发 + 去重 + A0 自动处理（first deliverable bounded closeout）
 - [ ] EVO-11: Bandit 分发策略运行时接入，regret 下降可度量
 - [ ] EVO-12: 技能健康报告 + `--auto-safe` 安装路径 + 退役标记
 - [ ] EVO-12a: 技能自生成 — agent trace 模式检测 + 技能提案 + scope extension
@@ -3274,9 +3288,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (41 done, 9 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (6 done, 1 in_progress, 9 pending, 6 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | EVO-01~EVO-21, EVO-12a | 22 (8 done, 1 in_progress, 7 pending, 6 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **171** — **126 done** |
+| **总计** | **Phase 0–5 remediation items only** | **171** — **128 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 171。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
