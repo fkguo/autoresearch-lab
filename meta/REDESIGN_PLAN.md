@@ -2744,17 +2744,25 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 ### EVO-04: Agent 注册表 + A2A Agent Card
 
 > **EvoMap/GEP 分析更新 (2026-02-20)**: 采用 REP 信封格式 (`rep-a2a`)，借鉴 GEP `hello` 消息的能力广告机制。依赖线性化: NEW-07 → EVO-17 → EVO-04。详见 `docs/2026-02-20-evomap-gep-analysis.md` §4.2, §7.1。
+>
+> **Closeout update (2026-03-25)**: 本项的首个 bounded deliverable 已在 `rep-sdk` lane 完成，并以当前 live repo reality 取代这里原先的 stale `packages/a2a` / `agent_registry_v1` 叙述。当前 authority path 全部落在 `packages/rep-sdk`：package-local `agent_card_v1` schema snapshot、`src/discovery/{agent-card,agent-registry,hello-discovery}.ts`、以及稳定 `@autoresearch/rep-sdk/discovery` 子路径导出。该 slice 只复用既有 REP `hello` envelopes 做能力广告发现，不修改 `rep_envelope_v1`，不引入 HTTP transport，不 repoint Python `agent_registry.py` / `a2a_adapter.py`，也不提前揉入 EVO-18 / EVO-19 / 更广的 Track A productization。
 
-**修改内容**: 基于 NEW-07 的 Agent Card 基础设施 + EVO-17 REP 信封，扩展为跨实例发现：
+**修改内容**: 基于 NEW-07 的 Agent Card 基础设施 + EVO-17 REP 信封，在当前 live repo 上先落 bounded first deliverable：
 
 | 文件 | 变更 |
 |---|---|
-| `packages/a2a/src/discovery.ts` | A2A Agent Card 发布 + 远程发现，使用 REP `hello` 消息格式 (借鉴 GEP 能力广告机制) |
-| `autoresearch-meta/schemas/agent_registry_v1.schema.json` | 注册中心 schema |
+| `packages/rep-sdk/package.json` | 新增稳定 `./discovery` 子路径导出，保持 `@autoresearch/rep-sdk` 零内部运行时依赖 |
+| `packages/rep-sdk/schemas/agent_card_v1.schema.json` | package-local Agent Card schema snapshot，与 `meta/schemas/agent_card_v1.schema.json` 保持 parity |
+| `packages/rep-sdk/src/discovery/{agent-card,agent-registry,hello-discovery}.ts` | Agent Card validation、fail-closed in-memory registry、以及基于既有 REP `hello` envelope 的广告发现 |
 
 **依赖**: EVO-17 (REP 信封可用后再接入注册表)
 
-**验收**: 远程 Agent 可通过 REP A2A 协议被发现和调用；`hello` 消息含能力广告。
+**验收**:
+- [x] `@autoresearch/rep-sdk/discovery` 可独立 `import`，且 `@autoresearch/rep-sdk` 仍无内部 runtime 依赖
+- [x] live Agent Card fixtures 通过 package-local schema snapshot 验证；registry 对 unknown / ambiguous capability fail-closed
+- [x] discovery 仅消费现有 REP `hello` envelopes，不引入 HTTP transport、`agent_registry_v1`、Python runtime repoint、或第二套 discovery truth
+
+> 说明: 更宽的远程调用/productization 目标仍属后续 slice；本轮 closeout 不宣称“远程 Agent 可被调用”这一更大终态已整体完成。
 
 ### EVO-05: Domain Pack 打包/分发标准
 
