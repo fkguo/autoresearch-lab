@@ -75,10 +75,10 @@ Do not emit `verification_check_run_v1` in Batch 2. There is no non-heuristic ex
 ### Subject / Verdict Rules
 
 - Emit a single provider-neutral verification subject with `subject_kind = "result"`.
-- Anchor that subject to existing computation authority only:
+- Anchor that subject's content-addressed `source_refs` to existing computation authority only:
   - `manifest_ref`
   - `produced_artifact_refs`
-  - the stored `computation_result_v1` artifact itself
+- Do not content-address the final stored `computation_result_v1` artifact back into the subject. Carry that future/final URI only as a non-content-addressed linked identifier such as `id_kind = "computation_result_uri"`.
 - Do not invent a second project-state object, prompt-only checklist record, or provider-local surrogate.
 - Verdict behavior is fixed:
   - `execution_status = "completed"` -> subject verdict `status = "not_attempted"` with one `missing_decisive_checks` entry using `check_kind = "decisive_verification_pending"`
@@ -92,6 +92,7 @@ Do not emit `verification_check_run_v1` in Batch 2. There is no non-heuristic ex
 ### Pass-Through Surfaces
 
 - `computation_result_v1.json` must populate `verification_refs` with refs to the three emitted artifacts.
+- `verification_refs.check_run_refs` must be omitted from `computation_result_v1.json` and both bridge payloads in Batch 2; only the verdict artifact itself carries `check_run_refs: []`.
 - Because `BridgeAuthorityInput` in `packages/orchestrator/src/computation/followup-bridges.ts` currently selects only `run_id`, `objective_title`, `summary`, `manifest_ref`, `produced_artifact_refs`, and `feedback_lowering`, Batch 2 must explicitly widen that input shape to carry `verification_refs` from `ComputationResultV1` into bridge construction.
 - Note: the current bridge producers do not populate `verification_refs` today. Batch 2 must add that field to bridge payload construction; this is new wiring, not a no-op copy.
 - `packages/orchestrator/src/computation/followup-bridges.ts` must copy the same `verification_refs` container unchanged into `writing_followup_bridge_v1.json`.
