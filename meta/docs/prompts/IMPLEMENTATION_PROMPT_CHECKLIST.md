@@ -13,6 +13,10 @@
 4. 相关架构 / memory 文档
 5. 目标代码与相邻测试
 
+补充硬门禁：
+
+- 若本轮会使用 Serena MCP 工具进行符号导航、memory 读写、或 project-aware 代码理解，必须先在当前 `worktree` 执行 `activate_project`，随后执行 `check_onboarding_performed`；若尚未 onboarding，则先完成 onboarding。未激活前不得把 Serena 输出当 authority。
+
 ### 1.0 默认工作区选择
 
 若当前任务不是并行 lane，且不需要保留一个额外的隔离工作区，默认直接在主仓 `main` worktree 实施，不额外创建 batch worktree。
