@@ -2682,7 +2682,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 > **前置重释 (v1.9.2)**: 真正的研究循环语义不再等到 Phase 5 才第一次出现；Phase 3 的 `NEW-LOOP-01` 先建立单研究者非线性 research loop substrate，`EVO-01/02/03` 在其上接入 compute / feedback / writing automation。
 > **范围澄清 (2026-03-08)**: 本 Phase 不是“只有社区化”。其中 `EVO-01/02/03/13/14` 仍服务于单用户 / 单项目的端到端闭环与统一执行收束；`EVO-15+` 才进入社区 / 发布 / 研究进化外层。
 > **子 lane 划分 (2026-03-08)**:
-> - `P5A`: `EVO-01/02/03`, `NEW-VER-01`, `EVO-06/07/09/10/11/12/13/14`
+> - `P5A`: `EVO-01/02/03`, `NEW-VER-01`, `NEW-SHELL-01`, `EVO-06/07/09/10/11/12/13/14`
 > - `P5B`: `EVO-04/05/08/12a/15/16/17/18/19/20/21`
 > - 该划分是 Phase 内部阅读 / 排期 lens，不新增 `Phase 6`，也不改变现有依赖顺序；若单项目闭环收束与社区外层建设发生取舍，默认先满足 `P5A`。
 > **产品化约束 (2026-03-09)**: 即使后续提供单一 packaged end-user agent，它也应是构建在 orchestrator/runtime + root composition layer + selected providers 之上的独立 leaf package，而不是把 repo root、`packages/orchestrator/`、或某个 domain-specific CLI 直接提升为产品 agent。
@@ -2814,6 +2814,49 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - `computation_result_v1` / followup bridges / writing evidence 只做最小 producer or pass-through wiring，不引入第二套 runtime/project-state authority
 - `physicsValidator` 及其导出/测试/文档残留被删除，而不是降格为长期 fallback
 - implementation closeout 继续遵守 formal three-review + self-review + tracker/plan/memory sync gate
+
+### NEW-SHELL-01: Boundary Enforcement Anti-Drift
+
+> **定位 (2026-03-26)**: 这是一个新的 standalone `P5A` item，建立在已关闭的 `NEW-05a-shared-boundary`、`NEW-05a-runtime-root-boundary`、`NEW-RT-04` 与 `EVO-13` 之上。它只把既有边界真相转成 checked-in anti-drift enforcement，不 reopen `NEW-LOOP-01`、`EVO-13`、`EVO-14`，也不替代 `NEW-VER-01`。
+> **DeerFlow disposition (2026-03-26)**: `borrow` DeerFlow 的 harness/app boundary anti-drift test pattern；DeerFlow gateway/frontend/workspace shell 仅是 `adapt later`，不属于本 item 范围。
+> **source-grounded gap**: `meta/docs/2026-03-09-root-ecosystem-boundary-adr.md` 与 `.serena/memories/architecture-decisions.md` 已经锁定 root ecosystem/workbench vs future leaf shell、shared vs provider authority、以及 orchestrator package boundary；`NEW-RT-04` 已经通过 `packages/hep-mcp/tests/contracts/sharedOrchestratorPackageExports.test.ts` + `scripts/check-orchestrator-package-freshness.mjs` 建立 host-path anti-drift precedent。当前缺的不是“边界定义”，而是一个持续执行的 packaging-truth anti-drift gate。
+
+**目标**:
+
+- 把 root 仍是 ecosystem/workbench、未来 packaged agent 只能是 later leaf package after `P5A` closure 这一 truth 变成 checked-in front-door boundary gate。
+- 把 `packages/shared` 不得吸收 provider-owned authority、`packages/orchestrator` 不得吸收 provider UX / shell / app-layer authority 变成 checked-in anti-drift gate。
+- 延续 `shared -> orchestrator -> hep-mcp` 的 host-consumption contract，而不是让 host adapters 重新定义 generic authority。
+
+**implementation slice**:
+
+- root/scripts test-only anti-drift checker for front-door boundary truth
+- `packages/shared` test-only import-boundary gate for provider-owned authority
+- `packages/orchestrator` test-only import-boundary gate for provider UX / shell / app-layer authority
+- `packages/hep-mcp/tests/contracts/sharedOrchestratorPackageExports.test.ts` extension or adjacent host-consumption contract proof
+- front-door docs only if the newly added gate proves current wording contradicts already-decided truth
+
+**明确不做**:
+
+- 不创建 `packages/*shell*`、gateway、frontend package
+- 不实现 deferred tool discovery、workspace virtualization、operator gateway
+- 不重做 orchestrator/provider runtime semantics
+- 不重开 runtime / scheduler / project-state redesign
+- 不重写 root/shared/orchestrator authority baseline
+- 不 reopen `NEW-LOOP-01`、`EVO-13`、`EVO-14`
+- 不把本项并入或改名为 `NEW-VER-01`
+
+**依赖**: `NEW-05a-shared-boundary`, `NEW-05a-runtime-root-boundary`, `NEW-RT-04`; builds on closed `EVO-13` without reopening it
+
+**最终验收**:
+
+- `git diff --check`
+- boundary anti-drift checker command passes
+- targeted `@autoresearch/shared` boundary test passes
+- targeted `@autoresearch/orchestrator` boundary test passes
+- `pnpm --filter @autoresearch/hep-mcp test -- tests/contracts/sharedOrchestratorPackageExports.test.ts`
+- `node scripts/check-orchestrator-package-freshness.mjs`
+- `pnpm --filter @autoresearch/orchestrator build`
+- `pnpm --filter @autoresearch/hep-mcp build`
 
 ### EVO-04: Agent 注册表 + A2A Agent Card
 
@@ -3377,6 +3420,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 - [ ] EVO-01~03: idea→计算→结果→论文端到端无人工干预
 - [ ] NEW-VER-01: provider-neutral verification kernel 以 `schema foundation -> minimal producer + pass-through wiring -> heuristic deletion` 顺序完成，不 reopen `EVO-02` / `EVO-03` / `EVO-13`
+- [ ] NEW-SHELL-01: boundary-enforcement anti-drift 只做 test/script/doc-only guardrails，`borrow` DeerFlow boundary-test pattern only，且不 reopen `NEW-LOOP-01` / `EVO-13` / `EVO-14`、不替代 `NEW-VER-01`
 - [ ] EVO-04~05: 远程 Agent 发现 + Domain Pack 独立安装
 - [ ] EVO-06~07: 科学诚信报告 + 可复现性验证通过 (**详设完成**: `track-a-evo06/07` design docs, 4 JSON Schemas)
 - [ ] EVO-08: 跨实例 idea 同步 + 溯源完整
@@ -3407,9 +3451,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (41 done, 9 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, EVO-01~EVO-21, EVO-12a | 23 (12 done, 2 in_progress, 4 pending, 5 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (12 done, 2 in_progress, 4 pending, 6 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **172** — **132 done** |
+| **总计** | **Phase 0–5 remediation items only** | **173** — **132 done** |
 
-> **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 172。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。`NEW-VER-01` 现作为单独的 verification-kernel follow-up item 留在 `P5A`，而不是回写为 `EVO-02` / `EVO-03` / `EVO-13` reopen。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
+> **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 173。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。`NEW-VER-01` 现作为单独的 verification-kernel follow-up item 留在 `P5A`，而不是回写为 `EVO-02` / `EVO-03` / `EVO-13` reopen；`NEW-SHELL-01` 现同样作为单独的 shell-boundary anti-drift follow-up item 留在 `P5A`，而不是回写为 `NEW-LOOP-01` / `EVO-13` / `EVO-14` reopen。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
