@@ -1,15 +1,16 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.6-draft (v1.9.5 + NEW-VER-01 Batch 2 canonical planning closeout)
+> **版本**: 1.9.6-draft (v1.9.5 + NEW-VER-01 Batch 2 canonical planning closeout + NEW-SHELL-01 boundary-enforcement anti-drift registration)
 > **日期**: 2026-03-26
 > **基线**: v1.9.5-draft
-> **重构项总数**: 172 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
+> **重构项总数**: 173 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
 >
 > **v1.9.6 Changelog**:
 > - 为 `NEW-VER-01` Batch 2 新增 checked-in canonical prompt：锁定唯一 producer 为 `writeComputationResultArtifact()`，唯一首批 consumer 为 `buildRunWritingEvidence()` 的 metadata path，并明确 bridges 只做 `verification_refs` pass-through
 > - 将 Batch 2 的首批 emitted artifacts 锁定为 `verification_subject_computation_result_v1.json`、`verification_subject_verdict_computation_result_v1.json`、`verification_coverage_v1.json`，并明确 Batch 2 不得合成 `verification_check_run_v1`
 > - 把 Batch 3 删除 `physicsValidator` 的前置条件、回归测试边界与 explicit no-go 写入 SSOT；确认当前 source-grounded seam 已足够，不新增额外 planning split
+> - 新增 `NEW-SHELL-01`：把 shell-boundary anti-drift 明确登记为新的 `P5A` item，只借用 DeerFlow 的 boundary-test pattern，不 reopen `NEW-LOOP-01` / `EVO-13` / `EVO-14`，也不替代 `NEW-VER-01`
 >
 > **v1.9.5 Changelog**:
 > - 新增 `NEW-VER-01`：把 verification kernel 收口为 provider-neutral、typed、artifact-backed 的新 item，覆盖 compute -> writing -> review -> revision，而不是把现有 heuristic residue 继续保留为 fallback authority
