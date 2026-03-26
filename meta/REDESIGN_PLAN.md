@@ -2866,6 +2866,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - `pnpm --filter @autoresearch/orchestrator build`
 - `pnpm --filter @autoresearch/hep-mcp build`
 
+> **Closeout update (2026-03-26)**: NEW-SHELL-01 is now implemented as the planned bounded guardrail slice, without expanding into runtime or package redesign. The live enforcement surfaces are: root checker `scripts/check-shell-boundary-anti-drift.mjs`; shared boundary test `packages/shared/src/__tests__/package-boundary-authority.test.ts`; orchestrator boundary test `packages/orchestrator/tests/package-boundary.test.ts`; and the extended host-consumption contract `packages/hep-mcp/tests/contracts/sharedOrchestratorPackageExports.test.ts`. These checks lock four truths continuously: root still reads as ecosystem/workbench/governance rather than a product shell; no premature shell/gateway/frontend package exists; `packages/shared` stays below provider-owned authority; `packages/orchestrator` stays below shell/UI/app authority; and hep-mcp must consume `@autoresearch/shared` / `@autoresearch/orchestrator` exports instead of redefining generic orchestrator authority locally. Front-door wording in `README.md`, `docs/README_zh.md`, and root `package.json` already matched the decided truth, so doc edits were unnecessary beyond this closeout sync. Acceptance passed on the closeout worktree: `git diff --check`; `node scripts/check-shell-boundary-anti-drift.mjs`; `pnpm --filter @autoresearch/shared test -- src/__tests__/package-boundary-authority.test.ts`; `pnpm --filter @autoresearch/orchestrator test -- tests/package-boundary.test.ts`; `pnpm --filter @autoresearch/hep-mcp test -- tests/contracts/sharedOrchestratorPackageExports.test.ts`; `node scripts/check-orchestrator-package-freshness.mjs`; `pnpm --filter @autoresearch/orchestrator build`; `pnpm --filter @autoresearch/hep-mcp build`. Formal review then converged with 0 blocking via `Opus = CONVERGED_WITH_AMENDMENTS`, `Gemini-3.1-Pro-Preview` same-model embedded-source isolated-review rerun = `CONVERGED_WITH_AMENDMENTS`, and `OpenCode(zhipuai-coding-plan/glm-5)` same-model embedded-source rerun = `CONVERGED_WITH_AMENDMENTS`; the only adopted amendments were comment-level robustness clarifications for exact substring and exact directory-name matching.
+
 ### EVO-04: Agent 注册表 + A2A Agent Card
 
 > **EvoMap/GEP 分析更新 (2026-02-20)**: 采用 REP 信封格式 (`rep-a2a`)，借鉴 GEP `hello` 消息的能力广告机制。依赖线性化: NEW-07 → EVO-17 → EVO-04。详见 `docs/2026-02-20-evomap-gep-analysis.md` §4.2, §7.1。
@@ -3428,7 +3430,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 - [ ] EVO-01~03: idea→计算→结果→论文端到端无人工干预
 - [ ] NEW-VER-01: provider-neutral verification kernel 以 `schema foundation -> minimal producer + pass-through wiring -> heuristic deletion` 顺序完成，不 reopen `EVO-02` / `EVO-03` / `EVO-13`
-- [ ] NEW-SHELL-01: boundary-enforcement anti-drift 只做 test/script/doc-only guardrails，`borrow` DeerFlow boundary-test pattern only，且不 reopen `NEW-LOOP-01` / `EVO-13` / `EVO-14`、不替代 `NEW-VER-01`
+- [x] NEW-SHELL-01: boundary-enforcement anti-drift 只做 test/script/doc-only guardrails，`borrow` DeerFlow boundary-test pattern only，且不 reopen `NEW-LOOP-01` / `EVO-13` / `EVO-14`、不替代 `NEW-VER-01`
 - [ ] EVO-04~05: 远程 Agent 发现 + Domain Pack 独立安装
 - [ ] EVO-06~07: 科学诚信报告 + 可复现性验证通过 (**详设完成**: `track-a-evo06/07` design docs, 4 JSON Schemas)
 - [ ] EVO-08: 跨实例 idea 同步 + 溯源完整
@@ -3459,9 +3461,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (41 done, 9 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (12 done, 2 in_progress, 4 pending, 6 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (13 done, 1 in_progress, 4 pending, 6 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **173** — **132 done** |
+| **总计** | **Phase 0–5 remediation items only** | **173** — **133 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 173。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。`NEW-VER-01` 现作为单独的 verification-kernel follow-up item 留在 `P5A`，而不是回写为 `EVO-02` / `EVO-03` / `EVO-13` reopen；`NEW-SHELL-01` 现同样作为单独的 shell-boundary anti-drift follow-up item 留在 `P5A`，而不是回写为 `NEW-LOOP-01` / `EVO-13` / `EVO-14` reopen。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
