@@ -1,10 +1,15 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.5-draft (v1.9.4 + verification-kernel follow-up registration)
-> **日期**: 2026-03-25
-> **基线**: v1.9.4-draft
+> **版本**: 1.9.6-draft (v1.9.5 + NEW-VER-01 Batch 2 canonical planning closeout)
+> **日期**: 2026-03-26
+> **基线**: v1.9.5-draft
 > **重构项总数**: 172 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.6 Changelog**:
+> - 为 `NEW-VER-01` Batch 2 新增 checked-in canonical prompt：锁定唯一 producer 为 `writeComputationResultArtifact()`，唯一首批 consumer 为 `buildRunWritingEvidence()` 的 metadata path，并明确 bridges 只做 `verification_refs` pass-through
+> - 将 Batch 2 的首批 emitted artifacts 锁定为 `verification_subject_computation_result_v1.json`、`verification_subject_verdict_computation_result_v1.json`、`verification_coverage_v1.json`，并明确 Batch 2 不得合成 `verification_check_run_v1`
+> - 把 Batch 3 删除 `physicsValidator` 的前置条件、回归测试边界与 explicit no-go 写入 SSOT；确认当前 source-grounded seam 已足够，不新增额外 planning split
 >
 > **v1.9.5 Changelog**:
 > - 新增 `NEW-VER-01`：把 verification kernel 收口为 provider-neutral、typed、artifact-backed 的新 item，覆盖 compute -> writing -> review -> revision，而不是把现有 heuristic residue 继续保留为 fallback authority
@@ -2763,10 +2768,12 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | Batch | 名称 | owned files / surfaces | 目标 |
 |---|---|---|---|
 | 1 | schema foundation | `meta/schemas/verification_{subject,check_run,subject_verdict,coverage}_v1.schema.json` + generated TS/Python bindings + canonical prompt/docs | 先把 provider-neutral verification contract authority 落地为 checked-in SSOT |
-| 2 | minimal producer + pass-through wiring | `packages/orchestrator/src/computation/{result,followup-bridges}.ts`、`packages/hep-mcp/src/core/writing/evidence.ts`、相邻 tests | 只做最小 producer emit / pass-through wiring，不重做 runtime / scheduler / project-state |
+| 2 | minimal producer + pass-through wiring | `packages/orchestrator/src/computation/result.ts`、`packages/orchestrator/src/computation/followup-bridges.ts`、`packages/orchestrator/src/computation/followup-bridge-review.ts`、`packages/hep-mcp/src/core/writing/evidence.ts`、相邻 tests | 只做 computation-result 首批 verification artifacts emit、bridge `verification_refs` 原样传递、以及 writing-evidence metadata consumer；不重做 runtime / scheduler / project-state |
 | 3 | heuristic deletion | `packages/hep-mcp/src/tools/research/physicsValidator.ts`、`packages/hep-mcp/src/tools/research/index.ts`、相邻 tests/docs/registry surfaces | 删除 heuristic residue，并要求真实 verification producers 接管 intended value |
 
 > **Batch 1 closeout (2026-03-25)**: schema foundation 已在当前 worktree 完成。当前 checked-in authority 现包含四个 provider-neutral verification artifacts（`verification_subject_v1`、`verification_check_run_v1`、`verification_subject_verdict_v1`、`verification_coverage_v1`）、`computation_result_v1` / `writing_review_bridge_v1` 上的最小 optional `verification_refs` contract hook、以及对应 TS/Python bindings 与 shared contract tests。R1 暴露的 `workflow_recipe_v1` codegen blocker 已由 `meta/scripts/codegen-ts.ts` 的 guard-union fix + targeted regression test 吸收；Batch 2/3 尚未开始，因此本 item 整体仍为 `in_progress`。
+
+> **Batch 2 canonical planning closeout (2026-03-26)**: 当前 source-grounded seam 已足够，不新增额外 planning split。Batch 2 的唯一 producer 锁定为 `packages/orchestrator/src/computation/result.ts` 中的 `writeComputationResultArtifact()`；它只允许首批发出三个 artifacts：`verification_subject_computation_result_v1.json`、`verification_subject_verdict_computation_result_v1.json`、`verification_coverage_v1.json`。其中 subject 固定为单个 provider-neutral `subject_kind = "result"`，锚定既有 computation authority（`manifest_ref` + `produced_artifact_refs` + stored `computation_result_v1`），不得引入第二套 project-state。由于当前代码树还不存在非 heuristic 的 executed-check producer，Batch 2 明确不得合成 `verification_check_run_v1`；`check_run_refs` 保持为空。Verdict 语义也已锁定：`execution_status = completed` → `status = not_attempted` + 一条 `check_kind = decisive_verification_pending` 的 `missing_decisive_checks`；`execution_status = failed` → `status = blocked` + 同一 `check_kind` 且 reason 绑定 execution failure。Pass-through 边界同样固定：`computation_result_v1.json` 填充 `verification_refs`，而 `packages/orchestrator/src/computation/followup-bridges.ts` 与 `packages/orchestrator/src/computation/followup-bridge-review.ts` 当前尚未写出该字段，因此 Batch 2 必须把它新增接入 bridge payload construction，并明确扩宽 `followup-bridges.ts` 的 `BridgeAuthorityInput`，使 `verification_refs` 能从 `ComputationResultV1` 真正流入两个 bridge writer；接入后 bridges 只做该 ref container 的原样透传，不得派生新 verdict。Batch 2 的第一批也是唯一 consumer 锁定为 `packages/hep-mcp/src/core/writing/evidence.ts` 的 `buildRunWritingEvidence()` metadata path：它只能沿现有 `bridge_artifact_names -> readBridgeArtifact()` 读取路径，把 bridge-carried `verification_refs` 解析并写入 `writing_evidence_meta_v1.json` 的结构化 `verification` 区域，不得把这些 artifacts 混入 LaTeX/PDF catalog、embedding、enrichment 或新增 writing-side verification family。`writing_evidence_source_status.json`、`evidenceSemantic`、`exportProject`、`research-writer`、`paper-reviser`、`referee-review` 均不属于 Batch 2。Batch 3 删除 `physicsValidator` 的前置条件也已锁定：必须先由 Batch 2 在真实代码/测试中证明 computation-result emit、bridge pass-through、以及 `writing_evidence_meta_v1.json` 的 typed verification surfacing 全部成立，再删除 `packages/hep-mcp/src/tools/research/physicsValidator.ts`、其 `index.ts` re-export、`packages/hep-mcp/tests/physicsValidator.test.ts` 与仍把它当 current truth 的 live docs/registry surfaces。
 
 **明确不做**:
 
@@ -2774,8 +2781,32 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - 不扩成 runtime / scheduler / project-state redesign
 - 不新增第二套 project-state SSOT
 - 不把 `physicsValidator` 改名后继续保留为 fallback authority
+- 不做 `packages/shared` schema/codegen 新增工作
+- 不改写 `deriveNextIdeaLoopState()` 或 `feedback_lowering`
+- 不新增额外 verification families
+- 不做 broader evidence redesign
+- 不用 prompt-only checklist 替代 typed artifact path
 
 **依赖**: `NEW-COMP-02`, `EVO-03`
+
+**Batch 2 implementation acceptance（已锁定）**:
+
+- `git diff --check`
+- `pnpm --filter @autoresearch/shared exec vitest run src/__tests__/verification-kernel-contracts.test.ts`
+- `pnpm --filter @autoresearch/orchestrator exec vitest run tests/compute-loop-feedback.test.ts tests/compute-loop-writing-review-bridge.test.ts`
+- `pnpm --filter @autoresearch/hep-mcp exec vitest run tests/core/writingEvidence.test.ts`
+- `pnpm --filter @autoresearch/hep-mcp exec vitest run tests/physicsValidator.test.ts`
+- `pnpm --filter @autoresearch/orchestrator build`
+- `pnpm --filter @autoresearch/hep-mcp build`
+
+**Batch 2 review focus（已锁定）**:
+
+- producer 只能是 computation-result path
+- first consumer 只能是 writing-evidence metadata
+- bridges 只能 pass through `verification_refs`，不能变成新 authority
+- Batch 2 不得合成 `verification_check_run_v1`
+- 不得引入 `physicsValidator` fallback semantics
+- Batch 1 → Batch 2 → Batch 3 顺序不得漂移
 
 **最终验收**:
 
