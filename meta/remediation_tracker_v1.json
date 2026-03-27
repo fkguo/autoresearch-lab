@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "plan_version": "1.9.8-draft",
-  "updated_at": "2026-03-26T21:47:59Z",
-  "note": "v1.9.8-draft: `NEW-VER-01` Batch 3 delete-and-replace closeout is now checked into the current worktree together with canonical prompt `meta/docs/prompts/prompt-2026-03-26-new-ver-01-batch3-delete-physics-validator.md`. The live heuristic surface `physicsValidator` plus its research-barrel re-export and dedicated test were removed, while the already-landed typed authority remains `writeComputationResultArtifact()` -> bridge `verification_refs` -> `buildRunWritingEvidence()` metadata output `writing_evidence_meta_v1.json.verification`. Batch 3 replacement-authority regression set passed: `git diff --check`; `pnpm --filter @autoresearch/shared exec vitest run src/__tests__/verification-kernel-contracts.test.ts`; `pnpm --filter @autoresearch/orchestrator exec vitest run tests/compute-loop-feedback.test.ts tests/compute-loop-writing-review-bridge.test.ts`; `pnpm --filter @autoresearch/hep-mcp exec vitest run tests/core/writingEvidence.test.ts`; `pnpm --filter @autoresearch/orchestrator build`; `pnpm --filter @autoresearch/hep-mcp build`; plus deleted-file absence checks. External review converged with `Opus` and `OpenCode`; Gemini was ignored on the explicit human approval basis `忽略 gemini 评审` after same-model reruns produced no archivable verdict, and formal self-review found 0 blocking. `NEW-VER-01` is now `done`, Phase 5 progress is `14/24`, total remediation items remain 173, and total done items are 134.",
+  "plan_version": "1.9.9-draft",
+  "updated_at": "2026-03-27T12:00:00Z",
+  "note": "v1.9.9-draft: governance-only EVO-06/07 rebaseline is now checked into the current worktree together with canonical prompt `meta/docs/prompts/prompt-2026-03-27-evo06-evo07-verification-projection-first-deliverable.md`. This lane also fixes the Phase 5 summary drift to `24 (14 done, 1 in_progress, 4 pending, 5 design_complete)`. `NEW-VER-01` remains the only live verification authority: `verification_subject_v1` / `verification_subject_verdict_v1` / `verification_coverage_v1` artifacts are emitted by `writeComputationResultArtifact()`, carried by `computation_result_v1.verification_refs` and `writing_review_bridge_v1.verification_refs`, and surfaced in `writing_evidence_meta_v1.json.verification` only as a derived host-side summary. `verification_check_run_v1` remains schema-only until a truthful executed-check producer exists. The bounded first deliverable is `REP projection first`: `EVO-07` owns the first implementation slice as the reproducibility-facing consumer of current verification truth, while `EVO-06` is the companion integrity/gating semantics item. No `packages/**` implementation landed in this lane, nothing reopens `NEW-VER-01` / `NEW-SHELL-01` / `EVO-11` / `EVO-18`, and no runtime / scheduler / project-state redesign is introduced.",
   "phases": {
     "0": {
       "name": "止血",
@@ -1723,12 +1723,13 @@
           "complexity": "high",
           "assignee": null,
           "depends_on": [],
-          "design_doc": "docs/track-a-evo06-integrity-framework-design.md",
+          "design_doc": "meta/docs/prompts/prompt-2026-03-27-evo06-evo07-verification-projection-first-deliverable.md",
           "schemas": [
             "schemas/integrity_report_v1.schema.json",
             "schemas/integrity_check_v1.schema.json",
             "schemas/domain_pack_manifest_v1.schema.json"
-          ]
+          ],
+          "note": "2026-03-27 rebaseline: the old February Track A integrity checker framing is historical only and is not live authority for slice 1. `NEW-VER-01` is now done and is the sole live verification substrate to consume: `verification_subject_v1`, `verification_subject_verdict_v1`, and `verification_coverage_v1` artifacts carried by `computation_result_v1.verification_refs` / `writing_review_bridge_v1.verification_refs`, with `writing_evidence_meta_v1.json.verification` remaining a derived host-side summary only. The bounded first deliverable is `REP projection first`, owned in implementation terms by `EVO-07`; `EVO-06` is the companion integrity/gating item that may only define integrity-facing projection semantics as strict structural reads of current verdict/coverage gaps. No novelty verifier, parameter-bias checker, approximation validator, INSPIRE-backed lookup, domain-pack loader, blocking-policy runtime, or truthful `integrity_report_v1` producer lands in this first slice."
         },
         "EVO-07": {
           "title": "可复现性验证管线",
@@ -1736,12 +1737,13 @@
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
-            "EVO-01"
+            "NEW-VER-01"
           ],
-          "design_doc": "docs/track-a-evo07-reproducibility-design.md",
+          "design_doc": "meta/docs/prompts/prompt-2026-03-27-evo06-evo07-verification-projection-first-deliverable.md",
           "schemas": [
             "schemas/reproducibility_report_v1.schema.json"
-          ]
+          ],
+          "note": "2026-03-27 rebaseline: `EVO-07` is now the first implementation owner of the bounded `REP projection first` slice. Slice 1 consumes the already-emitted `verification_subject_v1` / `verification_subject_verdict_v1` / `verification_coverage_v1` artifacts and their current carriers `computation_result_v1.verification_refs` + `writing_review_bridge_v1.verification_refs`, then projects that truth into downstream reproducibility-facing consumers first. It must keep the current computation-result emitter, bridge pass-through, and writing-evidence parser unchanged; it must not introduce any `verification_check_run_v1` producer; and it must not mint a real `reproducibility_report_v1` until a truthful executed-check producer exists. The only truthful slice-1 output is non-fabricated pending/blocked reproducibility state derived from current verdict/coverage gaps. `EVO-18` remains closed only as a pure-library signal core, so this slice must not claim to unlock deferred `calculation_divergence` or `integrity_violation` detectors; `EVO-11` also remains closed and out of scope."
         },
         "EVO-08": {
           "title": "跨实例 idea 同步协议",
