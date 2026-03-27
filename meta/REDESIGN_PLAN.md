@@ -1,10 +1,16 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.7-draft (v1.9.6 + NEW-VER-01 Batch 2 implementation closeout)
+> **版本**: 1.9.8-draft (v1.9.7 + NEW-VER-01 Batch 3 delete-and-replace closeout)
 > **日期**: 2026-03-26
-> **基线**: v1.9.6-draft
+> **基线**: v1.9.7-draft
 > **重构项总数**: 173 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.8 Changelog**:
+> - 新增 checked-in canonical Batch 3 prompt：`meta/docs/prompts/prompt-2026-03-26-new-ver-01-batch3-delete-physics-validator.md`，锁定 delete-and-replace 边界、replacement-authority truth、完整 regression set、以及 Gemini 需有明确 human approval basis 的 reviewer 处置
+> - 记录 `NEW-VER-01` Batch 3 delete-and-replace closeout：删除 `packages/hep-mcp/src/tools/research/physicsValidator.ts`、移除 `packages/hep-mcp/src/tools/research/index.ts` 中的 live re-export、删除 `packages/hep-mcp/tests/physicsValidator.test.ts`，且不保留 heuristic fallback / wrapper / rename-and-keep-alive semantics
+> - 锁定 surviving authority 只剩已 landed 的 typed path：`writeComputationResultArtifact()` producer -> bridge `verification_refs` pass-through -> `buildRunWritingEvidence()` metadata output `writing_evidence_meta_v1.json.verification`；`packages/hep-mcp/tests/core/writingEvidence.test.ts` 同时锁定“新 authority 仍在”与“旧 heuristic surface 已不存在”
+> - 记录 Batch 3 pre/post-change source-grounded evidence、完整 replacement-authority regression set acceptance、`Opus + OpenCode` 0-blocking formal review convergence、用户以“忽略 gemini 评审”明确批准本批忽略 Gemini reviewer、以及 0-blocking self-review；`NEW-VER-01` 现已完成，Phase 5 进度更新为 `14/24`
 >
 > **v1.9.7 Changelog**:
 > - 记录 `NEW-VER-01` Batch 2 implementation closeout：`writeComputationResultArtifact()` 现已 live emit 三个锁定 verification artifacts，bridges 原样传递 `verification_refs`，`buildRunWritingEvidence()` 仅在 metadata path 消费并写出结构化 `verification` 区域
@@ -141,7 +147,7 @@ Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ P5A: 单用户 / 单项目端到端闭环 + 统一执行收束 (`EVO-01/02/03`, `NEW-VER-01`, `EVO-06/07/09/10/11/12/13/14`)
   ├─ P5B: 社区 / 发布 / 跨实例 / 研究进化外层 (`EVO-04/05/08/12a/15/16/17/18/19/20/21`)
   ├─ EVO-01/02/03/13 ✅
-  ├─ NEW-VER-01 in_progress
+  ├─ NEW-VER-01 ✅
   ├─ EVO-09/10/11/12 ✅; EVO-14 in_progress; EVO-06/07/12a design_complete
   ├─ EVO-04/17/18/20 ✅; EVO-05/08/15/16 pending; EVO-19/21 design_complete
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (未来目标；当前仍保留过渡 Python surfaces，默认包含 `hepar` CLI alias)
@@ -2783,6 +2789,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 > **Batch 2 implementation closeout (2026-03-26)**: 当前 worktree 已把锁定的 Batch 2 seam 接成 live wiring。`writeComputationResultArtifact()` 现在会先发出 `verification_subject_computation_result_v1.json`、`verification_subject_verdict_computation_result_v1.json`、`verification_coverage_v1.json`，再写入带 `verification_refs` 的 `computation_result_v1.json`；subject `source_refs` 只 content-address `manifest_ref + produced_artifact_refs`，最终 computation-result URI 仅以 `linked_identifiers.id_kind = "computation_result_uri"` 回链。`packages/orchestrator/src/computation/followup-bridges.ts` 与 `packages/orchestrator/src/computation/followup-bridge-review.ts` 现都原样透传同一个 `verification_refs` container；该 container 只含 `subject_refs`、`subject_verdict_refs`、`coverage_refs`，继续省略 `check_run_refs`。`packages/hep-mcp/src/core/writing/evidence.ts` 现只通过 bridge artifacts 解析这些 refs，要求它们全部解析为当前 run 的 `rep://runs/.../artifact/artifacts/<name>`，在缺失/非法 ref 时 fail-closed，并把 verdict/coverage 摘要写入 `writing_evidence_meta_v1.json.verification`，而不扩到 LaTeX/PDF catalogs、embeddings、enrichment 或 tool response summary。Locked acceptance 已在当前 worktree 通过：`git diff --check`；`pnpm --filter @autoresearch/shared exec vitest run src/__tests__/verification-kernel-contracts.test.ts`；`pnpm --filter @autoresearch/orchestrator exec vitest run tests/compute-loop-feedback.test.ts tests/compute-loop-writing-review-bridge.test.ts`；`pnpm --filter @autoresearch/hep-mcp exec vitest run tests/core/writingEvidence.test.ts`；`pnpm --filter @autoresearch/hep-mcp exec vitest run tests/physicsValidator.test.ts`；`pnpm --filter @autoresearch/orchestrator build`；`pnpm --filter @autoresearch/hep-mcp build`。Post-change GitNexus refresh 使用了 `npx gitnexus analyze --force`；`detect_changes(scope=all)` 记录 `changed_count=48`、`changed_files=9`、`affected_count=8`、`risk_level=high`，但仍会把根 `AGENTS.md` / `CLAUDE.md` generated appendix drift 混进结果，因此最终 correctness judgment 仍以 source inspection + acceptance 为准。Formal review 在用户要求重试后使用同一 trio 重新收敛于 `meta/.review/2026-03-26-new-ver-01-batch2/r2/`：`Opus = CONVERGED`、`Gemini-3.1-Pro-Preview = CONVERGED`、`OpenCode(zhipuai-coding-plan/glm-5) = CONVERGED`；先前不稳定的 workspace/agentic path 只作为 same-model embedded-source rerun 的触发条件，未替换 reviewer。Formal self-review 也复核为 0 blocking。`packages/hep-mcp/src/tools/research/physicsValidator.ts` 与 `packages/hep-mcp/src/tools/research/index.ts` 仍保持未改，`NEW-VER-01` 继续维持 `in_progress`，因为 Batch 3 heuristic deletion 尚未开始。
 
+> **Batch 3 implementation closeout (2026-03-26)**: 当前 worktree 已完成严格的 delete-and-replace closeout，并补入 canonical prompt `meta/docs/prompts/prompt-2026-03-26-new-ver-01-batch3-delete-physics-validator.md`。Pre-change GitNexus/source inspection 先确认 `validatePhysics` 的 live 调用链只在 `packages/hep-mcp/tests/physicsValidator.test.ts` 结束，且 `processes_affected = 0`、`risk = LOW`，因此 `physicsValidator` 不是仍在主线 authority path 上的 runtime surface。删除后，`packages/hep-mcp/src/tools/research/physicsValidator.ts` 与 `packages/hep-mcp/tests/physicsValidator.test.ts` 均已移除，`packages/hep-mcp/src/tools/research/index.ts` 的 live re-export block 也已删除；`rg` 仅在历史治理/审计 artifacts 与新的 anti-regression 断言中还能看到这些符号。唯一 surviving authority 保持为已 landed 的 typed artifact-backed path：`writeComputationResultArtifact()` 生产 `verification_*` artifacts，bridge payloads 原样透传 `verification_refs`，`buildRunWritingEvidence()` 继续只在 metadata path 消费并写入 `writing_evidence_meta_v1.json.verification`。`packages/hep-mcp/tests/core/writingEvidence.test.ts` 现同时锁定两条 current truth：bridge-carried typed verification metadata 仍然 surfaced，且 research barrel 不再导出 `validatePhysics`、`PHYSICS_AXIOMS`、`PhysicsValidationStatus`。Batch 3 replacement-authority regression set 已在当前 worktree 通过：`git diff --check`；`pnpm --filter @autoresearch/shared exec vitest run src/__tests__/verification-kernel-contracts.test.ts`；`pnpm --filter @autoresearch/orchestrator exec vitest run tests/compute-loop-feedback.test.ts tests/compute-loop-writing-review-bridge.test.ts`；`pnpm --filter @autoresearch/hep-mcp exec vitest run tests/core/writingEvidence.test.ts`；`pnpm --filter @autoresearch/orchestrator build`；`pnpm --filter @autoresearch/hep-mcp build`。补充检查也已通过：确认 `packages/hep-mcp/src/tools/research/physicsValidator.ts` 与 `packages/hep-mcp/tests/physicsValidator.test.ts` 均已删除。Formal external review 对当前删除面收敛为 `Opus = CONVERGED` 与 `OpenCode(zhipuai-coding-plan/glm-5) = CONVERGED`；Gemini same-model reruns 未产出可归档 verdict，而用户随后以“忽略 gemini 评审”显式批准本批 closeout 忽略 Gemini reviewer，而不是静默替换 reviewer。Formal self-review 也复核为 0 blocking，并确认 historical stale citation `meta/docs/semantic-understanding-heuristics-audit-2026-03-04.md` 仅保留为历史记录、非 live front-door surface，因此本批不处理。至此 `NEW-VER-01` 全部 batch 已完成。
+
 **明确不做**:
 
 - 不重开 `EVO-02`、`EVO-03`、`EVO-13`
@@ -3429,7 +3437,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 ### Phase 5 验收总检查点
 
 - [ ] EVO-01~03: idea→计算→结果→论文端到端无人工干预
-- [ ] NEW-VER-01: provider-neutral verification kernel 以 `schema foundation -> minimal producer + pass-through wiring -> heuristic deletion` 顺序完成，不 reopen `EVO-02` / `EVO-03` / `EVO-13`
+- [x] NEW-VER-01: provider-neutral verification kernel 以 `schema foundation -> minimal producer + pass-through wiring -> heuristic deletion` 顺序完成，不 reopen `EVO-02` / `EVO-03` / `EVO-13`
 - [x] NEW-SHELL-01: boundary-enforcement anti-drift 只做 test/script/doc-only guardrails，`borrow` DeerFlow boundary-test pattern only，且不 reopen `NEW-LOOP-01` / `EVO-13` / `EVO-14`、不替代 `NEW-VER-01`
 - [ ] EVO-04~05: 远程 Agent 发现 + Domain Pack 独立安装
 - [ ] EVO-06~07: 科学诚信报告 + 可复现性验证通过 (**详设完成**: `track-a-evo06/07` design docs, 4 JSON Schemas)
@@ -3461,9 +3469,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (41 done, 9 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (13 done, 1 in_progress, 4 pending, 6 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (14 done, 4 pending, 6 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **173** — **133 done** |
+| **总计** | **Phase 0–5 remediation items only** | **173** — **134 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 173。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。`NEW-VER-01` 现作为单独的 verification-kernel follow-up item 留在 `P5A`，而不是回写为 `EVO-02` / `EVO-03` / `EVO-13` reopen；`NEW-SHELL-01` 现同样作为单独的 shell-boundary anti-drift follow-up item 留在 `P5A`，而不是回写为 `NEW-LOOP-01` / `EVO-13` / `EVO-14` reopen。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
