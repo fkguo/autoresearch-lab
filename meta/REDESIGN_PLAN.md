@@ -1,15 +1,15 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.10-draft (v1.9.9 + EVO-07 governance closeout)
+> **版本**: 1.9.10-draft (v1.9.9 + EVO-07/EVO-06 governance closeout)
 > **日期**: 2026-03-27
 > **基线**: v1.9.9-draft
 > **重构项总数**: 173 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
 >
 > **v1.9.10 Changelog**:
-> - 关闭 `EVO-07` 的 governance/SSOT gap：`main@635e427` 已经 landed bounded `REP projection first` slice，当前 live `packages/rep-sdk` authority 以 `src/model/verification-projection.ts`、`src/validation/verification-projection.ts`、`src/validation/rdi-gate.ts` 及其相邻 exports/tests 为准
-> - 将 v1.9.9 的 Phase 5 汇总 `24 (14 done, 1 in_progress, 4 pending, 5 design_complete)` 更新为 `24 (15 done, 1 in_progress, 4 pending, 4 design_complete)`，并相应把总完成数从 `134 done` 更新为 `135 done`
-> - 保持 `EVO-06` 仅为 companion integrity/gating semantics item；本次 closeout 不把它上提为已完成的 integrity checker runtime、truthful `integrity_report_v1` producer、或更宽的 verification runtime
+> - 保持 `EVO-07` 为已关闭的 reproducibility-facing bounded first deliverable：`main@635e427` 已经 landed `REP projection first` slice，当前 live `packages/rep-sdk` authority 仍以 `src/model/verification-projection.ts`、`src/validation/verification-projection.ts`、`src/validation/rdi-gate.ts` 及其相邻 exports/tests 为准
+> - 在 rebased closeout resume (`main@95b0fc0` baseline) 上关闭 `EVO-06`：其 bounded `integrity semantics first` companion slice 仍然只是在 `packages/rep-sdk` 内把现有 verification truth 读成 integrity/gating semantics，而不是新增 truthful report/check-run authority
+> - 将 v1.9.9 的 Phase 5 汇总 `24 (14 done, 1 in_progress, 4 pending, 5 design_complete)` 更新为 `24 (16 done, 1 in_progress, 4 pending, 3 design_complete)`，并相应把总完成数从 `134 done` 更新为 `136 done`
 >
 > **v1.9.9 Changelog**:
 > - 在同一 governance lane 修复 Phase 5 summary drift：`24 (14 done, 4 pending, 6 design_complete)` -> `24 (14 done, 1 in_progress, 4 pending, 5 design_complete)`
@@ -158,7 +158,7 @@ Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ P5B: 社区 / 发布 / 跨实例 / 研究进化外层 (`EVO-04/05/08/12a/15/16/17/18/19/20/21`)
   ├─ EVO-01/02/03/13 ✅
   ├─ NEW-VER-01 ✅
-  ├─ EVO-07/09/10/11/12 ✅; EVO-14 in_progress; EVO-06/12a design_complete
+  ├─ EVO-06/07/09/10/11/12 ✅; EVO-14 in_progress; EVO-12a design_complete
   ├─ EVO-04/17/18/20 ✅; EVO-05/08/15/16 pending; EVO-19/21 design_complete
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (未来目标；当前仍保留过渡 Python surfaces，默认包含 `hepar` CLI alias)
   │
@@ -2707,7 +2707,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 > - `P5A`: `EVO-01/02/03`, `NEW-VER-01`, `NEW-SHELL-01`, `EVO-06/07/09/10/11/12/13/14`
 > - `P5B`: `EVO-04/05/08/12a/15/16/17/18/19/20/21`
 > - 该划分是 Phase 内部阅读 / 排期 lens，不新增 `Phase 6`，也不改变现有依赖顺序；若单项目闭环收束与社区外层建设发生取舍，默认先满足 `P5A`。
-> **2026-03-27 governance closeout**: 同日较早的 rebaseline 现已推进到 source-grounded closeout。`main@635e427` 已 landed bounded `REP projection first` slice，因此当前 Phase 5 汇总应读作 `24 (15 done, 1 in_progress, 4 pending, 4 design_complete)`。`EVO-07` 现已按当前 `packages/rep-sdk` consumer truth 关闭为 done；`EVO-06` 仍保持 companion-only 的 `design_complete` 状态，因此本 lane 依然不宣称 integrity checker runtime、truthful `integrity_report_v1` authority、或更宽 verification runtime 已完成。
+> **2026-03-27 governance closeout**: 同日较早的 rebaseline 现已推进到 rebased source-grounded closeout。`main@635e427` 已 landed bounded `REP projection first` slice，而当前 lane 已在 `main@95b0fc0` baseline 上完成 bounded `integrity semantics first` companion closeout，因此当前 Phase 5 汇总应读作 `24 (16 done, 1 in_progress, 4 pending, 3 design_complete)`。`EVO-07` 继续按当前 `packages/rep-sdk` consumer truth 保持 done；`EVO-06` 现也只按其 package-local integrity/gating semantics companion deliverable 关闭为 done，而不宣称 integrity checker runtime、truthful `integrity_report_v1` authority、truthful `reproducibility_report_v1` authority、或更宽 verification runtime 已完成。
 > **产品化约束 (2026-03-09)**: 即使后续提供单一 packaged end-user agent，它也应是构建在 orchestrator/runtime + root composition layer + selected providers 之上的独立 leaf package，而不是把 repo root、`packages/orchestrator/`、或某个 domain-specific CLI 直接提升为产品 agent。
 
 ### EVO-01: idea→理论计算自动执行闭环 ✅
@@ -2921,7 +2921,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 **验收**: HEP domain pack 可独立打包/安装/升级。
 
-### EVO-06: 理论物理研究诚信强制框架
+### EVO-06: 理论物理研究诚信强制框架 ✅
 
 > **2026-03-27 rebaseline**: 2026-02-21 的 Track A `idea-core` checker table 已不再是 slice-1 live authority。当前 repo 中相关 design-doc 路径未落在 checked-in live tree，而其 February framing 也建立在 pre-`NEW-VER-01` heuristic / runtime assumptions 上。`EVO-06` 的 first live slice 必须建立在 today’s typed verification kernel 之上，而不是重新把 `idea-core` heuristics 拉回 authority。
 > **current live authority**: `NEW-VER-01` 已完成，canonical truth 现在是 `verification_subject_v1` / `verification_subject_verdict_v1` / `verification_coverage_v1` artifacts；`packages/orchestrator/src/computation/result.ts` 已 emit 它们并写入 `computation_result_v1.verification_refs`，`packages/orchestrator/src/computation/followup-bridges.ts` 与 `packages/orchestrator/src/computation/followup-bridge-review.ts` 只原样透传 `verification_refs`，`packages/hep-mcp/src/core/writing/evidence.ts` 只把这些 refs 投影到 derived `writing_evidence_meta_v1.json.verification` summary。当前仍不存在 truthful executed-check `verification_check_run_v1` producer。
@@ -2931,6 +2931,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - `EVO-06` 在首个 live slice 中只负责定义 integrity-facing projection / gating semantics：如何把现有 verdict / coverage gaps 结构化读成“pending decisive verification”或“blocked by execution failure”等 truth。
 - 这些 semantics 必须是 strict structural reads of current typed artifacts；不得把 derived wording、domain heuristics、或 provider-local prior 重新提升成 authority。
 - `EVO-07` 先拥有 implementation slice；`EVO-06` 为其 companion item，锁定 integrity / gate interpretation，但不在 slice 1 单独落新的 runtime checker family。
+
+> **Closeout update (2026-03-27)**: rebased closeout state atop `main@95b0fc0` now lands the bounded `integrity semantics first` companion slice entirely inside `packages/rep-sdk`. `packages/rep-sdk/src/model/verification-projection.ts` now carries explicit integrity-facing semantic types and adds `integrity` onto `ReproducibilityProjection`; `packages/rep-sdk/src/validation/verification-projection.ts` derives those semantics strictly from `verification_subject_verdict_v1` + `verification_coverage_v1` truth, requiring decisive `verified` / `failed` verdicts to have non-empty `check_run_refs` and zero remaining `missing_decisive_checks`; `packages/rep-sdk/src/validation/rdi-gate.ts` now consumes only `reproducibilityProjection` plus `outcome.produced_by.run_id` for provenance matching, and reads gate truth directly from `projection.integrity.gate_decision` without trusting `IntegrityReport`. Adjacent exports/tests (`src/model/index.ts`, `src/validation/index.ts`, `tests/verification-fixtures.ts`, `tests/verification-projection.test.ts`, `tests/rdi-gate.test.ts`) lock the bounded semantics, including decisive-failed, partial/hold, provenance mismatch, and duplicate-check-name regressions. This closes `EVO-06` only as the bounded integrity/gating semantics companion deliverable. It does not add a truthful `integrity_report_v1` emitter, a truthful `reproducibility_report_v1` emitter, a `verification_check_run_v1` producer, domain-specific integrity checker runtime, literature-backed novelty checks, or any orchestrator/hep-mcp producer-carrier-host-summary rewrite.
 
 **Slice 1 consumes only**:
 
@@ -2970,7 +2972,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 > **2026-03-27 rebaseline**: `EVO-07` 不再从 February-era rerun backend table 起步。首个 live slice 现在必须从已 landed 的 `NEW-VER-01` verification substrate 出发，先把 current verification truth 投影进 downstream reproducibility-facing consumers，再谈 future executed-check runtime。
 > **slice-1 owner**: `EVO-07` 是 bounded first deliverable 的 first implementation owner。它消费 already-emitted typed verification artifacts，并把 current state 投影到 REP / reproducibility-facing consumer surfaces first；`EVO-06` 则作为 integrity / gating companion item 约束这些投影 semantics。
-> **Closeout update (2026-03-27)**: bounded `REP projection first` slice 现已 live on `main@635e427` (`feat: project verification truth into rep-sdk reproducibility state`). `packages/rep-sdk/src/model/verification-projection.ts`、`packages/rep-sdk/src/validation/verification-projection.ts`、`packages/rep-sdk/src/validation/rdi-gate.ts` 及相邻 exports/tests 现在已把现有 verification artifacts 投影为 `verified` / `pending` / `failed` / `blocked` reproducibility truth，并把该 truth 接入 fail-closed RDI gating，而不 mint `verification_check_run_v1` 或 truthful `reproducibility_report_v1`。这只关闭 `EVO-07` 的 bounded first deliverable；`EVO-06` 仍未因本次 closeout 被提升为 done。
+> **Closeout update (2026-03-27)**: bounded `REP projection first` slice 现已 live on `main@635e427` (`feat: project verification truth into rep-sdk reproducibility state`), and the rebased closeout state atop `main@95b0fc0` now also closes `EVO-06` as the bounded integrity/gating companion inside the same package-local consumer surface. `packages/rep-sdk/src/model/verification-projection.ts`、`packages/rep-sdk/src/validation/verification-projection.ts`、`packages/rep-sdk/src/validation/rdi-gate.ts` 及相邻 exports/tests 现在已把现有 verification artifacts 投影为 `verified` / `pending` / `failed` / `blocked` reproducibility truth，并把同一 truth 继续约束成 fail-closed integrity/gating semantics，而不 mint `verification_check_run_v1`、truthful `reproducibility_report_v1`、或 truthful `integrity_report_v1`。这只关闭 `EVO-07` 的 bounded first deliverable，并明确它的 companion `EVO-06` 也只按 package-local integrity/gating semantics deliverable 完成。
 
 **authority order (locked)**:
 
@@ -3517,7 +3519,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [x] NEW-VER-01: provider-neutral verification kernel 以 `schema foundation -> minimal producer + pass-through wiring -> heuristic deletion` 顺序完成，不 reopen `EVO-02` / `EVO-03` / `EVO-13`
 - [x] NEW-SHELL-01: boundary-enforcement anti-drift 只做 test/script/doc-only guardrails，`borrow` DeerFlow boundary-test pattern only，且不 reopen `NEW-LOOP-01` / `EVO-13` / `EVO-14`、不替代 `NEW-VER-01`
 - [ ] EVO-04~05: 远程 Agent 发现 + Domain Pack 独立安装
-- [ ] EVO-06~07: 科学诚信报告 + 可复现性验证通过 (**详设完成**: `track-a-evo06/07` design docs, 4 JSON Schemas)
+- [x] EVO-06~07: bounded `verification projection first` + `integrity semantics first` consumer deliverables 已关闭；二者都只把 live verification kernel truth 投影为 reproducibility / integrity semantics，不宣称 truthful `integrity_report_v1` / `reproducibility_report_v1` emitter 或 `verification_check_run_v1` producer
 - [ ] EVO-08: 跨实例 idea 同步 + 溯源完整
 - [x] EVO-09: live TS `packages/idea-engine/` `search.step` 失败库查询集成（first deliverable bounded closeout）
 - [x] EVO-10: 进化提案 run 完成自动触发 + 去重 + A0 自动处理（first deliverable bounded closeout）
@@ -3546,9 +3548,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (41 done, 9 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (15 done, 1 in_progress, 4 pending, 4 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (16 done, 1 in_progress, 4 pending, 3 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **173** — **135 done** |
+| **总计** | **Phase 0–5 remediation items only** | **173** — **136 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 173。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。`NEW-VER-01` 现作为单独的 verification-kernel follow-up item 留在 `P5A`，而不是回写为 `EVO-02` / `EVO-03` / `EVO-13` reopen；`NEW-SHELL-01` 现同样作为单独的 shell-boundary anti-drift follow-up item 留在 `P5A`，而不是回写为 `NEW-LOOP-01` / `EVO-13` / `EVO-14` reopen。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
