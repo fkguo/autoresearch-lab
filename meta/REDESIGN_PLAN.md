@@ -1,10 +1,15 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.12-draft (v1.9.11 + EVO-14 Batch 9 planning lock)
+> **版本**: 1.9.13-draft (v1.9.12 + EVO-14 Batch 9 implementation closeout)
 > **日期**: 2026-03-28
-> **基线**: v1.9.11-draft
+> **基线**: v1.9.12-draft
 > **重构项总数**: 173 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.13 Changelog**:
+> - 记录 `EVO-14` Batch 9 implementation closeout：当前 live fleet surface 现已包含显式 `orch_fleet_reassign_claim`，其语义严格锁定为 same-project、single-item、operator-picked target worker 的 manual reassignment only
+> - 明确 Batch 9 仍只允许读取 `.autoresearch/fleet_queue.json` + `.autoresearch/fleet_workers.json` 并仅改写 queue claim / audit ledger；scheduler truth 继续只在 `orch_fleet_worker_poll`，不得滑入 takeover / daemon / auto-selection / second authority / cross-root mutation orchestration
+> - 更新 EVO-14 当前现实与 batch checklist：Batch 9 现为 `done`，而 broader lifecycle automation 仍是后续单独规划问题；Phase 5 汇总继续保持 `24 (16 done, 1 in_progress, 3 pending, 4 design_complete)`，aggregate 仍为 `173 — 136 done`
 >
 > **v1.9.12 Changelog**:
 > - 锁定 `EVO-14` 在 Batch 8 之后的最小可信下一步：新增 checked-in canonical planning prompt `meta/docs/prompts/prompt-2026-03-28-evo14-batch9-manual-reassignment-planning.md`，把 Batch 9 定义为 `explicit manual reassignment only`
@@ -3269,7 +3274,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - 当前 live authority 已经是 TS-first，而不是旧 Python `run_scheduler.py` / `agent_lifecycle.py` 文件面。
 - shared seam 由 `@autoresearch/shared` 的 orchestrator tool names 提供；generic tool authority 由 `@autoresearch/orchestrator` 的 `ORCH_TOOL_SPECS` 提供；当前 host adapter / dispatcher authority 由 `packages/hep-mcp/` 通过共享 host path 暴露。
 - `EVO-13` 已经覆盖 **team-local** runtime / recovery / live-status/replay / assignment-local timeout 边界；`EVO-14` 只负责 **cross-run / fleet-level** visibility、queue、scheduler、resource 和 global lifecycle 语义，不能回切 `executeUnifiedTeamRuntime` 的 team-local 语义。
-- 当前真实现状是：cross-root read-only fleet visibility、per-project queue authority、per-project worker/resource authority、manual stale-claim adjudication、operator stale-signal diagnostics、显式 lease/expiry contract、worker claim-acceptance gate、以及显式 drained-worker unregister contract 都已存在于当前代码现实；explicit manual reassignment 仍未 live，且 broader lifecycle automation 仍未进入 auto takeover / auto reassignment / daemonized scheduling / second fleet authority/read surface / cross-root mutation orchestration。
+- 当前真实现状是：cross-root read-only fleet visibility、per-project queue authority、per-project worker/resource authority、manual stale-claim adjudication、operator stale-signal diagnostics、显式 lease/expiry contract、worker claim-acceptance gate、显式 drained-worker unregister contract、以及 explicit manual reassignment 都已存在于当前代码现实；broader lifecycle automation 仍未进入 auto takeover / auto reassignment / daemonized scheduling / second fleet authority/read surface / cross-root mutation orchestration。
 
 **Batch 分层**:
 
@@ -3283,7 +3288,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | Batch 6 | done | Lease authority & explicit expiry contract | 把 lease authority 固定到 queue claim，自显式 `lease_expires_at` 推导 expiry，并仅在 `orch_fleet_worker_poll` 内做 bounded renewal / auto-release |
 | Batch 7 | done | Worker claim acceptance gate | 为 worker registry 增加显式 `accepts_claims` + dedicated mutation tool；`orch_fleet_worker_poll` 在 heartbeat / renew / same-project expiry sweep 后 gate 新 claim，但不触碰已有 lease / ownership |
 | Batch 8 | done | Drained worker unregister contract | 增加显式 `orch_fleet_worker_unregister`；仅在 `accepts_claims=false` 且 `active_claim_count=0` 时删除 worker registry 记录并写 audit-only ledger，不触碰 queue / lease / scheduler authority |
-| Batch 9 | design_complete | Explicit manual reassignment only | 规划锁定为单项目根、单 queue item、operator-picked target worker 的显式 reassignment surface；只允许读 queue/worker truth 并写回 queue claim + audit ledger，不自动选目标、不扩成 broader lifecycle automation |
+| Batch 9 | done | Explicit manual reassignment only | 新增显式 `orch_fleet_reassign_claim`；仅允许在同一 `project_root` 内把一个当前 `claimed` queue item 从当前 owner worker 转交给 operator-supplied target worker，仅读 queue/worker truth、仅改写 queue claim + audit ledger，不自动选目标、不扩成 broader lifecycle automation |
 
 **当前 batch 级进度**:
 
@@ -3295,7 +3300,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [x] Batch 6: Lease authority & explicit expiry contract
 - [x] Batch 7: Worker claim acceptance gate（当前 worktree 已实现并通过 acceptance / GitNexus 复核；formal review 已以既定 reviewer lineup 收敛到 0 blocking；Opus/OpenCode 评审产物保留了实质源码级结论，但偏离 strict-JSON wrapper 契约，此点仅作 informational 记录）
 - [x] Batch 8: Drained worker unregister contract（当前 worktree 已实现并通过 acceptance / GitNexus 复核；final formal review 在 `meta/.review/2026-03-23-evo14-batch8-r2/` 以 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)` 收敛到 0 blocking；self-review 仅额外吸收了新测试文件 200-LOC guardrail 修正，不改变 runtime authority 语义）
-- [ ] Batch 9: Explicit manual reassignment only（planning locked by `meta/docs/prompts/prompt-2026-03-28-evo14-batch9-manual-reassignment-planning.md`；实现仍未开始，formal review seat updated to `OpenCode(zhipuai-coding-plan/glm-5.1)` for this lane）
+- [x] Batch 9: Explicit manual reassignment only（当前 worktree 已实现并通过 acceptance / GitNexus 复核；formal review 在 `meta/.review/2026-03-28-evo14-batch9-r1/` 以 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5.1)` 收敛到 0 blocking；same-model embedded rerun 只用于 Gemini/OpenCode 的 verdict normalization，self-review 额外吸收了 fail-closed guard regression coverage strengthening，不改变 runtime authority 语义）
 - [ ] 后续 batch：broader lifecycle automation 继续单独规划；仍不得提前滑入 takeover / daemon / second-authority / cross-root mutation orchestration，也不是 `EVO-15`
 
 **Batch 1（已完成）修改内容**:
