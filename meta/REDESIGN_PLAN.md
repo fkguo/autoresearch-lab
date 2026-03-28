@@ -1,10 +1,17 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.10-draft (v1.9.9 + EVO-07/EVO-06 governance closeout)
-> **日期**: 2026-03-27
+> **版本**: 1.9.11-draft (v1.9.10 + EVO-05 governance rebaseline)
+> **日期**: 2026-03-28
 > **基线**: v1.9.9-draft
 > **重构项总数**: 173 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.11 Changelog**:
+> - 将 stale `EVO-05` file table 从不存在的 `idea-core/src/idea_core/plugins/pack_spec.py` / `autoresearch-meta/...` 路径 delete-and-replace 为 source-grounded current reality：live runtime-facing domain-pack authority 仍在 `packages/idea-core/src/idea_core/engine/{domain_pack,default_domain_pack,hep_domain_pack}.py`、`hep_builtin_domain_packs.json`、`coordinator.py`、`rpc/server.py` 与 `test_domain_pack_m30.py`
+> - 明确 `meta/schemas/domain_pack_manifest_v1.schema.json` 虽然是 live checked-in schema，但当前属于 Track A / REP domain-pack manifest semantics，而不是 today’s `idea-core` loader / installer contract
+> - 明确 `EVO-12` 已关闭的 `packages/skills-market/**` authority 仍只覆盖 market-package install lifecycle；当前无 `domain-pack` package type、无 domain-pack install flow、也无 `--auto-safe` 复用权
+> - 新增 canonical rebaseline prompt `meta/docs/prompts/prompt-2026-03-28-evo05-domain-pack-rebaseline.md`，并将 `EVO-05` 收敛为 `design_complete`：first deliverable 先锁定 runtime-backed domain-pack catalog / export authority，而不是伪造“独立安装/升级已存在”
+> - 将当前 Phase 5 汇总从 `24 (16 done, 1 in_progress, 4 pending, 3 design_complete)` 更新为 `24 (16 done, 1 in_progress, 3 pending, 4 design_complete)`；aggregate done 仍为 `136`
 >
 > **v1.9.10 Changelog**:
 > - 保持 `EVO-07` 为已关闭的 reproducibility-facing bounded first deliverable：`main@635e427` 已经 landed `REP projection first` slice，当前 live `packages/rep-sdk` authority 仍以 `src/model/verification-projection.ts`、`src/validation/verification-projection.ts`、`src/validation/rdi-gate.ts` 及其相邻 exports/tests 为准
@@ -159,7 +166,7 @@ Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ EVO-01/02/03/13 ✅
   ├─ NEW-VER-01 ✅
   ├─ EVO-06/07/09/10/11/12 ✅; EVO-14 in_progress; EVO-12a design_complete
-  ├─ EVO-04/17/18/20 ✅; EVO-05/08/15/16 pending; EVO-19/21 design_complete
+  ├─ EVO-04/17/18/20 ✅; EVO-08/15/16 pending; EVO-05/19/21 design_complete
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (未来目标；当前仍保留过渡 Python surfaces，默认包含 `hepar` CLI alias)
   │
 Pipeline A/B 统一时间线:
@@ -2707,7 +2714,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 > - `P5A`: `EVO-01/02/03`, `NEW-VER-01`, `NEW-SHELL-01`, `EVO-06/07/09/10/11/12/13/14`
 > - `P5B`: `EVO-04/05/08/12a/15/16/17/18/19/20/21`
 > - 该划分是 Phase 内部阅读 / 排期 lens，不新增 `Phase 6`，也不改变现有依赖顺序；若单项目闭环收束与社区外层建设发生取舍，默认先满足 `P5A`。
-> **2026-03-27 governance closeout**: 同日较早的 rebaseline 现已推进到 rebased source-grounded closeout。`main@635e427` 已 landed bounded `REP projection first` slice，而当前 lane 已在 `main@95b0fc0` baseline 上完成 bounded `integrity semantics first` companion closeout，因此当前 Phase 5 汇总应读作 `24 (16 done, 1 in_progress, 4 pending, 3 design_complete)`。`EVO-07` 继续按当前 `packages/rep-sdk` consumer truth 保持 done；`EVO-06` 现也只按其 package-local integrity/gating semantics companion deliverable 关闭为 done，而不宣称 integrity checker runtime、truthful `integrity_report_v1` authority、truthful `reproducibility_report_v1` authority、或更宽 verification runtime 已完成。
+> **2026-03-27 governance closeout**: 同日较早的 rebaseline 现已推进到 rebased source-grounded closeout。`main@635e427` 已 landed bounded `REP projection first` slice，而当前 lane 已在 `main@95b0fc0` baseline 上完成 bounded `integrity semantics first` companion closeout；随着后续 `EVO-05` governance rebaseline，当前 Phase 5 汇总现读作 `24 (16 done, 1 in_progress, 3 pending, 4 design_complete)`。`EVO-07` 继续按当前 `packages/rep-sdk` consumer truth 保持 done；`EVO-06` 现也只按其 package-local integrity/gating semantics companion deliverable 关闭为 done，而不宣称 integrity checker runtime、truthful `integrity_report_v1` authority、truthful `reproducibility_report_v1` authority、或更宽 verification runtime 已完成。
 > **产品化约束 (2026-03-09)**: 即使后续提供单一 packaged end-user agent，它也应是构建在 orchestrator/runtime + root composition layer + selected providers 之上的独立 leaf package，而不是把 repo root、`packages/orchestrator/`、或某个 domain-specific CLI 直接提升为产品 agent。
 
 ### EVO-01: idea→理论计算自动执行闭环 ✅
@@ -2912,14 +2919,58 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 ### EVO-05: Domain Pack 打包/分发标准
 
-**修改内容**:
+> **2026-03-28 rebaseline**: 旧 file table 已不再对应 live repo reality。`idea-core/src/idea_core/plugins/pack_spec.py` 不存在，`autoresearch-meta/...` 也已不是当前 monorepo authority。今天 repo 中与 “domain pack” 相关的 truth 实际分成两层：一层是 `idea-core` 的 live runtime-facing pack substrate；另一层是 Track A / REP 侧的 checked-in manifest schema。`EVO-05` 当前 first deliverable 必须先围绕前者收口，而不是把后者或 `skills-market` installer 误写成已存在的 domain-pack install authority。
 
-| 文件 | 变更 |
-|---|---|
-| `idea-core/src/idea_core/plugins/pack_spec.py` | Domain Pack 打包规范 (manifest + schema + prompts) |
-| `autoresearch-meta/schemas/domain_pack_manifest_v1.schema.json` | Pack manifest schema |
+**Current live authority**:
 
-**验收**: HEP domain pack 可独立打包/安装/升级。
+- runtime-facing substrate:
+  - `packages/idea-core/src/idea_core/engine/domain_pack.py`
+  - `packages/idea-core/src/idea_core/engine/default_domain_pack.py`
+  - `packages/idea-core/src/idea_core/engine/hep_domain_pack.py`
+  - `packages/idea-core/src/idea_core/engine/hep_builtin_domain_packs.json`
+  - `packages/idea-core/src/idea_core/engine/coordinator.py`
+  - `packages/idea-core/src/idea_core/rpc/server.py`
+  - `packages/idea-core/tests/engine/test_domain_pack_m30.py`
+- adjacent checked-in schema/design surface only:
+  - `meta/schemas/domain_pack_manifest_v1.schema.json`
+  - current semantics = Track A / REP-side integrity/scoring/taxonomy manifest, not the live `idea-core` loader contract
+
+**EVO-05 vs EVO-12 boundary**:
+
+- `EVO-05` owns the domain-pack runtime packaging/export boundary for `idea-core` consumers
+- `EVO-12` remains the already-closed `packages/skills-market/**` install-side lifecycle authority only
+- `packages/skills-market/schemas/market-package.schema.json` has `skill-pack|tool-pack|engine-pack|workflow-pack|contract-pack|skill-pack-index`, but no `domain-pack`
+- `packages/skills-market/packages/idea-core.json` distributes the `idea-core` engine-pack itself, not domain packs
+- therefore this item must not reopen `EVO-12`, piggyback on `--auto-safe`, or pretend a domain-pack installer already exists
+
+**Bounded first deliverable**:
+
+- establish a **runtime-backed domain-pack catalog / export authority** for the packs that already exist today
+- the first slice should make current built-in pack truth independently enumerable/reviewable from the live descriptor/catalog path while keeping `campaign.init` / `search.step` / `eval.run` semantics unchanged
+- active pack ids to anchor:
+  - `generic.default.v1`
+  - `hep.operators.v1`
+- current split reality that the first slice must acknowledge:
+  - `generic.default.v1` is available via `build_builtin_domain_pack_index()` fallback in `domain_pack.py`
+  - `packages/idea-core/src/idea_core/rpc/server.py` and `coordinator.py:default_service()` currently construct `build_builtin_hep_domain_pack_index()`, so the stdio/default-service front door exposes only HEP descriptors rather than `generic.default.v1`
+- therefore the first deliverable may need to unify or explicitly expose both existing catalog/index constructors, rather than assuming the current stdio front door already covers every active built-in pack
+- explicitly deferred:
+  - independent install / upgrade flow
+  - any `skills-market` package-type or installer change
+  - forcing `meta/schemas/domain_pack_manifest_v1.schema.json` onto the current `idea-core` loader
+  - broad `idea-core` migration or generic-core worldview uplift
+
+**Canonical prompt for the future implementation lane**:
+
+- `meta/docs/prompts/prompt-2026-03-28-evo05-domain-pack-rebaseline.md`
+
+**Acceptance lock for the first deliverable**:
+
+- runtime-backed pack catalog/export truth is independently enumerable from the current `idea-core` domain-pack substrate
+- `campaign.init` still resolves domain packs by domain prefix / explicit `domain_pack_id`
+- `search.step` still consumes selected pack operators / recipes
+- `packages/skills-market/**` stays untouched
+- no claim that HEP domain packs are already independently installable/upgradable
 
 ### EVO-06: 理论物理研究诚信强制框架 ✅
 
@@ -3518,7 +3569,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [ ] EVO-01~03: idea→计算→结果→论文端到端无人工干预
 - [x] NEW-VER-01: provider-neutral verification kernel 以 `schema foundation -> minimal producer + pass-through wiring -> heuristic deletion` 顺序完成，不 reopen `EVO-02` / `EVO-03` / `EVO-13`
 - [x] NEW-SHELL-01: boundary-enforcement anti-drift 只做 test/script/doc-only guardrails，`borrow` DeerFlow boundary-test pattern only，且不 reopen `NEW-LOOP-01` / `EVO-13` / `EVO-14`、不替代 `NEW-VER-01`
-- [ ] EVO-04~05: 远程 Agent 发现 + Domain Pack 独立安装
+- [ ] EVO-04~05: 远程 Agent 发现 + runtime-backed Domain Pack catalog/export authority
 - [x] EVO-06~07: bounded `verification projection first` + `integrity semantics first` consumer deliverables 已关闭；二者都只把 live verification kernel truth 投影为 reproducibility / integrity semantics，不宣称 truthful `integrity_report_v1` / `reproducibility_report_v1` emitter 或 `verification_check_run_v1` producer
 - [ ] EVO-08: 跨实例 idea 同步 + 溯源完整
 - [x] EVO-09: live TS `packages/idea-engine/` `search.step` 失败库查询集成（first deliverable bounded closeout）
@@ -3548,7 +3599,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (41 done, 9 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (16 done, 1 in_progress, 4 pending, 3 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (16 done, 1 in_progress, 3 pending, 4 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
 | **总计** | **Phase 0–5 remediation items only** | **173** — **136 done** |
