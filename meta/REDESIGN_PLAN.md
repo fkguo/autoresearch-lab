@@ -1,10 +1,15 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.14-draft (v1.9.13 + approval cluster rebaseline + EVO-05 runtime-backed catalog/export closeout + L-01 URI registry closeout)
+> **版本**: 1.9.15-draft (v1.9.14 + M-20 registry migration rebaseline)
 > **日期**: 2026-03-29
-> **基线**: v1.9.13-draft
+> **基线**: v1.9.14-draft
 > **重构项总数**: 173 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.15 Changelog**:
+> - source-grounded rebaseline 关闭 `M-20`：commit `85f816f` 早已落地 `migration_registry_v1` schema + checked-in registry + `toolkit/migrate.py` + CLI `migrate` wiring + `test_migrate.py`，当前 item truth 改写为“baseline landed”而非“待从零实现”
+> - 明确 `M-20` 当前边界：checked-in `migration_registry_v1.json` 仍为 `0` chains，且 `workspace migrate` 只扫描 `.autoresearch/**`；更广泛的 artifact-migration rollout 只有在首条真实 checked-in chain 或显式 widen-scope 决策出现时才应 reopen
+> - Phase 2 汇总现更新为 `51 (45 done, 5 pending, 1 cut)`；aggregate remediation progress 更新为 `173 — 142 done`
 >
 > **v1.9.14 Changelog**:
 > - source-grounded rebaseline 关闭 `NEW-02` / `NEW-03` / `NEW-04`：`packages/hep-autoresearch/src/hep_autoresearch/toolkit/{approval_packet,report_renderer}.py`、`orchestrator_cli.py` 与相邻 tests 早已提供 live approval trio / approvals show / report render authority；旧 template/codegen-specific 文案降格为历史实现意图而非 today truth
@@ -159,7 +164,7 @@ Phase 2A (运行时可靠性):
   │
 Phase 2B (Pipeline 连通 + 深度集成):
   ├─ H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21 ✅
-  ├─ M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl (仅 M-20 仍 pending)
+  ├─ M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl ✅
   ├─ NEW-02/NEW-03/NEW-04 approval/report legacy surfaces ✅ (2026-03-29 source-grounded rebaseline)
   ├─ NEW-CONN-02/03/04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-RT-01/02/03/04 ✅
   ├─ NEW-05a Stage 3：idea-engine TS `search.step` / authority-seam baseline 启动
@@ -1226,19 +1231,36 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [x] WAL 模式在连接后验证 *(EXPECTED_WAL_JOURNAL_MODE + SQLITE_WAL_PRAGMAS constants in shared, Phase 2 Batch 2)*
 - [x] (R7) 通用 SQLite 工具模块可被 Memory Graph / Gene Library / Strategy Stats 消费 *(packages/shared/src/db/sqlite-utils.ts — platform-agnostic interface + constants, Phase 2 Batch 2)*
 
-### M-20: 迁移注册表 Phase 2 Batch 4
+### M-20: 迁移注册表 ✅ Rebaselined closeout
 
-**依赖**: H-15b (版本化统一), **H-21 (数据位置统一 — 涉及文件路径的迁移条目必须在 H-21 合并后执行)**
+> **Rebaseline (2026-03-29, source audit)**: `M-20` is already live as a baseline-landed migration-infrastructure item. Commit `85f816f` added `meta/schemas/migration_registry_v1.schema.json`, checked-in `meta/schemas/migration_registry_v1.json`, `packages/hep-autoresearch/src/hep_autoresearch/toolkit/migrate.py`, CLI `migrate` wiring in `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py`, and `packages/hep-autoresearch/tests/test_migrate.py`; targeted proof still passes on the current worktree (`15 passed`).
+>
+> **Current boundary**: the checked-in migration registry still contains `0` chains, and `workspace migrate` only scans `.autoresearch/**`. This item therefore closes as “baseline landed,” not as a broader artifact-migration rollout across non-`.autoresearch/**` surfaces.
 
-**修改文件**:
-| 文件 | 修改内容 |
+**依赖（2026-03-29 truthful rebaseline）**: H-15b (版本化统一), H-21 (数据位置统一)
+
+**当前 live authority**:
+| 文件 | 当前事实 |
 |---|---|
-| `autoresearch-meta/schemas/migration_registry_v1.json` | (新文件) 每个持久化 schema 的迁移链：`{schema_id, versions: [{from, to, migration_fn}]}` |
-| `hep-autoresearch/src/hep_autoresearch/toolkit/migrate.py` | (新文件) `workspace migrate` 命令：检测旧版 artifact → 应用迁移链 |
+| `meta/schemas/migration_registry_v1.schema.json` | checked-in migration-registry schema authority |
+| `meta/schemas/migration_registry_v1.json` | checked-in registry baseline; current truth is `chain_count = 0` |
+| `packages/hep-autoresearch/src/hep_autoresearch/toolkit/migrate.py` | live `workspace migrate` implementation; detects versioned JSON artifacts under `.autoresearch/**` |
+| `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` | live front-door CLI wiring for `migrate` |
+| `packages/hep-autoresearch/tests/test_migrate.py` | targeted proof for registry loading, autodetect, dry-run, version-0 handling, and N-1 fixture upgrade |
+
+**未包含 / 仍未声称 live**:
+- 首条真实 checked-in migration chain 仍未落地
+- 非 `.autoresearch/**` artifact 的 migration rollout 不在当前 live scope 内
+- repo 中其他带 `schema_version` 的 artifact / schema surface，不应仅凭命名就被视为已纳入 migration registry authority
+
+**最小 truthful reopen 条件**:
+- 为某个 `.autoresearch/**` runtime artifact 增加第一条真实 checked-in migration chain
+- 或者，显式做出 widen-scope 决策，把 migration authority 扩展到 `.autoresearch/**` 之外
 
 **验收检查点**:
 - [x] N-1 版本 fixture 可通过 `workspace migrate` 升级
 - [x] 迁移后 artifact 通过当前版本 schema 验证
+- [x] rebaseline proof: `migration_registry_v1.json` 当前为 `chain_count = 0`，且 live `workspace migrate` scope 仅为 `.autoresearch/**`
 
 ### M-21: 载荷大小/背压契约 ✅
 
@@ -3636,12 +3658,12 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06, NEW-R09 (cut) | 23 (22 done, 1 cut) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (44 done, 6 pending, 1 cut) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (45 done, 5 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (4 done, 4 pending) |
 | **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (17 done, 1 in_progress, 3 pending, 3 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **173** — **141 done** |
+| **总计** | **Phase 0–5 remediation items only** | **173** — **142 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 173。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。`NEW-VER-01` 现作为单独的 verification-kernel follow-up item 留在 `P5A`，而不是回写为 `EVO-02` / `EVO-03` / `EVO-13` reopen；`NEW-SHELL-01` 现同样作为单独的 shell-boundary anti-drift follow-up item 留在 `P5A`，而不是回写为 `NEW-LOOP-01` / `EVO-13` / `EVO-14` reopen。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
