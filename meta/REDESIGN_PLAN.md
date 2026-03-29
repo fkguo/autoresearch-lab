@@ -1,15 +1,20 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.13-draft (v1.9.12 + EVO-14 Batch 9 implementation closeout)
-> **日期**: 2026-03-28
-> **基线**: v1.9.12-draft
+> **版本**: 1.9.14-draft (v1.9.13 + approval cluster rebaseline)
+> **日期**: 2026-03-29
+> **基线**: v1.9.13-draft
 > **重构项总数**: 173 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.14 Changelog**:
+> - source-grounded rebaseline 关闭 `NEW-02` / `NEW-03` / `NEW-04`：`packages/hep-autoresearch/src/hep_autoresearch/toolkit/{approval_packet,report_renderer}.py`、`orchestrator_cli.py` 与相邻 tests 早已提供 live approval trio / approvals show / report render authority；旧 template/codegen-specific 文案降格为历史实现意图而非 today truth
+> - 明确 approval cluster authority boundary：`packages/orchestrator/src/computation/approval.ts` 已有 bounded A3 trio producer，`packages/orchestrator/src/orch-tools/{run-read-model,approval}.ts` 已消费 `approval_packet_v1.json`，但 TS orchestrator 仍未替代 generic Python `approvals show` / `report render` front-door surfaces
+> - 将 `M-22` 重写为“shared substrate live, rollout pending”：`meta/schemas/gate_spec_v1.schema.json` + `packages/shared/src/gate-registry.ts` + `packages/shared/src/__tests__/gate-registry.test.ts` 已落地并锁定 fail-closed posture；剩余工作收敛为跨组件 consumer/mapping rollout，而非从零创建 GateSpec。Phase 2 汇总更新为 `51 (44 done, 6 pending, 1 cut)`，aggregate 更新为 `173 — 139 done`
 >
 > **v1.9.13 Changelog**:
 > - 记录 `EVO-14` Batch 9 implementation closeout：当前 live fleet surface 现已包含显式 `orch_fleet_reassign_claim`，其语义严格锁定为 same-project、single-item、operator-picked target worker 的 manual reassignment only
 > - 明确 Batch 9 仍只允许读取 `.autoresearch/fleet_queue.json` + `.autoresearch/fleet_workers.json` 并仅改写 queue claim / audit ledger；scheduler truth 继续只在 `orch_fleet_worker_poll`，不得滑入 takeover / daemon / auto-selection / second authority / cross-root mutation orchestration
-> - 更新 EVO-14 当前现实与 batch checklist：Batch 9 现为 `done`，而 broader lifecycle automation 仍是后续单独规划问题；Phase 5 汇总继续保持 `24 (16 done, 1 in_progress, 3 pending, 4 design_complete)`，aggregate 仍为 `173 — 136 done`
+> - 更新 EVO-14 当前现实与 batch checklist：Batch 9 现为 `done`，而 broader lifecycle automation 仍是后续单独规划问题；Phase 5 汇总继续保持 `24 (16 done, 1 in_progress, 3 pending, 4 design_complete)`，aggregate 当时为 `173 — 136 done`
 >
 > **v1.9.12 Changelog**:
 > - 锁定 `EVO-14` 在 Batch 8 之后的最小可信下一步：新增 checked-in canonical planning prompt `meta/docs/prompts/prompt-2026-03-28-evo14-batch9-manual-reassignment-planning.md`，把 Batch 9 定义为 `explicit manual reassignment only`
@@ -149,7 +154,7 @@ Phase 2A (运行时可靠性):
 Phase 2B (Pipeline 连通 + 深度集成):
   ├─ H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21 ✅
   ├─ M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl (仅 M-20 仍 pending)
-  ├─ NEW-02/NEW-03/NEW-04 pending
+  ├─ NEW-02/NEW-03/NEW-04 approval/report legacy surfaces ✅ (2026-03-29 source-grounded rebaseline)
   ├─ NEW-CONN-02/03/04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01, NEW-RT-01/02/03/04 ✅
   ├─ NEW-05a Stage 3：idea-engine TS `search.step` / authority-seam baseline 启动
   ├─ NEW-ARXIV-01 arxiv-mcp 独立 MCP (~1700 LOC) ← Phase 2 early add
@@ -163,7 +168,7 @@ Phase 3 (扩展性 + 计算连通 + 单研究者研究循环前置):
   ├─ RT-05, NEW-RT-06, NEW-RT-07, NEW-DISC-01 ✅
   ├─ NEW-SEM-01~13、NEW-SEM-06-INFRA/06b/06d/06e/06f ✅
   ├─ NEW-SKILL-01 pending
-  ├─ M-22 GateSpec 通用抽象、M-03/M-04/M-07~M-10/M-12/M-13/M-16~M-17、L-08 pending
+  ├─ M-22 GateSpec 通用抽象（schema + shared registry + tests 已 live；consumer rollout pending）、M-03/M-04/M-07~M-10/M-12/M-13/M-16~M-17、L-08 pending
   ├─ NEW-06/NEW-R11/NEW-R12, UX-03/UX-04, RT-01/RT-04 ✅
   │
 Phase 4 (长期演进):
@@ -747,6 +752,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 ### M-22: GateSpec 通用抽象 (原 §7.8 M-14) — Phase 3
 
 > **Authority normalization (2026-03-20)**: GateSpec v1 is now the generic authority contract, not an approval-only stopgap. Shared taxonomy aligns to `approval | quality | convergence`; budget remains observability/policy rather than a first-class generic gate until a concrete caller proves otherwise.
+>
+> **Rebaseline (2026-03-29, source audit)**: `meta/schemas/gate_spec_v1.schema.json`, `packages/shared/src/gate-registry.ts`, and `packages/shared/src/__tests__/gate-registry.test.ts` are already live. The remaining gap is no longer “create GateSpec”, but “drive non-test cross-component consumers to map/live-read against the shared GateSpec substrate”.
 
 **依赖**: H-04 (Gate Registry)
 **关联**: C-01 (审批超时)
@@ -754,11 +761,13 @@ branches:     candidate → pending, active → running, abandoned → completed
 **修改文件**:
 | 文件 | 修改内容 |
 |---|---|
-| `meta/schemas/gate_spec_v1.schema.json` | `GateSpec { gate_id, gate_type: "approval"|"quality"|"convergence", scope, policy, fail_behavior: "fail-open"|"fail-closed", audit_required: bool }` |
+| `meta/schemas/gate_spec_v1.schema.json` | live `GateSpec v1` authority schema：`{ gate_id, gate_type, scope, policy, fail_behavior, audit_required }` |
+| `packages/shared/src/gate-registry.ts` | shared gate registry + `getGateSpec` / `validateGates` / fail-closed concrete gate entries |
+| `packages/shared/src/__tests__/gate-registry.test.ts` | registry uniqueness / taxonomy / fail-closed / audit-required coverage |
 
 **验收检查点**:
-- [ ] 所有组件的 gate 可映射到 `GateSpec v1`
-- [ ] `fail_behavior` 默认为 `fail-closed`
+- [ ] 所有组件的 gate 可映射到 `GateSpec v1`（当前 live consumer usage 仍主要停留在 shared registry/test surface；cross-component rollout 未完成）
+- [x] `fail_behavior` 默认为 `fail-closed`，且当前 shared registry entries/test guards 已锁定 fail-closed posture
 
 ### H-11a: MCP 工具风险分级 (从 Phase 2 提前) ✅
 
@@ -1269,21 +1278,25 @@ branches:     candidate → pending, active → running, abandoned → completed
 - [x] 所有组件日志可被统一聚合工具 (`jq`) 解析
 - [x] `trace_id` 贯穿 MCP → orchestrator → ledger
 
-### NEW-02: 审批产物三件套 + CLI 可读性重做
+### NEW-02: 审批产物三件套 + CLI 可读性重做 ✅ Rebaselined closeout
 
-**依赖**: H-04 (Gate Registry), M-22 (GateSpec), NEW-01 (ApprovalPacket schema codegen)
+> **Rebaseline (2026-03-29, source audit)**: this item is already live on the Python legacy approval surface. `packages/hep-autoresearch/src/hep_autoresearch/toolkit/approval_packet.py` renders/writes the trio, `orchestrator_cli.py` calls `write_trio(...)`, and `packages/hep-autoresearch/tests/test_approval_packet.py` locks the short/full/json contract. The broader `M-22` consumer rollout remains a separate pending item rather than a blocker for this closeout.
+>
+> **Authority boundary**: TS orchestrator already has a bounded A3-specific trio producer in `packages/orchestrator/src/computation/approval.ts`; it complements this item but does not replace the generic Python approval-trio / front-door review surface.
+
+**依赖（2026-03-29 truthful rebaseline）**: H-04 (Gate Registry), NEW-01 (ApprovalPacket schema baseline)
 **改造对象**: `orchestrator_cli.py` 中 `_approval_packet_skeleton()` + `_request_approval()`
 
-**现状**: `_request_approval` 生成单一 `packet.md`（全量 Markdown），人类审阅时信息密度过高，无结构化机器消费格式。
+**现状（2026-03-29 rebaseline）**: old plan text is stale. The live Python legacy surface already writes `packet_short.md`, `packet.md`, and `approval_packet_v1.json`; runtime authority today is the inline renderer + handwritten dataclass in `approval_packet.py`, not the exact template/codegen shape originally sketched here.
 
 **修改文件**:
 | 文件 | 修改内容 |
 |---|---|
-| `autoresearch-meta/schemas/approval_packet_v1.schema.json` | (新文件) 结构化 schema：`{ purpose, gate_id, run_id, approval_id, plan: [], risks: [], budgets: { max_network_calls, max_runtime_minutes, max_cpu_hours, max_gpu_hours, max_disk_gb }, outputs: [], rollback, commands: [], checklist: [] }` |
-| `hep-autoresearch/src/hep_autoresearch/toolkit/approval_packet.py` | (新文件) `ApprovalPacketRenderer`：从 state + policy 构建 `ApprovalPacket` dataclass (由 codegen 生成)，输出三份产物 |
-| `hep-autoresearch/src/hep_autoresearch/templates/packet_short.md.jinja2` | (新文件) 短版模板：TL;DR、Gate、run-id、执行命令、修改/运行摘要、预算表、accept/reject checklist、回滚步骤、预期输出路径。目标 ≤1 页 |
-| `hep-autoresearch/src/hep_autoresearch/templates/packet_full.md.jinja2` | (新文件) 全量模板：保留现有 `_approval_packet_skeleton` 全部字段 + gate resolution trace，重排为可扫描格式 |
-| `hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` | `_request_approval()` 改为写入三份产物到 `approvals/<approval_id>/`：`packet_short.md`, `packet.md`, `approval_packet_v1.json` |
+| `meta/schemas/approval_packet_v1.schema.json` | live structured schema authority for the approval packet JSON artifact |
+| `packages/hep-autoresearch/src/hep_autoresearch/toolkit/approval_packet.py` | inline renderer + handwritten dataclass + `write_trio(...)` writer for `packet_short.md` / `packet.md` / `approval_packet_v1.json` |
+| `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` | `_request_approval()` writes the trio under `approvals/<approval_id>/` |
+| `packages/hep-autoresearch/tests/test_approval_packet.py` | trio contract coverage: short/full/json rendering, CLI show modes, gate-context regression |
+| `packages/orchestrator/src/computation/approval.ts` | adjacent bounded TS A3 trio producer using the same artifact names (`packet_short.md`, `packet.md`, `approval_packet_v1.json`) |
 
 **产物结构**:
 ```
@@ -1294,42 +1307,49 @@ artifacts/runs/<run_id>/approvals/<approval_id>/
 ```
 
 **验收检查点**:
-- [ ] `_request_approval()` 生成三份产物且 `approval_packet_v1.json` 通过 schema 验证
-- [ ] `packet_short.md` 渲染后 ~60 行软上限（超限时附加 overflow 指针到 full packet）
-- [ ] `packet.md` 包含现有 `_approval_packet_skeleton` 全部信息（无回归）
-- [ ] `approval_packet_v1.json` 含 `purpose`, `plan[]`, `risks[]`, `budgets{}`, `outputs[]`, `rollback`, `commands[]`
+- [x] `_request_approval()` 生成三份产物且 `approval_packet_v1.json` 通过 schema 验证
+- [x] `packet_short.md` 渲染后保持 `SHORT_LINE_LIMIT = 60` 软上限；超限时附加 overflow 指针到 `packet.md`
+- [x] `packet.md` 保留 purpose / plan / budgets / risks / outputs / rollback / commands / checklist / gate trace 等全量细节，无“只剩 short packet”回归
+- [x] `approval_packet_v1.json` 含 `purpose`, `plan[]`, `risks[]`, `budgets{}`, `outputs[]`, `rollback`, `commands[]`
 
-### NEW-03: 审批 CLI 查看命令
+### NEW-03: 审批 CLI 查看命令 ✅ Rebaselined closeout
+
+> **Rebaseline (2026-03-29, source audit)**: Python legacy CLI already exposes `approvals show --run-id <RID> --gate <A?> --format short|full|json`, with tests covering empty/no-match/error paths plus manual smoke on all three output modes. TS orchestrator currently offers read/list consumers (`run-read-model.ts`, `approval.ts`) rather than a direct front-door `show` CLI replacement.
 
 **依赖**: NEW-02 (三件套产物)
 
 **修改文件**:
 | 文件 | 修改内容 |
 |---|---|
-| `hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` | 新增子命令 `approvals show --run-id <RID> --gate <A?> --format short|full|json`；默认 `short`，终端打印 `packet_short.md`；`full` 打印 `packet.md`；`json` 输出 `approval_packet_v1.json` 到 stdout |
+| `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` | `approvals show --run-id <RID> --gate <A?> --format short|full|json`；默认 `short`，终端打印 `packet_short.md`；`full` 打印 `packet.md`；`json` 输出 `approval_packet_v1.json` 到 stdout |
+| `packages/hep-autoresearch/tests/test_approval_packet.py` | `short` / `full` / `json` behavior plus empty/no-match/malformed-packet regressions |
+| `packages/orchestrator/src/orch-tools/{run-read-model,approval}.ts` | adjacent TS approval read/list consumers; not a full replacement for the Python front door |
 
 **验收检查点**:
-- [ ] `hepar approvals show --run-id <RID> --gate A3` 默认打印 short 版本
-- [ ] `--format json` 输出可被 `jq` 解析
-- [ ] 无匹配审批时返回清晰错误信息
+- [x] `hepar approvals show --run-id <RID> --gate A3` 默认打印 short 版本
+- [x] `--format json` 输出可被 `jq` 解析
+- [x] 无匹配审批时返回清晰错误信息
 
-### NEW-04: 自包含人类报告生成
+### NEW-04: 自包含人类报告生成 ✅ Rebaselined closeout
+
+> **Rebaseline (2026-03-29, source audit)**: the first live self-contained report substrate already exists. `packages/hep-autoresearch/src/hep_autoresearch/toolkit/report_renderer.py` renders Markdown/LaTeX directly, `orchestrator_cli.py` wires `report render`, and `packages/hep-autoresearch/tests/test_report_renderer.py` covers run summary, key numbers, audit pointers, SHA256 completeness, and TeX output. The old template-file wording is historical intent, not current runtime truth.
+>
+> **Authority boundary**: this surface remains Python legacy today; TS orchestrator does not yet provide a generic `report render` replacement.
 
 **依赖**: NEW-02 (审批产物), H-18 (ArtifactRef)
 
 **修改文件**:
 | 文件 | 修改内容 |
 |---|---|
-| `hep-autoresearch/src/hep_autoresearch/toolkit/report_renderer.py` | (新文件) `ReportRenderer`：从指定 run 的 `analysis.json` / `headline_numbers` / 关键 CSV/PNG 生成单文件报告；支持 Markdown 和 LaTeX 输出 |
-| `hep-autoresearch/src/hep_autoresearch/templates/report.md.jinja2` | (新文件) 报告模板：摘要 → 各 run 结果（含表格/图引用）→ 审计指针（artifact URI + SHA256） |
-| `hep-autoresearch/src/hep_autoresearch/templates/report.tex.jinja2` | (新文件) LaTeX 报告模板 |
-| `hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` | 新增子命令 `report render --run-ids <RID,...> --out <md\|tex> [--output-path <path>]` |
+| `packages/hep-autoresearch/src/hep_autoresearch/toolkit/report_renderer.py` | inline report renderer: collect run-level `analysis.json` + headline numbers + artifact SHA256/URI audit pointers; output Markdown or LaTeX |
+| `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` | `report render --run-ids <RID,...> --out <md|tex> [--output-path <path>]` |
+| `packages/hep-autoresearch/tests/test_report_renderer.py` | run summary / key results / audit pointers / full SHA256 / TeX rendering coverage |
 
 **验收检查点**:
-- [ ] `hepar report render --run-ids run_abc --out md` 生成自包含 Markdown 报告
-- [ ] 报告含各 run 的关键数值、表格、图引用（PNG 内联为 base64 或相对路径）
-- [ ] 报告含审计指针：每个引用的 artifact 附 URI + SHA256
-- [ ] `--out tex` 生成可编译的 LaTeX 文件
+- [x] `hepar report render --run-ids run_abc --out md` 生成自包含 Markdown 报告
+- [x] 报告含各 run 的关键数值，以及通过 artifact/audit-pointer sections 暴露的表格/图引用（当前 live shape = artifact reference table，而非模板期的 inline base64 embed）
+- [x] 报告含审计指针：每个引用的 artifact 附 URI + SHA256
+- [x] `--out tex` 生成可编译的 LaTeX 文件
 
 ### UX-02: 结构化计算代码目录 + Computation Contract ✅ Phase 2 Batch 7 ★UX
 
@@ -3608,12 +3628,12 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06, NEW-R09 (cut) | 23 (22 done, 1 cut) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (41 done, 9 pending, 1 cut) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (44 done, 6 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
 | **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (16 done, 1 in_progress, 3 pending, 4 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **173** — **136 done** |
+| **总计** | **Phase 0–5 remediation items only** | **173** — **139 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 173。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。`NEW-VER-01` 现作为单独的 verification-kernel follow-up item 留在 `P5A`，而不是回写为 `EVO-02` / `EVO-03` / `EVO-13` reopen；`NEW-SHELL-01` 现同样作为单独的 shell-boundary anti-drift follow-up item 留在 `P5A`，而不是回写为 `NEW-LOOP-01` / `EVO-13` / `EVO-14` reopen。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。

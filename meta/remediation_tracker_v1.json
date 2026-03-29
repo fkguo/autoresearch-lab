@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "plan_version": "1.9.12-draft",
-  "updated_at": "2026-03-28T07:13:45Z",
-  "note": "v1.9.12-draft: checked-in SSOT now preserves the already-landed bounded `REP projection first` + `integrity semantics first` closeout, keeps the `EVO-05` rebaseline aligned to current repo reality, and additionally locks the next `EVO-14` planning step after Batch 8. `EVO-14` remains `in_progress`; Phase 5 summary therefore still reads `24 (16 done, 1 in_progress, 3 pending, 4 design_complete)`, and aggregate remediation progress remains `173 — 136 done`. `EVO-05` no longer points at nonexistent `pack_spec.py` / `autoresearch-meta` paths: its live runtime-facing substrate is the existing `packages/idea-core/src/idea_core/engine/{domain_pack,default_domain_pack,hep_domain_pack}.py` + `hep_builtin_domain_packs.json` + `coordinator.py` / `rpc/server.py` / `test_domain_pack_m30.py` path, while `meta/schemas/domain_pack_manifest_v1.schema.json` remains an adjacent Track A / REP manifest schema rather than the current `idea-core` loader/install contract. Current runtime truth is split across two constructors: `generic.default.v1` comes from the provider-neutral `build_builtin_domain_pack_index()` fallback, while the current stdio/default-service front door still instantiates `build_builtin_hep_domain_pack_index()` and therefore exposes only HEP descriptors. `EVO-12` remains a separate already-closed `packages/skills-market/**` install-side authority and is not reopened by this rebaseline: current `market-package` taxonomy still has no `domain-pack` type or install flow. The newly locked `EVO-05` first deliverable is therefore only a runtime-backed domain-pack catalog/export authority for active packs, with independent install/upgrade and any `skills-market` integration explicitly deferred. The new checked-in canonical prompt `meta/docs/prompts/prompt-2026-03-28-evo14-batch9-manual-reassignment-planning.md` defines the smallest credible `EVO-14` Batch 9 as `explicit manual reassignment only`: one same-project operator-picked reassignment surface over an already claimed queue item, reusing existing queue/worker/lease authority without creating a second fleet authority file, second cross-root mutation surface, daemonized scheduler, or auto takeover/auto reassignment semantics. Broader lifecycle automation remains a later planning question rather than implicit Batch 9 scope. `NEW-VER-01` remains the only live verification authority: `verification_subject_v1` / `verification_subject_verdict_v1` / `verification_coverage_v1` artifacts are emitted by `writeComputationResultArtifact()`, carried by `computation_result_v1.verification_refs` and `writing_review_bridge_v1.verification_refs`, and surfaced in `writing_evidence_meta_v1.json.verification` only as a derived host-side summary. `verification_check_run_v1` remains schema-only until a truthful executed-check producer exists. This governance update still does not claim a truthful `integrity_report_v1` emitter, a truthful `reproducibility_report_v1` emitter, orchestrator/hep-mcp producer-carrier-host-summary rewrites, or any reopen of `NEW-VER-01` / `NEW-SHELL-01` / `EVO-11` / `EVO-18`.",
+  "plan_version": "1.9.14-draft",
+  "updated_at": "2026-03-29T07:14:23Z",
+  "note": "v1.9.14-draft: source-grounded approval-cluster rebaseline now marks `NEW-02` / `NEW-03` / `NEW-04` done against already-live Python legacy approval/report surfaces, keeps `M-22` pending as a partially landed GateSpec substrate (`gate_spec_v1` schema + shared registry + tests live; cross-component consumer rollout still open), and records the current Python-vs-TS authority boundary in `meta/docs/2026-03-29-approval-cluster-rebaseline.md`. Phase 2 summary is now `51 (44 done, 6 pending, 1 cut)`, and aggregate remediation progress is `173 — 139 done`. This governance update does not claim any new package-runtime rewrite; it only rebaselines status and scope to match current live source truth.",
   "phases": {
     "0": {
       "name": "止血",
@@ -601,33 +601,38 @@
         },
         "NEW-02": {
           "title": "审批产物三件套",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "H-04",
-            "M-22",
             "NEW-01"
-          ]
+          ],
+          "completed_at": "2026-03-29",
+          "note": "Source-grounded rebaseline closeout completed on 2026-03-29 without reopening runtime implementation. Live approval trio authority already exists on the Python legacy surface: `meta/schemas/approval_packet_v1.schema.json`, `packages/hep-autoresearch/src/hep_autoresearch/toolkit/approval_packet.py`, and `_request_approval()` in `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` already write `packet_short.md`, `packet.md`, and `approval_packet_v1.json`; `packages/hep-autoresearch/tests/test_approval_packet.py` locks short/full/json behavior, the 60-line short-packet cap, and trio creation; and the current lane manually revalidated `approval_packet_v1.json` against the checked-in JSON schema. The original plan's template/codegen-specific wording was stale: today’s runtime authority is the inline renderer + handwritten dataclass, while generated Python models under `meta/generated/python/**` remain adjacent artifacts rather than the live runtime authority. `packages/orchestrator/src/computation/approval.ts` already provides a bounded TS A3 trio producer using the same artifact names, but that bounded surface does not replace the generic Python approval-trio front door. The broader `M-22` cross-component GateSpec rollout remains separate and is no longer treated as a blocker for this item."
         },
         "NEW-03": {
           "title": "审批 CLI 查看命令",
-          "status": "pending",
+          "status": "done",
           "complexity": "low",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "NEW-02"
-          ]
+          ],
+          "completed_at": "2026-03-29",
+          "note": "Source-grounded rebaseline closeout completed on 2026-03-29. The Python legacy CLI already exposes `approvals show --run-id <RID> --gate <A?> --format short|full|json` via `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py`, with parser wiring in the same file and targeted coverage in `packages/hep-autoresearch/tests/test_approval_packet.py` for `short`, `full`, `json`, empty/no-match behavior, and malformed packet handling. Manual smoke on the current lane also confirmed `short`, `full`, and `json` output modes. Today’s TS orchestrator only offers adjacent read/list consumers (`packages/orchestrator/src/orch-tools/run-read-model.ts` and `packages/orchestrator/src/orch-tools/approval.ts`), not a direct `show` CLI replacement, so this item closes the live Python front-door surface rather than a broader migration."
         },
         "NEW-04": {
           "title": "自包含人类报告生成",
-          "status": "pending",
+          "status": "done",
           "complexity": "medium",
-          "assignee": null,
+          "assignee": "gpt-5-codex",
           "depends_on": [
             "NEW-02",
             "H-18"
-          ]
+          ],
+          "completed_at": "2026-03-29",
+          "note": "Source-grounded rebaseline closeout completed on 2026-03-29 without reopening report-runtime design. The first live self-contained report substrate already exists in `packages/hep-autoresearch/src/hep_autoresearch/toolkit/report_renderer.py`, with `report render` wired in `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` and targeted coverage in `packages/hep-autoresearch/tests/test_report_renderer.py` for run summary extraction, key numbers, audit pointers, SHA256 completeness, and LaTeX output. Manual smoke on the current lane confirmed Markdown and LaTeX rendering, including artifact references for `figure.png` and `table.csv`. The old template-file wording was stale: today’s runtime truth is an inline renderer that emits self-contained Markdown/TeX plus artifact URI + SHA256 audit pointers. This remains a Python legacy surface; TS orchestrator does not yet provide a generic `report render` replacement."
         },
         "NEW-R05": {
           "title": "证据抽象层",
@@ -1225,7 +1230,7 @@
           "depends_on": [
             "H-04"
           ],
-          "note": "Scope Audit 3/3: deferred to Phase 3."
+          "note": "Source-grounded rebaseline on 2026-03-29 confirmed this item is partially landed rather than unstarted. `meta/schemas/gate_spec_v1.schema.json` is already live, `packages/shared/src/gate-registry.ts` already exports provider-neutral `GateSpec` entries plus `getGateSpec` / `validateGates`, and `packages/shared/src/__tests__/gate-registry.test.ts` already locks unique ids, taxonomy, fail-closed posture, and audit-required invariants. Generated Python models also exist under `meta/generated/python/gate_spec_v1.py`. However, current non-test consumer usage remains sparse enough that it is not yet truthful to mark the item done. The remaining gap is cross-component consumer/mapping rollout and explicit shared-substrate adoption, not schema/registry creation. See `meta/docs/2026-03-29-approval-cluster-rebaseline.md` for the current authority map."
         },
         "NEW-OPENALEX-01": {
           "status": "done",
