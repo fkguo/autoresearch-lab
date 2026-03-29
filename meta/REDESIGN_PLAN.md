@@ -1,6 +1,6 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.14-draft (v1.9.13 + approval cluster rebaseline)
+> **版本**: 1.9.14-draft (v1.9.13 + approval cluster rebaseline + EVO-05 runtime-backed catalog/export closeout)
 > **日期**: 2026-03-29
 > **基线**: v1.9.13-draft
 > **重构项总数**: 173 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
@@ -9,7 +9,12 @@
 > **v1.9.14 Changelog**:
 > - source-grounded rebaseline 关闭 `NEW-02` / `NEW-03` / `NEW-04`：`packages/hep-autoresearch/src/hep_autoresearch/toolkit/{approval_packet,report_renderer}.py`、`orchestrator_cli.py` 与相邻 tests 早已提供 live approval trio / approvals show / report render authority；旧 template/codegen-specific 文案降格为历史实现意图而非 today truth
 > - 明确 approval cluster authority boundary：`packages/orchestrator/src/computation/approval.ts` 已有 bounded A3 trio producer，`packages/orchestrator/src/orch-tools/{run-read-model,approval}.ts` 已消费 `approval_packet_v1.json`，但 TS orchestrator 仍未替代 generic Python `approvals show` / `report render` front-door surfaces
-> - 将 `M-22` 重写为“shared substrate live, rollout pending”：`meta/schemas/gate_spec_v1.schema.json` + `packages/shared/src/gate-registry.ts` + `packages/shared/src/__tests__/gate-registry.test.ts` 已落地并锁定 fail-closed posture；剩余工作收敛为跨组件 consumer/mapping rollout，而非从零创建 GateSpec。Phase 2 汇总更新为 `51 (44 done, 6 pending, 1 cut)`，aggregate 更新为 `173 — 139 done`
+> - 将 `M-22` 重写为“shared substrate live, rollout pending”：`meta/schemas/gate_spec_v1.schema.json` + `packages/shared/src/gate-registry.ts` + `packages/shared/src/__tests__/gate-registry.test.ts` 已落地并锁定 fail-closed posture；剩余工作收敛为跨组件 consumer/mapping rollout，而非从零创建 GateSpec。Phase 2 汇总更新为 `51 (44 done, 6 pending, 1 cut)`
+> - 记录 `EVO-05` bounded implementation lane 的当前真实状态：`packages/idea-core` 现已落地 runtime-backed domain-pack catalog/export authority（catalog helper + read-only `domain_pack.catalog` RPC/contract/test coverage），且不改变 `campaign.init` / `search.step` / `eval.run` 语义
+> - 明确当前 first deliverable 只是把 `generic.default.v1` 与 `hep.operators.v1` 的 builtin/runtime split truth 变成可枚举/可审计 surface；不引入 installer / upgrade flow，不重开 `EVO-12` / `skills-market`，也不把 `domain_pack_manifest_v1` 强行写成 loader contract
+> - `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5.1)` formal trio review 现已 source-grounded 收敛到 `0` blocking / `0` reviewer amendments；`r1/meta.json` 中的 wrapper-format drift 仅作 informational 记录，不构成 reviewer failure 或 closeout blocker
+> - formal self-review 复核当前源码、front-door surface、acceptance 结果与 GitNexus low-risk post-change evidence 后继续保持 `0` blocking；`EVO-05` 现改读为 `done`
+> - 更新 Phase 5 汇总为 `24 (17 done, 1 in_progress, 3 pending, 3 design_complete)`；当前 aggregate 更新为 `173 — 140 done`
 >
 > **v1.9.13 Changelog**:
 > - 记录 `EVO-14` Batch 9 implementation closeout：当前 live fleet surface 现已包含显式 `orch_fleet_reassign_claim`，其语义严格锁定为 same-project、single-item、operator-picked target worker 的 manual reassignment only
@@ -181,7 +186,7 @@ Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ EVO-01/02/03/13 ✅
   ├─ NEW-VER-01 ✅
   ├─ EVO-06/07/09/10/11/12 ✅; EVO-14 in_progress; EVO-12a design_complete
-  ├─ EVO-04/17/18/20 ✅; EVO-08/15/16 pending; EVO-05/19/21 design_complete
+  ├─ EVO-04/05/17/18/20 ✅; EVO-08/15/16 pending; EVO-19/21 design_complete
   ├─ idea-core Python 退役 + hep-autoresearch 退役 (未来目标；当前仍保留过渡 Python surfaces，默认包含 `hepar` CLI alias)
   │
 Pipeline A/B 统一时间线:
@@ -2947,7 +2952,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 > 说明: 更宽的远程调用/productization 目标仍属后续 slice；本轮 closeout 不宣称“远程 Agent 可被调用”这一更大终态已整体完成。
 
-### EVO-05: Domain Pack 打包/分发标准
+### EVO-05: Domain Pack 打包/分发标准 ✅
+
+> **2026-03-29 closeout update**: the bounded first deliverable is now complete on lane `/Users/fkg/Coding/Agents/autoresearch-lab-evo05-domain-pack-catalog-first` without widening execution semantics. `packages/idea-core/src/idea_core/engine/domain_pack.py` now exports builtin/runtime-backed catalog helpers, `packages/idea-core/src/idea_core/engine/coordinator.py` now exposes read-only `domain_pack.catalog`, and the current front door is locked by `packages/idea-core/contracts/idea-generator-snapshot/schemas/{idea_core_rpc_v1.openrpc.json,idea_core_rpc_v1.bundled.json,domain_pack_catalog_result_v1.schema.json}` plus `packages/idea-core/tests/{engine/test_domain_pack_m30.py,test_rpc_server_boundary.py}`. Package acceptance passed (`git diff --check`, contract bundle/validate, targeted tests, full `pytest`); formal trio review then converged on the required seats (`Opus`, `Gemini-3.1-Pro-Preview`, `OpenCode(zhipuai-coding-plan/glm-5.1)`) with `0` blocking / `0` reviewer amendments, and the final self-review stayed `0` blocking after keeping the directly related low-risk default-runtime regression test. `r1/meta.json` still records wrapper-format drift for some reviewer artifacts, but all three reviewers returned usable source-grounded 0-blocking judgments, so no reviewer failure or fallback substitution applied. This closes `EVO-05` only as the runtime-backed catalog/export authority first deliverable; it does not claim installer/upgrade lifecycle, `skills-market` integration, or `domain_pack_manifest_v1` loader authority.
 
 > **2026-03-28 rebaseline**: 旧 file table 已不再对应 live repo reality。`idea-core/src/idea_core/plugins/pack_spec.py` 不存在，`autoresearch-meta/...` 也已不是当前 monorepo authority。今天 repo 中与 “domain pack” 相关的 truth 实际分成两层：一层是 `idea-core` 的 live runtime-facing pack substrate；另一层是 Track A / REP 侧的 checked-in manifest schema。`EVO-05` 当前 first deliverable 必须先围绕前者收口，而不是把后者或 `skills-market` installer 误写成已存在的 domain-pack install authority。
 
@@ -2983,14 +2990,14 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - current split reality that the first slice must acknowledge:
   - `generic.default.v1` is available via `build_builtin_domain_pack_index()` fallback in `domain_pack.py`
   - `packages/idea-core/src/idea_core/rpc/server.py` and `coordinator.py:default_service()` currently construct `build_builtin_hep_domain_pack_index()`, so the stdio/default-service front door exposes only HEP descriptors rather than `generic.default.v1`
-- therefore the first deliverable may need to unify or explicitly expose both existing catalog/index constructors, rather than assuming the current stdio front door already covers every active built-in pack
+- therefore the current deliverable explicitly exposes both existing catalog/index constructors, rather than assuming the current stdio front door already covers every active built-in pack
 - explicitly deferred:
   - independent install / upgrade flow
   - any `skills-market` package-type or installer change
   - forcing `meta/schemas/domain_pack_manifest_v1.schema.json` onto the current `idea-core` loader
   - broad `idea-core` migration or generic-core worldview uplift
 
-**Canonical prompt for the future implementation lane**:
+**Canonical prompt for this bounded implementation lane**:
 
 - `meta/docs/prompts/prompt-2026-03-28-evo05-domain-pack-rebaseline.md`
 
@@ -3631,9 +3638,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (44 done, 6 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (16 done, 1 in_progress, 3 pending, 4 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (17 done, 1 in_progress, 3 pending, 3 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **173** — **139 done** |
+| **总计** | **Phase 0–5 remediation items only** | **173** — **140 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 173。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。`NEW-VER-01` 现作为单独的 verification-kernel follow-up item 留在 `P5A`，而不是回写为 `EVO-02` / `EVO-03` / `EVO-13` reopen；`NEW-SHELL-01` 现同样作为单独的 shell-boundary anti-drift follow-up item 留在 `P5A`，而不是回写为 `NEW-LOOP-01` / `EVO-13` / `EVO-14` reopen。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
