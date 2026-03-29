@@ -1,6 +1,6 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.14-draft (v1.9.13 + approval cluster rebaseline + EVO-05 runtime-backed catalog/export closeout)
+> **版本**: 1.9.14-draft (v1.9.13 + approval cluster rebaseline + EVO-05 runtime-backed catalog/export closeout + L-01 URI registry closeout)
 > **日期**: 2026-03-29
 > **基线**: v1.9.13-draft
 > **重构项总数**: 173 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
@@ -14,7 +14,8 @@
 > - 明确当前 first deliverable 只是把 `generic.default.v1` 与 `hep.operators.v1` 的 builtin/runtime split truth 变成可枚举/可审计 surface；不引入 installer / upgrade flow，不重开 `EVO-12` / `skills-market`，也不把 `domain_pack_manifest_v1` 强行写成 loader contract
 > - `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5.1)` formal trio review 现已 source-grounded 收敛到 `0` blocking / `0` reviewer amendments；`r1/meta.json` 中的 wrapper-format drift 仅作 informational 记录，不构成 reviewer failure 或 closeout blocker
 > - formal self-review 复核当前源码、front-door surface、acceptance 结果与 GitNexus low-risk post-change evidence 后继续保持 `0` blocking；`EVO-05` 现改读为 `done`
-> - 更新 Phase 5 汇总为 `24 (17 done, 1 in_progress, 3 pending, 3 design_complete)`；当前 aggregate 更新为 `173 — 140 done`
+> - 记录 `L-01` bounded docs/governance closeout：新增 `docs/URI_REGISTRY.md` 作为当前 monorepo live `hep://` / `orch://` / `pdg://` URI 集中注册表，并同步 `docs/README_zh.md`、`docs/ARCHITECTURE.md`、`meta/docs/orchestrator-mcp-tools-spec.md` 去除 stale `hep://corpora`、stale bare `hep://runs/<run_id>` 与 stale `orch://runs/<run_id>/{state,ledger}` wording，不改 runtime 语义
+> - 更新 Phase 4 汇总为 `8 (4 done, 4 pending)`、Phase 5 汇总保持 `24 (17 done, 1 in_progress, 3 pending, 3 design_complete)`；当前 aggregate 更新为 `173 — 141 done`
 >
 > **v1.9.13 Changelog**:
 > - 记录 `EVO-14` Batch 9 implementation closeout：当前 live fleet surface 现已包含显式 `orch_fleet_reassign_claim`，其语义严格锁定为 same-project、single-item、operator-picked target worker 的 manual reassignment only
@@ -178,7 +179,7 @@ Phase 3 (扩展性 + 计算连通 + 单研究者研究循环前置):
   │
 Phase 4 (长期演进):
   ├─ NEW-07, L-05, L-06 ✅
-  ├─ L-01~L-04, L-07 pending
+  ├─ L-02~L-04, L-07 pending
   │
 Phase 5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）):
   ├─ P5A: 单用户 / 单项目端到端闭环 + 统一执行收束 (`EVO-01/02/03`, `NEW-VER-01`, `EVO-06/07/09/10/11/12/13/14`)
@@ -2673,7 +2674,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 | ID | 缺陷 | 修改内容 | 验收标准 |
 |---|---|---|---|
-| L-01 | URI scheme 缺少集中文档 | `autoresearch-meta/docs/uri_registry.md`: `hep://`, `pdg://` 全部 URI 模式注册表 | 文档存在且覆盖所有已知 URI |
+| L-01 | URI scheme 缺少集中文档 | `docs/URI_REGISTRY.md`: 当前 monorepo live `hep://` / `orch://` / `pdg://` URI 注册表（含 authority ownership / scope boundary；不改 runtime 语义） | 文档存在且与当前 live code/doc surfaces 对齐 |
 | L-02 | 3 个孤儿技能未打包 | review-swarm, deep-learning-lab, md-toc-latex-unescape → 打包或标记 `internal-only` | manifest 中无未声明技能 |
 | L-03 | SKILL.md frontmatter 不一致 | 统一 frontmatter template: `name`, `description`, 可选 `metadata` | lint 检查所有 SKILL.md frontmatter |
 | L-04 | Checkpoint 过期竞争条件 | 与 H-05 合并：使用 `AdvisoryLock` TTL 机制 | 时钟偏移 ±30s 内不误判 |
@@ -3637,10 +3638,10 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06, NEW-R09 (cut) | 23 (22 done, 1 cut) |
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (44 done, 6 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
-| **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (3 done, 5 pending) |
+| **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (4 done, 4 pending) |
 | **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (17 done, 1 in_progress, 3 pending, 3 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **173** — **140 done** |
+| **总计** | **Phase 0–5 remediation items only** | **173** — **141 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 173。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。`NEW-VER-01` 现作为单独的 verification-kernel follow-up item 留在 `P5A`，而不是回写为 `EVO-02` / `EVO-03` / `EVO-13` reopen；`NEW-SHELL-01` 现同样作为单独的 shell-boundary anti-drift follow-up item 留在 `P5A`，而不是回写为 `NEW-LOOP-01` / `EVO-13` / `EVO-14` reopen。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
