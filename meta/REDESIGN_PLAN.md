@@ -9,10 +9,10 @@
 > **v1.9.15 Changelog**:
 > - source-grounded rebaseline 关闭 `M-20`：commit `85f816f` 早已落地 `migration_registry_v1` schema + checked-in registry + `toolkit/migrate.py` + CLI `migrate` wiring + `test_migrate.py`，当前 item truth 改写为“baseline landed”而非“待从零实现”
 > - 明确 `M-20` 当前边界：checked-in `migration_registry_v1.json` 仍为 `0` chains，且 `workspace migrate` 只扫描 `.autoresearch/**`；更广泛的 artifact-migration rollout 只有在首条真实 checked-in chain 或显式 widen-scope 决策出现时才应 reopen
-> - 将 `M-22` 的“rollout pending”继续收敛为更小、更真实的下一步：shared `GateSpec` substrate 仍已 live，但首个 implementation slice 只锁定 `packages/shared` + `packages/orchestrator` 的 TS approval authority adoption，不再暗示“所有组件一起 rollout”
-> - 明确当前 duplicate-authority families：`packages/orchestrator/src/{state-manager.ts,orch-tools/common.ts,orch-tools/control.ts,orch-tools/schemas.ts}` 仍各自维护 A1–A5 approval / policy-key / filter semantics；`packages/hep-autoresearch/src/hep_autoresearch/toolkit/{orchestrator_state.py,computation.py}` 仍保留 Python legacy approval authority；`skills/research-team/scripts/gates/convergence_schema.py` 仍自带 `team_convergence` / `draft_convergence` metadata；`meta/schemas/research_workflow_v1.schema.json` 仍维持独立 `WorkflowGateSpec`
-> - 新增 canonical prompt `meta/docs/prompts/prompt-2026-03-29-m22-gatespec-ts-approval-consumers-first.md`，把下一个 implementation lane 明确限定为 TS orchestrator approval/query/state-validation/read-model path；`A0` 继续只作为 compatibility query/filter value，且不进入 `GateSpec v1`
-> - 记录当前环境事实：`pnpm --filter @autoresearch/shared test -- src/__tests__/gate-registry.test.ts` 在本 worktree 仍因缺失 `node_modules` / `vitest` 而无法执行；后续 implementation lane 必须在 hydrated workspace 重新跑该 gate
+> - 将 `M-22` 的“rollout pending”继续收敛为更小、更真实的实现：首个 `TS approvals first` slice 现已在当前 worktree 落地到 `packages/shared` + `packages/orchestrator` approval/query/state-validation/read-model path，使 shared `GateSpec` 首次拥有真实非测试 consumer，而不是仍停留在 substrate-only 状态
+> - 明确当前 remaining duplicate-authority families：`packages/orchestrator` 首个 TS slice 已不再手维护 A1–A5 runtime authority；仍待后续 broader rollout 的 authority family 现收敛为 `packages/hep-autoresearch/src/hep_autoresearch/toolkit/{orchestrator_state.py,computation.py}` 的 Python legacy approval authority、`skills/research-team/scripts/gates/convergence_schema.py` 的 convergence metadata、以及 `meta/schemas/research_workflow_v1.schema.json` 的独立 `WorkflowGateSpec`
+> - checked-in canonical prompt `meta/docs/prompts/prompt-2026-03-29-m22-gatespec-ts-approval-consumers-first.md` 已作为本首个 implementation slice 的实现 authority 落地；`A0` 继续只作为 compatibility query/filter value，且不进入 `GateSpec v1`
+> - 当前 implementation lane 已在 hydrated workspace 重新跑通 `pnpm --filter @autoresearch/shared test -- src/__tests__/gate-registry.test.ts`；shared build 仍是 orchestrator tests 的前置条件，因为 `@autoresearch/shared` 导出 `dist/*`
 > - Phase 2 汇总现更新为 `51 (45 done, 5 pending, 1 cut)`；aggregate remediation progress 更新为 `173 — 142 done`
 >
 > **v1.9.14 Changelog**:
@@ -770,7 +770,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 >
 > **Rebaseline (2026-03-29, source audit)**: `meta/schemas/gate_spec_v1.schema.json`, `packages/shared/src/gate-registry.ts`, and `packages/shared/src/__tests__/gate-registry.test.ts` are already live. The remaining gap is no longer “create GateSpec”, but “drive non-test cross-component consumers to map/live-read against the shared GateSpec substrate”.
 >
-> **Consumer rollout narrowing (2026-03-29, TS approvals first)**: first implementation scope is now explicitly bounded to `packages/shared` + `packages/orchestrator` approval authority adoption only. Python legacy approval mappings, research-team convergence gate adoption, and `research_workflow_v1` / template cleanup remain deferred until this first TS approval slice lands truthfully.
+> **Consumer rollout narrowing (2026-03-29, TS approvals first)**: first implementation scope was explicitly bounded to `packages/shared` + `packages/orchestrator` approval authority adoption only. The current worktree now lands that bounded TS approval/query/state-validation/read-model slice: `packages/orchestrator` live-reads shared GateSpec authority for A1–A5, keeps `A0` compatibility-only outside `GateSpec v1`, and still defers Python legacy approval mappings, research-team convergence gate adoption, and `research_workflow_v1` / template cleanup. The broader `M-22` consumer rollout therefore remains pending even though the first real non-test consumer slice is now live.
 
 **依赖**: H-04 (Gate Registry)
 **关联**: C-01 (审批超时)
@@ -787,9 +787,9 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `meta/schemas/research_workflow_v1.schema.json` | adjacent unused `WorkflowGateSpec` authority; defer rather than fold into the first approval rollout |
 
 **验收检查点**:
-- [ ] `packages/orchestrator` approval/query/state-validation/read-model path live-reads shared `GateSpec` authority for A1–A5 while preserving existing public ids, `expected_approvals`, `approval_packet_v1`, approval policy operation keys, and approvals-list behavior
-- [ ] `A0` remains compatibility-only for query/filter surfaces and is not introduced as a `GateSpec v1` entry
-- [ ] Python legacy approval mappings, research-team convergence adoption, and `research_workflow_v1` / workflow-template cleanup remain explicitly deferred rather than implied by the first rollout slice
+- [x] `packages/orchestrator` approval/query/state-validation/read-model path live-reads shared `GateSpec` authority for A1–A5 while preserving existing public ids, `expected_approvals`, `approval_packet_v1`, approval policy operation keys, and approvals-list behavior
+- [x] `A0` remains compatibility-only for query/filter surfaces and is not introduced as a `GateSpec v1` entry
+- [x] Python legacy approval mappings, research-team convergence adoption, and `research_workflow_v1` / workflow-template cleanup remain explicitly deferred rather than implied by the first rollout slice
 - [x] `fail_behavior` 默认为 `fail-closed`，且当前 shared registry entries/test guards 已锁定 fail-closed posture
 
 ### H-11a: MCP 工具风险分级 (从 Phase 2 提前) ✅
