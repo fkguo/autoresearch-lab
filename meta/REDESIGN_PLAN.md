@@ -21,6 +21,8 @@
 > - checked-in canonical prompt `meta/docs/prompts/prompt-2026-03-29-m22-gatespec-ts-approval-consumers-first.md` 已作为本首个 implementation slice 的实现 authority 落地；`A0` 继续只作为 compatibility query/filter value，且不进入 `GateSpec v1`
 > - 当前 implementation lane 已在 hydrated workspace 重新跑通 `pnpm --filter @autoresearch/shared test -- src/__tests__/gate-registry.test.ts`；shared build 仍是 orchestrator tests 的前置条件，因为 `@autoresearch/shared` 导出 `dist/*`
 > - source-grounded rebaseline 保留 `NEW-R08` 为 pending，但将其 authority boundary 改写为 published `skill-pack` payload（由 `packages/skills-market/packages/*.json` `source.subpath` + `source.include` / `source.exclude` 定义），并锁定当前 source-proof：14 published packs、291 payload files、143 payload script files、64 个 `>200 eLOC`、59 个 unexempted；同时明确 `meta/scripts/check_loc.py` 当前只覆盖 touched `py/ts/js`-family files，因此 `.sh` / `.jl` oversized payload entrypoints 仍在 live checker coverage 外，后续 execution 必须拆为按 skill cluster 的 bounded cleanup slices
+> - source-grounded rebaseline `NEW-R06`：将 item truth 从“7 个版本化类型文件仍待整合”改写为“analysis-types schema/codegen substrate 已 live，但 public/runtime authority 仍分摊在 handwritten shared Zod surface 与局部 hep-mcp consumer path 上”，并把下一 implementation slice 收敛为 live shared/hep-mcp analysis-tool authority convergence first
+> - 新增 canonical prompt `meta/docs/prompts/prompt-2026-03-29-new-r06-analysis-types-live-authority-convergence-first.md`，明确下一个 implementation lane 只处理 live consumer path，不得借机扩大到 parked/non-consumer rollout
 > - Phase 2 汇总现更新为 `51 (45 done, 5 pending, 1 cut)`；aggregate remediation progress 更新为 `173 — 142 done`
 >
 > **v1.9.14 Changelog**:
@@ -1871,11 +1873,12 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 **依赖**: NEW-01 (codegen pipeline)
 
-**现状**: 7 个版本化类型文件 (`analysis-results1.ts` ~ `analysis-results4.ts` 等) → 应整合为单一 canonical schema。
+**现状（2026-03-29 rebaseline）**: checked-in `meta/schemas/analysis_types_v1.schema.json`、`packages/shared/src/generated/analysis-types-v1.ts`、`meta/generated/python/analysis_types_v1.py`、`packages/shared/src/types/analysis-types.ts` 与 `packages/shared/src/__tests__/analysis-types.test.ts` 已经存在，说明 schema/codegen substrate 不是待创建状态，而是已部分落地。当前真实剩余问题是 live TS/runtime authority 仍分摊在 handwritten shared Zod surface 与局部 hep-mcp consumer path 上：`findConnections.ts`、`findRelated.ts`、`expansion.ts`、`survey.ts`、`tools/registry/inspireSchemas.ts` 已消费 shared analysis-types authority，但 `topicEvolution.ts` 仍保留本地 `TopicEvolutionParams` / result interfaces，且 generated analysis-types names 仍被 `packages/shared/src/generated/index.ts` 因 handwritten overlap 而抑制。旧的 `analysis-params*` / `analysis-results*` 文件已不在当前树上；当前 source proof 只剩 `analysis-types.ts`、`analysis-types-v1.ts` 与 shared test file。
 
 **验收检查点**:
-- [x] 单一 `analysis_results_v1.schema.json` SSOT
-- [x] codegen 生成替代手写版本化文件
+- [ ] live hep-mcp analysis consumers 收束到单一 shared analysis-types authority，而不是继续分摊在 local duplicate types / validators 上
+- [ ] `packages/hep-mcp/src/tools/research/topicEvolution.ts` 的本地 duplicate authority 被移除，或明确改为从 shared authority 派生
+- [ ] governance/docs 不再暗示 generated analysis-types 已经是 public TS authority，同时 handwritten overlap 仍在遮蔽同名 generated exports
 
 ### NEW-R07: hep-autoresearch 测试覆盖门禁 ★深度重构 ✅
 
