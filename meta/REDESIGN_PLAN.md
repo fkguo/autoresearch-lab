@@ -1809,7 +1809,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] 跨组件契约测试 CI 通过
 - [ ] 审批三件套产物生成正确（packet_short.md ≤1页, packet.md 全量, approval_packet_v1.json 通过 schema）
 - [ ] `hepar approvals show` + `hepar report render` 命令可用
-- [x] 证据抽象层 schema 定义完成 (NEW-R05)
+- [x] 证据抽象层 schema/codegen substrate 完成；runtime authority adoption 待完成 (NEW-R05)
 - [x] hep-autoresearch 测试覆盖门禁 CI 就绪 (NEW-R07)
 - [x] NEW-R15 编排器 MCP 工具实现 (`orch_run_*` + `orch_policy_query`) 可用
 - [x] `computation_manifest_v1.schema.json` 定义完成 (UX-02)
@@ -1826,19 +1826,32 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 **依赖**: NEW-01 (codegen pipeline), H-18 (ArtifactRef V1)
 
-**现状**: 8 个证据相关文件使用不一致的类型定义。证据 schema 应统一到 `autoresearch-meta/schemas/` 作为 SSOT，通过 codegen 生成 TS/Python 类型。
-**与 H-18 边界**: `ArtifactRefV1` 通过 `$ref` 组合引用 (JSON Schema `$ref`)，不在证据 schema 中重复 `sha256`/`size_bytes` 字段。
+**已完成 substrate**:
+- `meta/schemas/evidence_catalog_item_v1.schema.json` 已作为 evidence SSOT 落地，TS/Python codegen 已产出。
+- `packages/shared/src/generated/evidence-catalog-item-v1.ts` 与 `meta/generated/python/evidence_catalog_item_v1.py` 已反映同一 schema authority。
+- `packages/hep-mcp/src/core/evidence.ts` 已切到 shared generated `EvidenceCatalogItemV1` / `LatexLocatorV1` / `PdfLocatorV1`，LaTeX / project evidence build/query/playback 已在该 authority 上运行。
+- `ArtifactRefV1` 仍通过 `$ref` 组合引用，不在 evidence schema 中重复 `sha256` / `size_bytes` 字段。
 
-**修改文件**:
-| 文件 | 修改内容 |
-|---|---|
-| `autoresearch-meta/schemas/evidence_*.schema.json` | (新文件) 证据类型 SSOT schema |
-| `packages/hep-research-mcp/src/vnext/writing/` | 替换手写类型为 codegen 生成的类型 |
+**仍 pending 的 runtime authority adoption**:
+- `packages/hep-mcp/src/core/pdf/evidence.ts` 仍保留本地手写 `PdfEvidenceCatalogItemV1` / `PdfLocatorV1` / `PdfEvidenceType`；PDF evidence 仍是 run-local typed surface，未切到 shared generated evidence authority。
+- `packages/hep-mcp/src/core/writing/evidence.ts` 与 `packages/hep-mcp/src/core/evidenceSemantic.ts` 仍通过本地 PDF types 和 synthetic paper identity (`run_pdf`) 桥接 PDF evidence。
+- `packages/hep-mcp/src/core/hep/measurements.ts` 仍保留本地 `EvidenceType` union 与 `EvidenceCatalogItemV1Like`，而非直接消费 shared generated `EvidenceType` / `EvidenceCatalogItemV1`。
+- `NEW-CONN-03` 的 `ComputationEvidenceCatalogItemV1` / `hep_run_ingest_skill_artifacts` 已是并行已完成 lane；它不是 `NEW-R05` 未完成部分。
 
-**验收检查点**:
+**最小 truthful 下一交付**:
+- 收拢 PDF -> writing / semantic 边界，而不是重开整个 evidence stack。
+- 在 writing evidence 路径显式引入 `WritingPdfSourceInput.paper_id?: string`。
+- 当 PDF evidence 进入 writing / semantic artifacts 时，只允许使用显式 `pdf_source.paper_id` 或同 run 中唯一成功的 LaTeX paper identity；若两者都不存在则 fail-closed，而不是继续生成 `run_pdf`。
+- 对已符合 shared evidence contract 的 PDF / LaTeX consumer surface，优先改用 shared generated `EvidenceCatalogItemV1` / `PdfLocatorV1` / `EvidenceType`，并移除 `measurements.ts` 中本地 `EvidenceType` union、`EvidenceCatalogItemV1Like` 等重复 authority。
+
+**本 item 当前完成态检查**:
 - [x] 证据 schema 通过 JSON Schema Draft 2020-12 验证
-- [x] codegen 生成的 TS/Python 类型替代手写定义
+- [x] TS/Python codegen 生成完成
+- [x] LaTeX / project evidence build/query/playback 切到 shared generated types
 - [x] `ArtifactRefV1` 通过 `$ref` 组合，无字段重复
+- [ ] PDF evidence 在 writing / semantic boundary 上切到 shared generated evidence authority
+- [ ] PDF evidence 不再通过 synthetic paper identity (`run_pdf`) 进入 semantic path
+- [ ] residual consumer-local evidence types / unions (`PdfEvidenceCatalogItemV1`, `measurements.ts` local `EvidenceType`, `EvidenceCatalogItemV1Like`) 在适用边界上被 shared generated types 替代
 
 ### NEW-R05a: Pydantic v2 代码生成目标 rebaseline ✅ ★深度重构
 
