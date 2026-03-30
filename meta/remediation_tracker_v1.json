@@ -678,14 +678,15 @@
           "note": "Phase 2 Batch 3. check_test_coverage_gate.py: 33-file baseline whitelist, new source files must have tests. make test-coverage-gate target."
         },
         "NEW-R08": {
-          "title": "Skills LOC 预算",
+          "title": "Published skill-pack payload LOC/modularity budget",
           "status": "pending",
-          "complexity": "medium",
+          "complexity": "high",
           "assignee": null,
           "depends_on": [
             "NEW-R02a"
           ],
-          "source": "deep-refactoring-analysis"
+          "source": "deep-refactoring-analysis",
+          "note": "2026-03-29 governance rebaseline: `NEW-R08` no longer truthfully describes a 6-script cleanup. Live authority boundary is the published `skill-pack` payload defined by `packages/skills-market/packages/*.json` `source.subpath` + `source.include`/`source.exclude`, not raw `skills/**`. Current source-proof from the lane worktree: 14 published skill-packs, 291 payload files, 143 payload script files, 64 >200 eLOC, 59 unexempted. Suffix split: 53 `.py`, 9 `.sh`, 2 `.jl`; current `meta/scripts/check_loc.py` only covers touched `py/ts/js`-family files, so oversized published `.sh` / `.jl` entrypoints remain outside live checker coverage. Oversized payload is concentrated in `research-team`, `research-writer`, `hep-calc`, and runner skills. Item remains pending as a published-payload LOC/modularity backlog; future execution must land as bounded skill-cluster cleanup slices rather than a single cross-skill refactor."
         },
         "NEW-R10": {
           "title": "service.py 拆分 (条件性)",

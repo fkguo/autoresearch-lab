@@ -1,6 +1,6 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.15-draft (v1.9.14 + M-20 registry migration rebaseline + M-22 GateSpec TS-approval consumer rebaseline)
+> **版本**: 1.9.15-draft (v1.9.14 + M-20 registry migration rebaseline + M-22 GateSpec TS-approval consumer rebaseline + NEW-R08 published skill-pack payload LOC rebaseline)
 > **日期**: 2026-03-29
 > **基线**: v1.9.14-draft
 > **重构项总数**: 173 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
@@ -13,6 +13,7 @@
 > - 明确当前 remaining duplicate-authority families：`packages/orchestrator` 首个 TS slice 已不再手维护 A1–A5 runtime authority；仍待后续 broader rollout 的 authority family 现收敛为 `packages/hep-autoresearch/src/hep_autoresearch/toolkit/{orchestrator_state.py,computation.py}` 的 Python legacy approval authority、`skills/research-team/scripts/gates/convergence_schema.py` 的 convergence metadata、以及 `meta/schemas/research_workflow_v1.schema.json` 的独立 `WorkflowGateSpec`
 > - checked-in canonical prompt `meta/docs/prompts/prompt-2026-03-29-m22-gatespec-ts-approval-consumers-first.md` 已作为本首个 implementation slice 的实现 authority 落地；`A0` 继续只作为 compatibility query/filter value，且不进入 `GateSpec v1`
 > - 当前 implementation lane 已在 hydrated workspace 重新跑通 `pnpm --filter @autoresearch/shared test -- src/__tests__/gate-registry.test.ts`；shared build 仍是 orchestrator tests 的前置条件，因为 `@autoresearch/shared` 导出 `dist/*`
+> - source-grounded rebaseline 保留 `NEW-R08` 为 pending，但将其 authority boundary 改写为 published `skill-pack` payload（由 `packages/skills-market/packages/*.json` `source.subpath` + `source.include` / `source.exclude` 定义），并锁定当前 source-proof：14 published packs、291 payload files、143 payload script files、64 个 `>200 eLOC`、59 个 unexempted；同时明确 `meta/scripts/check_loc.py` 当前只覆盖 touched `py/ts/js`-family files，因此 `.sh` / `.jl` oversized payload entrypoints 仍在 live checker coverage 外，后续 execution 必须拆为按 skill cluster 的 bounded cleanup slices
 > - Phase 2 汇总现更新为 `51 (45 done, 5 pending, 1 cut)`；aggregate remediation progress 更新为 `173 — 142 done`
 >
 > **v1.9.14 Changelog**:
@@ -1867,18 +1868,32 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [x] 新增源文件无测试 → CI 失败
 - [x] 存量豁免清单有时间框定
 
-### NEW-R08: Skills LOC 预算 ★深度重构
+### NEW-R08: Published skill-pack payload LOC/modularity budget ★治理重基线
 
 > **来源**: `docs/2026-02-20-deep-refactoring-analysis.md` §8
 
-**依赖**: NEW-R02a (CODE-01 CI gate)
+> **2026-03-29 governance rebaseline**: `NEW-R08` 不再 truthfully 对应“6 个脚本的一次性清理”。当前 live maintenance boundary 是 `packages/skills-market/packages/*.json` 定义的 published `skill-pack` payload，而不是 raw `skills/**` tree。
 
-**现状**: 6 个技能脚本超出 CODE-01.1 200 eLOC 限制 (最大: `build_team_packet.py` 1130 LOC)。
-**策略**: 应用 CODE-01.1 到 `skills/*/scripts/`。中间态允许 ≤500 eLOC + CONTRACT-EXEMPT。
+**依赖**: NEW-R02a (repo-wide diff-scoped CODE-01.1 gate)
+
+**现状**:
+- `packages/skills-market/packages/*.json` 当前定义 14 个 published `skill-pack`，通过 `source.subpath` + `source.include`/`exclude` 决定发布 payload。
+- 按当前 installer payload 逻辑，published payload 共 291 files / 143 script files；其中 64 个 script files 超过 200 eLOC，59 个当前无 `CODE-01.1` exemption。
+- suffix split 为 53 `.py`、9 `.sh`、2 `.jl`；当前 `meta/scripts/check_loc.py` 只对 touched `py/ts/js`-family files 生效，因此 oversized published `.sh` / `.jl` entrypoints 不在 live checker coverage 内。
+- 超标 payload 主要集中在 `research-team`、`research-writer`、`hep-calc` 与 runner skills（`claude-cli-runner`、`codex-cli-runner`、`gemini-cli-runner`、`opencode-cli-runner`）；其中 `research-team` publish payload 单独就有 185 files / 113 script files / 41 个 >200 eLOC。
+- 非 published repo-local skills（如 `.system`）在 touched 时仍受 generic CODE-01 约束，但它们不再定义 `NEW-R08` 的 primary backlog boundary。
+
+**策略**:
+- 将 `NEW-R08` 重定义为 published `skill-pack` payload 的 LOC/modularity governance backlog，而不是对 raw `skills/**` 的 blanket cleanup。
+- repo-wide CODE-01.1 authority 继续留在 generic diff-scoped gate；`NEW-R08` 只跟踪 published payload inventory、suffix coverage gap 与 cleanup slicing truth。
+- 当前最小 truthful deliverable 是先锁定 source-proof 与 maintenance boundary，再把后续 execution 拆成按 skill cluster 落地的 bounded cleanup slices；不得再承诺“一条 lane 拆完全部超标 skill scripts”。
+- 旧 Phase 2 batch prompts 中把 `NEW-R08` 写成“6 个脚本 cleanup”的内容视为 historical artifacts；除非被重新提升为 live authority，否则不追改这些历史 prompt。
 
 **验收检查点**:
-- [ ] 6 个脚本拆分至 ≤200 eLOC (或有 CONTRACT-EXEMPT + sunset)
-- [ ] CI gate 覆盖 skills 目录
+- [ ] source-proof 记录当前 published `skill-pack` payload counts、over-200 / unexempted counts、suffix split，以及 `check_loc.py` 的 suffix coverage boundary
+- [ ] `meta/REDESIGN_PLAN.md`、`meta/remediation_tracker_v1.json` 与 canonical prompt 同步到同一 rebaseline truth
+- [ ] 明确记录后续 execution 必须按 dominant published skill clusters 拆分，而不是 monolithic cross-skill refactor
+- [ ] 本治理 lane 不改 `packages/**`，正式 trio review + self-review 完成
 
 ### NEW-R10: `service.py` 拆分 — CUT ★深度重构
 
