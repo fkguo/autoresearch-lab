@@ -1,10 +1,17 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.15-draft (v1.9.14 + M-20 registry migration rebaseline + M-22 GateSpec TS-approval consumer rebaseline + NEW-R08 published skill-pack payload LOC rebaseline)
-> **日期**: 2026-03-29
-> **基线**: v1.9.14-draft
+> **版本**: 1.9.16-draft (v1.9.15 + NEW-R05a Pydantic v2 rebaseline)
+> **日期**: 2026-03-30
+> **基线**: v1.9.15-draft
 > **重构项总数**: 173 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.16 Changelog**:
+> - source-grounded rebaseline 关闭 `NEW-R05a`：`meta/scripts/codegen.sh` 早已硬编码 `--output-model-type pydantic_v2.BaseModel`，checked-in `meta/generated/python/**` 早已作为 Pydantic v2 contract artifacts 落地，且 `make codegen-check` 继续锁定 committed sync
+> - 明确 `NEW-R05a` 当前边界：`meta/generated/python/**` 仅是相邻的 checked-in 契约绑定，不是 live Python runtime authority；当前审计未发现任何 non-test `packages/**` 对 `meta/generated/python/**` 的 import，因此这次 closeout 不声称 Python runtime adoption，也不重开 `packages/**` lane
+> - 归一 `NEW-01` / `SYNC-06` 的 stale wording：Python codegen truth 现统一指向 `meta/generated/python/` 下的 Pydantic v2 绑定，而不是旧的 package-local dataclass 输出路径
+> - 新增 canonical governance prompt `meta/docs/prompts/prompt-2026-03-29-new-r05a-pydantic-v2-rebaseline.md`，锁定 read-first order、narrow done claim、proof commands、formal trio review、self-review 与 reopen conditions
+> - Phase 2 汇总现更新为 `51 (46 done, 4 pending, 1 cut)`；aggregate remediation progress 更新为 `173 — 143 done`
 >
 > **v1.9.15 Changelog**:
 > - source-grounded rebaseline 关闭 `M-20`：commit `85f816f` 早已落地 `migration_registry_v1` schema + checked-in registry + `toolkit/migrate.py` + CLI `migrate` wiring + `test_migrate.py`，当前 item truth 改写为“baseline landed”而非“待从零实现”
@@ -520,17 +527,17 @@ autoresearch-lab/                # private monorepo (personal GitHub)
 >
 > **代码生成工具链**:
 > - TS: `json-schema-to-typescript` → `hep-research-mcp/packages/shared/src/generated/`
-> - Python: `datamodel-code-generator` → `hep-autoresearch/src/hep_autoresearch/generated/`
+> - Python: `datamodel-code-generator` → `meta/generated/python/` (`pydantic_v2.BaseModel` 契约绑定)
 > - CI 门禁: `make codegen && git diff --exit-code */generated/` — 生成文件与 committed 不一致时阻断
 
 | 抽象 | SSOT 位置 | TS 消费 | Python 消费 |
 |---|---|---|---|
 | ~~`AutoresearchErrorEnvelope`~~ | ~~已取消~~ — H-01 简化: 直接扩展 `McpError` += `retryable` + `retry_after_ms`，不新建独立 schema | — | — |
 | `RunState v1` | `autoresearch-meta/schemas/run_state_v1.schema.json` | 生成 enum | 生成 enum |
-| `GateSpec v1` | `autoresearch-meta/schemas/gate_spec_v1.schema.json` | 生成接口 | 生成 dataclass |
-| `EcosystemID` | `autoresearch-meta/schemas/ecosystem_id_v1.schema.json` | 生成接口 | 生成 dataclass |
-| `ArtifactRef v1` | `autoresearch-meta/schemas/artifact_ref_v1.schema.json` | 生成接口 (替代 Zod 手写) | 生成 dataclass |
-| `ApprovalPacket v1` | `autoresearch-meta/schemas/approval_packet_v1.schema.json` | (不消费) | 生成 dataclass |
+| `GateSpec v1` | `autoresearch-meta/schemas/gate_spec_v1.schema.json` | 生成接口 | 生成 Pydantic v2 契约模型 |
+| `EcosystemID` | `autoresearch-meta/schemas/ecosystem_id_v1.schema.json` | 生成接口 | 生成 Pydantic v2 契约模型 |
+| `ArtifactRef v1` | `autoresearch-meta/schemas/artifact_ref_v1.schema.json` | 生成接口 (替代 Zod 手写) | 生成 Pydantic v2 契约模型 |
+| `ApprovalPacket v1` | `autoresearch-meta/schemas/approval_packet_v1.schema.json` | (不消费) | 生成 Pydantic v2 契约模型 |
 | Artifact 命名规范 | `autoresearch-meta/ECOSYSTEM_DEV_CONTRACT.md` §Artifact | lint 脚本检查 | lint 脚本检查 |
 
 ### H-01: McpError 扩展 (retryable + retry_after_ms) ✅ (已实现)
@@ -835,16 +842,16 @@ branches:     candidate → pending, active → running, abandoned → completed
 **修改文件**:
 | 文件 | 修改内容 |
 |---|---|
-| `autoresearch-meta/scripts/codegen.sh` | (新文件) 统一入口：调用 `json-schema-to-typescript` 生成 TS 接口 → `datamodel-code-generator` 生成 Python dataclass；输出到各组件 `generated/` 目录 |
+| `autoresearch-meta/scripts/codegen.sh` | (新文件) 统一入口：调用 `json-schema-to-typescript` 生成 TS 接口 → `datamodel-code-generator --output-model-type pydantic_v2.BaseModel` 生成 Python 契约绑定；输出到 `packages/shared/src/generated/` 与 `meta/generated/python/` |
 | `autoresearch-meta/Makefile` | 新增 `codegen` target；新增 `codegen-check` target（生成 + `git diff --exit-code`） |
 | `hep-research-mcp/packages/shared/src/generated/` | (生成目录) TS 接口文件，替代手写 Zod 定义中的跨组件类型 |
-| `hep-autoresearch/src/hep_autoresearch/generated/` | (生成目录) Python dataclass 文件，替代手写镜像 |
+| `meta/generated/python/` | (生成目录) Python Pydantic v2 契约绑定，作为 checked-in cross-language contract artifact |
 | CI 配置 | `make codegen-check` 作为 CI 门禁 |
 
 **验收检查点**:
 - [x] `make codegen` 从 `autoresearch-meta/schemas/*.schema.json` 生成 TS + Python 代码
 - [x] 生成的 TS 接口可在 hep-research-mcp 中直接 import 并通过编译
-- [x] 生成的 Python dataclass 可在 hep-autoresearch 中直接 import 并通过 mypy
+- [x] 生成的 Python 绑定由 `datamodel-code-generator --output-model-type pydantic_v2.BaseModel` 产生，并可通过 `python3 -m py_compile meta/generated/python/*.py`
 - [x] CI 中 `make codegen-check` 检测到 schema 变更未重新生成时阻断
 
 > **NEW-R05 修正 (深度重构分析)**: Python 代码生成目标从 `dataclasses` 修正为 `Pydantic v2 BaseModel` (同一工具 `datamodel-code-generator`，flag `--output-model-type pydantic_v2.BaseModel`)。Pydantic v2 提供运行时验证对等性（与 TS 侧的 Zod runtime validation 对称）。此修正作为 NEW-R05a 独立子项管理，可在不影响 Phase 1 主路径的情况下时间框定评估 `pydantic-core` Rust wheel 构建风险。
@@ -1833,14 +1840,17 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [x] codegen 生成的 TS/Python 类型替代手写定义
 - [x] `ArtifactRefV1` 通过 `$ref` 组合，无字段重复
 
-### NEW-R05a: Pydantic v2 代码生成目标评估 ★深度重构
+### NEW-R05a: Pydantic v2 代码生成目标 rebaseline ✅ ★深度重构
 
 > **来源**: `docs/2026-02-20-deep-refactoring-analysis.md` §6 — 独立时间框定子项
 
 **依赖**: NEW-01 (codegen pipeline)
 
-**评估内容**: 将 `datamodel-code-generator` 的 Python 输出从 `dataclasses` 切换为 `Pydantic v2 BaseModel` (`--output-model-type pydantic_v2.BaseModel`)。需评估 `pydantic-core` Rust wheel 构建/安装风险。
-**决策门禁**: 时间框定评估; 如果 Rust wheel 在目标平台 (macOS arm64, Linux x86_64) 构建无问题，采纳; 否则保留 dataclasses。
+> **Rebaseline (2026-03-30, source audit)**: 这不再是一个“是否切换”的 pending evaluation lane。当前 checked-in `meta/scripts/codegen.sh` 已硬编码 `--output-model-type pydantic_v2.BaseModel`，`meta/generated/python/**` 已作为 Pydantic v2 契约绑定提交入库，`Makefile` 的 `codegen-check` 继续锁定 schema→generated sync；并且本轮 source audit 未发现任何 non-test `packages/**` 对 `meta/generated/python/**` 的 import。因此，`NEW-R05a` 的真实状态是“baseline already landed, governance wording stale”，而不是“运行时 adoption 尚未决策”。旧的 “先评估 `pydantic-core` Rust wheel 风险再决定是否采纳” 文案已过时，因为 codegen-artifact 层面的采纳早已发生。
+
+**状态**: done
+**当前边界**: `meta/generated/python/**` 仍只是相邻的 checked-in contract artifact，不是 live Python runtime authority；本条目不声称 `packages/**` 已切换到这些绑定。
+**若 future reopen**: 仅当 Python codegen target 再次变更、`meta/generated/python/**` 被提升为 live runtime authority、或当前 proof commands 不再成立时才应 reopen。
 
 ### NEW-R06: 分析类型 Schema 整合 Phase 2 Batch 4 ★深度重构
 
@@ -3685,7 +3695,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06, NEW-R09 (cut) | 23 (22 done, 1 cut) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (45 done, 5 pending, 1 cut) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (46 done, 4 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (4 done, 4 pending) |
 | **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (17 done, 1 in_progress, 3 pending, 3 design_complete) |
