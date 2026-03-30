@@ -1835,7 +1835,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 **仍 pending 的 runtime authority adoption**:
 - `packages/hep-mcp/src/core/pdf/evidence.ts` 仍保留本地手写 `PdfEvidenceCatalogItemV1` / `PdfLocatorV1` / `PdfEvidenceType`；PDF evidence 仍是 run-local typed surface，未切到 shared generated evidence authority。
 - `packages/hep-mcp/src/core/writing/evidence.ts` 与 `packages/hep-mcp/src/core/evidenceSemantic.ts` 仍通过本地 PDF types 和 synthetic paper identity (`run_pdf`) 桥接 PDF evidence。
-- `packages/hep-mcp/src/core/hep/measurements.ts` 仍保留本地 `EvidenceType` union 与 `EvidenceCatalogItemV1Like`，而非直接消费 shared generated `EvidenceType` / `EvidenceCatalogItemV1`。
+- `packages/hep-mcp/src/core/hep/measurements.ts` 仍保留本地 `EvidenceType` union（shared generated `EvidenceType` 的 LaTeX-only 子集）与 `EvidenceCatalogItemV1Like`，而非直接消费 shared generated `EvidenceType` / `EvidenceCatalogItemV1`。
 - `NEW-CONN-03` 的 `ComputationEvidenceCatalogItemV1` / `hep_run_ingest_skill_artifacts` 已是并行已完成 lane；它不是 `NEW-R05` 未完成部分。
 
 **最小 truthful 下一交付**:

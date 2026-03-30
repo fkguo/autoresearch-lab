@@ -54,6 +54,7 @@ Implementation lane must read, in order:
 - If neither source of paper identity exists, fail closed instead of fabricating `run_pdf`.
 - Use shared generated `EvidenceCatalogItemV1` and shared `PdfLocatorV1` for PDF items that enter writing / semantic catalogs, embeddings, and semantic-query candidate flow.
 - Replace `EvidenceCatalogItemV1Like` with the shared generated type wherever the input is already LaTeX catalog-shaped.
+- Note: local `EvidenceCatalogItemV1Like` uses `version?: number` while shared generated `EvidenceCatalogItemV1` requires `version: 1`; replacement call sites must supply that field explicitly.
 - Replace the local `EvidenceType` union in `packages/hep-mcp/src/core/hep/measurements.ts` with the shared generated `EvidenceType` (or a compatible subset derived from it) so that measurements no longer carries a second evidence-type authority.
 - Update or add targeted tests that prove the new fail-closed paper identity behavior and the shared-type consumer boundary.
 
