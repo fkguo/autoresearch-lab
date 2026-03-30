@@ -1875,10 +1875,12 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 **现状（2026-03-29 rebaseline）**: checked-in `meta/schemas/analysis_types_v1.schema.json`、`packages/shared/src/generated/analysis-types-v1.ts`、`meta/generated/python/analysis_types_v1.py`、`packages/shared/src/types/analysis-types.ts` 与 `packages/shared/src/__tests__/analysis-types.test.ts` 已经存在，说明 schema/codegen substrate 不是待创建状态，而是已部分落地。当前真实剩余问题是 live TS/runtime authority 仍分摊在 handwritten shared Zod surface 与局部 hep-mcp consumer path 上：`findConnections.ts`、`findRelated.ts`、`expansion.ts`、`survey.ts`、`tools/registry/inspireSchemas.ts` 已消费 shared analysis-types authority，但 `topicEvolution.ts` 仍保留本地 `TopicEvolutionParams` / result interfaces，且 generated analysis-types names 仍被 `packages/shared/src/generated/index.ts` 因 handwritten overlap 而抑制。旧的 `analysis-params*` / `analysis-results*` 文件已不在当前树上；当前 source proof 只剩 `analysis-types.ts`、`analysis-types-v1.ts` 与 shared test file。
 
+**状态（2026-03-30 bounded live-authority closeout）**: done。当前 live hep-mcp/shared analysis-tool path 已收束到单一 handwritten shared authority：`topicEvolution.ts` 改为从 `@autoresearch/shared` 导入 `TopicEvolutionParamsSchema` / `TopicEvolutionSchema` / shared result types，并删除本地 hand-owned params/result interfaces；为避免行为漂移，omitted `granularity` 在 direct `topicEvolution` path 和 live `topicAnalysis` caller path 上都继续保持既有 `'5year'` 语义，而不是 shared schema 的 `'year'` default。Shared test 现锁定 handwritten runtime ownership（且仍验证 shared schema 自身 default 为 `granularity='year'`, `include_subtopics=false`），hep-mcp tests 则用跨 2020→2024 的多年度跨度锁定 direct + unified caller path 的 legacy `5year` 行为。Generated-vs-handwritten overlap 仍存在于 shared 内部，但不再构成 live hep-mcp authority split，因此不再阻塞本条目的 bounded closeout。
+
 **验收检查点**:
-- [ ] live hep-mcp analysis consumers 收束到单一 shared analysis-types authority，而不是继续分摊在 local duplicate types / validators 上
-- [ ] `packages/hep-mcp/src/tools/research/topicEvolution.ts` 的本地 duplicate authority 被移除，或明确改为从 shared authority 派生
-- [ ] governance/docs 不再暗示 generated analysis-types 已经是 public TS authority，同时 handwritten overlap 仍在遮蔽同名 generated exports
+- [x] live hep-mcp analysis consumers 收束到单一 shared analysis-types authority，而不是继续分摊在 local duplicate types / validators 上
+- [x] `packages/hep-mcp/src/tools/research/topicEvolution.ts` 的本地 duplicate authority 被移除，或明确改为从 shared authority 派生
+- [x] governance/docs 不再暗示 generated analysis-types 已经是 public TS authority，同时 handwritten overlap 仍在遮蔽同名 generated exports
 
 ### NEW-R07: hep-autoresearch 测试覆盖门禁 ★深度重构 ✅
 
