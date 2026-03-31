@@ -1,17 +1,25 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.16-draft (v1.9.15 + NEW-R05a Pydantic v2 rebaseline)
-> **日期**: 2026-03-30
-> **基线**: v1.9.15-draft
-> **重构项总数**: 173 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
+> **版本**: 1.9.17-draft (v1.9.16 + runtime/sub-agent rebaseline ratified)
+> **日期**: 2026-03-31
+> **基线**: v1.9.16-draft
+> **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.17 Changelog**:
+> - 2026-03-31 source-grounded formal trio review 已完成 runtime/sub-agent rebaseline ratification：`Opus = CONVERGED_WITH_AMENDMENTS`、`Gemini-3.1-Pro-Preview = CONVERGED`、`OpenCode(zhipuai-coding-plan/glm-5.1) = CONVERGED_WITH_AMENDMENTS`，三席均 `0` blocking
+> - `NEW-RT-08/09/10` 现正式立项并进入 Phase 5 tracker：分别覆盖 agent-loop robustness、in-turn tool orchestration + runtime tool filtering、delegated runtime session / approval / task scoping；它们是 follow-up queue，而不是对 `NEW-RT-01` / `NEW-LOOP-01` / `EVO-13` 的 reopen
+> - 已吸收 trio amendments 并写入立项范围：A1 明确 backend usage metadata plumbing + telemetry/runtime-state 分层；A2/A3 明确 compaction 作用面是 `MessageParam[]` + `tool_result` 历史并锁定 truncation/completion `stop_reason` taxonomy；B1/B3/B4 明确 orchestrator-side tool policy registry、`McpClient.callTool()` deny seam、以及对现有 `TeamPermissionMatrix` / `team-execution-permissions.ts` 的扩展；C2/C3 明确 agent-keyed approval collection 与 `ResearchTask` projection，而不是第二套 task substrate
+> - sequencing 现正式更新为 `NEW-RT-08 -> NEW-RT-09 -> NEW-RT-10 -> broader M-22 rollout / future EVO-13 widening`；source-grounded reason 是当前 `McpClient.callTool()` 仍无 runtime tool filtering、`TeamPermissionMatrix` 仍非 tool-visibility authority，因此 `M-22` consumer widening 不应先于 runtime permission inheritance / filtering
+> - `NEW-RT-08/09/10` 现已从 proposal wording 收束为 executable tracker items：保留建议 batch 顺序、子任务拆分与 acceptance framing，便于后续直接转入 checked-in implementation prompt
+> - Phase 5 汇总现更新为 `27 (17 done, 1 in_progress, 6 pending, 3 design_complete)`；aggregate remediation progress 更新为 `176 — 144 done`
 >
 > **v1.9.16 Changelog**:
 > - source-grounded rebaseline 关闭 `NEW-R05a`：`meta/scripts/codegen.sh` 早已硬编码 `--output-model-type pydantic_v2.BaseModel`，checked-in `meta/generated/python/**` 早已作为 Pydantic v2 contract artifacts 落地，且 `make codegen-check` 继续锁定 committed sync
 > - 明确 `NEW-R05a` 当前边界：`meta/generated/python/**` 仅是相邻的 checked-in 契约绑定，不是 live Python runtime authority；当前审计未发现任何 non-test `packages/**` 对 `meta/generated/python/**` 的 import，因此这次 closeout 不声称 Python runtime adoption，也不重开 `packages/**` lane
 > - 归一 `NEW-01` / `SYNC-06` 的 stale wording：Python codegen truth 现统一指向 `meta/generated/python/` 下的 Pydantic v2 绑定，而不是旧的 package-local dataclass 输出路径
 > - 新增 canonical governance prompt `meta/docs/prompts/prompt-2026-03-29-new-r05a-pydantic-v2-rebaseline.md`，锁定 read-first order、narrow done claim、proof commands、formal trio review、self-review 与 reopen conditions
-> - Phase 2 汇总现更新为 `51 (46 done, 4 pending, 1 cut)`；aggregate remediation progress 更新为 `173 — 143 done`
+> - 本轮同时刷新了当时的 Phase 2 / aggregate 统计；当前统一真值以后续 tracker 同步结果为准
 >
 > **v1.9.15 Changelog**:
 > - source-grounded rebaseline 关闭 `M-20`：commit `85f816f` 早已落地 `migration_registry_v1` schema + checked-in registry + `toolkit/migrate.py` + CLI `migrate` wiring + `test_migrate.py`，当前 item truth 改写为“baseline landed”而非“待从零实现”
@@ -34,32 +42,32 @@
 > - `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5.1)` formal trio review 现已 source-grounded 收敛到 `0` blocking / `0` reviewer amendments；`r1/meta.json` 中的 wrapper-format drift 仅作 informational 记录，不构成 reviewer failure 或 closeout blocker
 > - formal self-review 复核当前源码、front-door surface、acceptance 结果与 GitNexus low-risk post-change evidence 后继续保持 `0` blocking；`EVO-05` 现改读为 `done`
 > - 记录 `L-01` bounded docs/governance closeout：新增 `docs/URI_REGISTRY.md` 作为当前 monorepo live `hep://` / `orch://` / `pdg://` URI 集中注册表，并同步 `docs/README_zh.md`、`docs/ARCHITECTURE.md`、`meta/docs/orchestrator-mcp-tools-spec.md` 去除 stale `hep://corpora`、stale bare `hep://runs/<run_id>` 与 stale `orch://runs/<run_id>/{state,ledger}` wording，不改 runtime 语义
-> - 更新 Phase 4 汇总为 `8 (4 done, 4 pending)`、Phase 5 汇总保持 `24 (17 done, 1 in_progress, 3 pending, 3 design_complete)`；当前 aggregate 更新为 `173 — 141 done`
+> - 同步了当时的 Phase 4 / Phase 5 / aggregate 汇总；当前统一真值以后续 tracker 同步结果为准
 >
 > **v1.9.13 Changelog**:
 > - 记录 `EVO-14` Batch 9 implementation closeout：当前 live fleet surface 现已包含显式 `orch_fleet_reassign_claim`，其语义严格锁定为 same-project、single-item、operator-picked target worker 的 manual reassignment only
 > - 明确 Batch 9 仍只允许读取 `.autoresearch/fleet_queue.json` + `.autoresearch/fleet_workers.json` 并仅改写 queue claim / audit ledger；scheduler truth 继续只在 `orch_fleet_worker_poll`，不得滑入 takeover / daemon / auto-selection / second authority / cross-root mutation orchestration
-> - 更新 EVO-14 当前现实与 batch checklist：Batch 9 现为 `done`，而 broader lifecycle automation 仍是后续单独规划问题；Phase 5 汇总继续保持 `24 (16 done, 1 in_progress, 3 pending, 4 design_complete)`，aggregate 当时为 `173 — 136 done`
+> - 更新 EVO-14 当前现实与 batch checklist：Batch 9 现为 `done`，而 broader lifecycle automation 仍是后续单独规划问题；相关统计以当前 tracker 同步结果为准
 >
 > **v1.9.12 Changelog**:
 > - 锁定 `EVO-14` 在 Batch 8 之后的最小可信下一步：新增 checked-in canonical planning prompt `meta/docs/prompts/prompt-2026-03-28-evo14-batch9-manual-reassignment-planning.md`，把 Batch 9 定义为 `explicit manual reassignment only`
 > - 明确 Batch 9 仍只允许单项目根、单 queue item、显式 operator-picked target worker 的 reassignment surface；queue truth / worker truth / scheduler truth / intervention truth 必须继续分离
-> - 将 broader lifecycle automation 继续保留为 Batch 9 之后的单独 future-planning question，不提前滑入 auto takeover / auto reassignment / daemonized scheduling / second authority / cross-root mutation orchestration；Phase 5 汇总继续保持 `24 (16 done, 1 in_progress, 3 pending, 4 design_complete)`，aggregate 仍为 `173 — 136 done`
+> - 将 broader lifecycle automation 继续保留为 Batch 9 之后的单独 future-planning question，不提前滑入 auto takeover / auto reassignment / daemonized scheduling / second authority / cross-root mutation orchestration；相关统计以当前 tracker 同步结果为准
 >
 > **v1.9.11 Changelog**:
 > - 将 stale `EVO-05` file table 从不存在的 `idea-core/src/idea_core/plugins/pack_spec.py` / `autoresearch-meta/...` 路径 delete-and-replace 为 source-grounded current reality：live runtime-facing domain-pack authority 仍在 `packages/idea-core/src/idea_core/engine/{domain_pack,default_domain_pack,hep_domain_pack}.py`、`hep_builtin_domain_packs.json`、`coordinator.py`、`rpc/server.py` 与 `test_domain_pack_m30.py`
 > - 明确 `meta/schemas/domain_pack_manifest_v1.schema.json` 虽然是 live checked-in schema，但当前属于 Track A / REP domain-pack manifest semantics，而不是 today’s `idea-core` loader / installer contract
 > - 明确 `EVO-12` 已关闭的 `packages/skills-market/**` authority 仍只覆盖 market-package install lifecycle；当前无 `domain-pack` package type、无 domain-pack install flow、也无 `--auto-safe` 复用权
 > - 新增 canonical rebaseline prompt `meta/docs/prompts/prompt-2026-03-28-evo05-domain-pack-rebaseline.md`，并将 `EVO-05` 收敛为 `design_complete`：first deliverable 先锁定 runtime-backed domain-pack catalog / export authority，而不是伪造“独立安装/升级已存在”
-> - 将当前 Phase 5 汇总从 `24 (16 done, 1 in_progress, 4 pending, 3 design_complete)` 更新为 `24 (16 done, 1 in_progress, 3 pending, 4 design_complete)`；aggregate done 仍为 `136`
+> - 同步修正了当时的 Phase 5 汇总漂移；当前统一真值以后续 tracker 同步结果为准
 >
 > **v1.9.10 Changelog**:
 > - 保持 `EVO-07` 为已关闭的 reproducibility-facing bounded first deliverable：`main@635e427` 已经 landed `REP projection first` slice，当前 live `packages/rep-sdk` authority 仍以 `src/model/verification-projection.ts`、`src/validation/verification-projection.ts`、`src/validation/rdi-gate.ts` 及其相邻 exports/tests 为准
 > - 在 rebased closeout resume (`main@95b0fc0` baseline) 上关闭 `EVO-06`：其 bounded `integrity semantics first` companion slice 仍然只是在 `packages/rep-sdk` 内把现有 verification truth 读成 integrity/gating semantics，而不是新增 truthful report/check-run authority
-> - 将 v1.9.9 的 Phase 5 汇总 `24 (14 done, 1 in_progress, 4 pending, 5 design_complete)` 更新为 `24 (16 done, 1 in_progress, 4 pending, 3 design_complete)`，并相应把总完成数从 `134 done` 更新为 `136 done`
+> - 同步刷新了当时的 Phase 5 / aggregate 统计；当前统一真值以后续 tracker 同步结果为准
 >
 > **v1.9.9 Changelog**:
-> - 在同一 governance lane 修复 Phase 5 summary drift：`24 (14 done, 4 pending, 6 design_complete)` -> `24 (14 done, 1 in_progress, 4 pending, 5 design_complete)`
+> - 在同一 governance lane 修复了当时的 Phase 5 summary drift；当前统一真值以后续 tracker 同步结果为准
 > - 重写 `EVO-06` / `EVO-07`，以已完成的 `NEW-VER-01` typed verification kernel 作为唯一 live authority；明确 authority order = `verification_subject_v1` / `verification_subject_verdict_v1` / `verification_coverage_v1` artifacts -> `computation_result_v1.verification_refs` + `writing_review_bridge_v1.verification_refs` carriers -> `writing_evidence_meta_v1.json.verification` derived host-side summary
 > - 新增 canonical implementation prompt `meta/docs/prompts/prompt-2026-03-27-evo06-evo07-verification-projection-first-deliverable.md`，锁定 bounded `REP projection first` slice：`EVO-07` 为 first implementation owner，`verification_check_run_v1` 继续保持 schema-only，且不 reopen `NEW-VER-01` / `NEW-SHELL-01` / `EVO-11` / `EVO-18`
 >
@@ -781,6 +789,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 > **Rebaseline (2026-03-29, source audit)**: `meta/schemas/gate_spec_v1.schema.json`, `packages/shared/src/gate-registry.ts`, and `packages/shared/src/__tests__/gate-registry.test.ts` are already live. The remaining gap is no longer “create GateSpec”, but “drive non-test cross-component consumers to map/live-read against the shared GateSpec substrate”.
 >
 > **Consumer rollout narrowing (2026-03-29, TS approvals first)**: first implementation scope was explicitly bounded to `packages/shared` + `packages/orchestrator` approval authority adoption only. The current worktree now lands that bounded TS approval/query/state-validation/read-model slice: `packages/orchestrator` live-reads shared GateSpec authority for A1–A5, keeps `A0` compatibility-only outside `GateSpec v1`, and still defers Python legacy approval mappings, research-team convergence gate adoption, and `research_workflow_v1` / template cleanup. The broader `M-22` consumer rollout therefore remains pending even though the first real non-test consumer slice is now live.
+>
+> **2026-03-31 ratified sequencing note (runtime-first)**: broader `M-22` rollout should no longer be treated as the immediate next runtime priority. Source-grounded reason: `McpClient.callTool()` still dispatches any requested tool without runtime allowlist enforcement, while `TeamPermissionMatrix` currently only constrains delegation / intervention structure rather than actual tool visibility at execution time. Widening GateSpec into more runtime consumers before `NEW-RT-09` / `NEW-RT-10` would therefore broaden surfaces that can name gates while tool filtering and permission inheritance remain prompt/protocol-only. Ratified order: land `NEW-RT-09` / `NEW-RT-10` first, then resume broader `M-22` rollout beyond the current TS approvals-first slice.
 
 **依赖**: H-04 (Gate Registry)
 **关联**: C-01 (审批超时)
@@ -1591,6 +1601,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [x] approval gate 注入: 遇到 gate 时暂停等待批准
 
 **后续 (SOTA 架构 2026-03-06)**: `NEW-RT-01` 保持 done；后续以 `NEW-RT-06` / `NEW-RT-07` 叠加 provider-agnostic routing，不 retroactively 重写此项。
+**2026-03-31 ratified clarification (runtime baseline)**: `NEW-RT-01` 继续保持 done，但不应再被解读成“agent loop runtime 已足够成熟”。当前 live `AgentRunner` 仍主要提供可用 baseline；已 ratify 的 follow-up `NEW-RT-08/09/10` 将在其上继续补齐长会话 context/window robustness、single-turn tool orchestration、runtime tool filtering，以及 delegated session / approval / task scoping，而不是 reopen 本项。
 
 ### NEW-RT-02: MCP StdioClient Reconnect ✅ Batch 4B (Phase 2 early)
 
@@ -2417,6 +2428,8 @@ paper/
 > **来源**: `meta/docs/sota-monorepo-architecture-2026-03-06.md`（v1.9.2 追加 single-user loop clarification；Opus + Kimi K2.5 / OpenCode 双审核通过，0 blocking，clarifications integrated）
 > **原则**: 不重写已完成的 `NEW-RT-01` / `NEW-SEM-06`; 将其视为基线，在其上叠加后续架构项。
 > **排期原则**: 保持既有 Batch 11–16 语义质量轨不变；新增项走并行 infra/retrieval/loop lane，避免把当前 SEM 批次全部重排。
+>
+> **2026-03-31 runtime-first proposal note**: 独立 `Opus` + `GLM-5.1` clean-room 审查与 direct source audit 的交集已把最高优先级重新指向 runtime / sub-agent / task foundations，而不是 hook-first expansion。`NEW-RT-01` / `NEW-LOOP-01` 继续作为已落地 baseline；proposal 的方向是在其上增加 runtime follow-up queue，而不是 retroactively 重写已关闭项。
 
 | ID | 标题 | 主要修改位置（逻辑组件路径） | 复杂度 | 依赖 | 验收重点 |
 |---|---|---|---|---|---|
@@ -2425,7 +2438,7 @@ paper/
 | NEW-DISC-01 | Federated Scholar Discovery | `packages/shared/src/discovery/`（必要时后续提升为 `packages/scholar-broker/`） | high | NEW-OPENALEX-01 | `INSPIRE + OpenAlex + arXiv` federated planning/dedup/canonicalization；shared identifiers 增加 `openalex_id`；query-plan / dedup / search-log artifacts 就绪 |
 | NEW-LITFLOW-01 | Generic Literature Workflow Extraction | `meta/recipes/` + `meta/protocols/session_protocol_v1.md` + `packages/skills-market/` + consumer skill docs | medium | M-24, NEW-DISC-01, NEW-WF-01, NEW-SKILL-WRITING | generic literature workflow authority 下沉到 checked-in workflow-pack/recipes；`research-team` 作为 consumer；`M-25` 仅保留 atomic `inspire_critical_research` cleanup |
 | NEW-LITFLOW-02 | Executable Literature Workflow Authority + High-Level Surface Pruning | `packages/literature-workflows/` + `meta/recipes/` + `packages/hep-autoresearch/` + `skills/research-team/` + `packages/hep-mcp/` catalogs/docs | high | NEW-LITFLOW-01, NEW-DISC-01, NEW-WF-01, M-24 | launcher-backed executable workflow authority；repoint checked-in consumers；从 `standard`/`full` 直接删除 workflow-like high-level literature MCP tools；不并入 `M-25` |
-| NEW-LOOP-01 | Single-User Research Loop Runtime | `packages/orchestrator/src/research-loop.ts` + workspace/task graph types | high | NEW-WF-01, UX-06, NEW-RT-06 | 研究执行内核从阶段线性流转为 event/task graph；interactive/autonomous 共用 substrate；成为 `EVO-01/02/03` 前置 |
+| NEW-LOOP-01 | Single-User Research Loop Runtime | `packages/orchestrator/src/research-loop/*` + workspace/task graph types | high | NEW-WF-01, UX-06, NEW-RT-06 | 研究执行内核从阶段线性流转为 event/task graph；interactive/autonomous 共用 substrate；成为 `EVO-01/02/03` 前置 |
 | NEW-SEM-06-INFRA | Retrieval Backbone Substrate Decision | shared retrieval infra + eval harness | medium | NEW-RT-05 | 锁定 embedding/index substrate；明确 hosted vs local、vector store、late-interaction path；以 `hashing_fnv1a32` 为基线出具 eval protocol |
 | NEW-SEM-06b | Hybrid Candidate Generation + Strong Reranker | `hep-mcp/src/core/evidence.ts` / `evidenceSemantic.ts` / broker adapters | high | NEW-RT-05, NEW-DISC-01, NEW-SEM-06-INFRA | hybrid recall + strong reranker 在 canonicalized docs 上显著优于 `SEM-06a`；不再 hard-fork provider-local identities |
 | NEW-SEM-06d | Triggered Query Reformulation + QPP | retrieval query planner + hard-case policy | medium | NEW-SEM-06b | 仅在 low-recall / high-ambiguity 场景触发 reformulation；hard subset 指标提升且成本受控 |
@@ -2551,6 +2564,98 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [x] `EVO-01/02/03` 的依赖说明改为在 `NEW-LOOP-01` 之上接入 compute/feedback/writing automation
 - [x] `EVO-01` compute handoff 与 `EVO-02` feedback handoff 至少各有 1 个 typed interface stub + integration smoke test
 - [x] 至少有一条端到端 smoke path 能展示“文献 → idea → compute → 回跳文献/idea → writing/review”非线性路径
+
+**2026-03-31 ratified clarification (source-audit)**: `NEW-LOOP-01` 继续保持 done。当前代码现实已经拥有显式 `ResearchTask` / event log / checkpoint substrate；本次 independent review 真正暴露的缺口不是“缺 task graph”，而是围绕该 substrate 的 Claude Code-style 长会话稳健性、background-task lifecycle、以及 delegated session / approval scoping 仍未形成 first-class runtime。新增 `NEW-RT-08/09/10` 因此是 runtime follow-up queue，而不是 reopen `NEW-LOOP-01`。
+
+#### 2026-03-31 ratified runtime / sub-agent follow-up queue
+
+| Proposal ID | 标题 | 建议落点 | 核心范围 | Sequencing note |
+|---|---|---|---|---|
+| NEW-RT-08 | Agent Loop Robustness | P5A runtime follow-up，位于 `NEW-RT-06/07` 之后、进一步 team-runtime widening 之前 | context/window management、overflow recovery、output truncation recovery、diminishing-returns detection、compaction / summarization boundary | 构建在 `NEW-RT-01` 已落地 loop baseline 之上，不 reopen `NEW-RT-01` |
+| NEW-RT-09 | In-Turn Tool Orchestration + Runtime Tool Filtering | P5A runtime follow-up，位于 broader `M-22` rollout 之前 | single-turn read-only / concurrency-safe tool batching、runtime MCP/tool allowlist enforcement、delegated tool permission filtering | 把 permission matrix 从 protocol/prompt 语义推进到 execution-time constraint；先于 broader `M-22` consumer widening |
+| NEW-RT-10 | Delegated Runtime Session / Approval / Task Scoping | P5A runtime follow-up，位于 future `EVO-13` widening 之前或与之并行 | agent-scoped session / pending-approval state、background-task lifecycle、sub-agent context/MCP inheritance、cleanup / termination semantics | 属于 team-local runtime 语义；不应漂移进 `EVO-14` fleet layer |
+
+**建议顺序（ratified）**:
+
+| Window | Proposal item | Why first |
+|---|---|---|
+| P5A runtime batch R1 | `NEW-RT-08` | 不先解决长会话稳健性，后续 sub-agent / loop widening 只会把 fragility 放大 |
+| P5A runtime batch R2 | `NEW-RT-09` | 当前 `McpClient.callTool()` 仍不会在执行期拦截未授权工具，`TeamPermissionMatrix` 也尚未变成 agent-visible tool filter；若先扩 broader `M-22` rollout，只会扩大“有 gate 语义、无 runtime filtering”的 consumer 面 |
+| P5A runtime batch R3 | `NEW-RT-10` | 在已有 loop/task substrate 与 runtime filtering 之上，再补 agent-scoped session / approval / background-task semantics，避免过早把 team-local concern 写进 fleet layer |
+| P5A runtime batch R4+ | broader `M-22` rollout / future `EVO-13` widening | 以上三项完成后，再扩 shared gate consumer 与更宽的 delegated runtime surface，返工风险最低 |
+
+#### `NEW-RT-08` 子任务拆分（建议 P5A runtime batch R1）
+
+1. **A1 — Turn-level usage / window accounting**
+   - 在 `AgentRunner` / backend response seam 增加 turn-level usage accounting 与 `window_pressure` runtime bookkeeping。
+   - 首版必须先把 `chatBackend.createMessage()` 返回的 usage/token metadata 明确 plumbing 到 accounting seam；不能只在现有接口外空谈“补 accounting”，因为当前 `runImpl()` 只消费 `content` 与 `stop_reason`。
+   - 明确 observability metrics（`SpanCollector` / ledger telemetry）与 runtime window management state（如 token budget、compaction cursor、retry budget）的双层边界：前者只做观测，后者才驱动 overflow/truncation recovery，避免把 A1 误写成纯 telemetry enrichment。
+2. **A2 — Context overflow recovery**
+   - 为 `prompt too long` / window exhaustion 增加 fail-closed recovery path：先 compact / summarize / trim，再有限次重试。
+   - compaction / summarize 必须直接作用于 `MessageParam[]` 会话历史与 `tool_result` payload，而不是假设存在 Claude Code `tokenBudget.ts` 那种 streaming token-budget loop；这里只能吸收其 design pattern，不能照搬实现表面。
+   - compact boundary 必须留下 auditable marker，而不是静默删历史。
+3. **A3 — Output truncation recovery**
+   - 对模型输出截断 / `max_tokens` 打断增加 continuation / bounded retry 语义，避免将不完整回答误当成完成。
+   - 首版必须显式定义 `stop_reason` 分类：至少将 `max_tokens`（及 adapter alias）视为 truncation recovery，将 `end_turn` / `stop_sequence`（及 adapter alias `endTurn`）视为 terminal completion；`tool_use` 继续走现有 tool path，unknown reasons fail-closed。
+4. **A4 — Diminishing-returns detection**
+   - 增加“连续低增益 turns”检测，用于提示 synthesize / stop / handoff，而不是让 loop 无界空转。
+   - 这是质量 guard，不是成本上限。
+5. **A5 — Regression tests + telemetry**
+   - 为 overflow、truncation、compaction、diminishing-returns 各补 1 条 scoped acceptance/test path，并记录 telemetry/artifact。
+
+**`NEW-RT-08` 验收口径**:
+- [ ] 长会话在 window pressure 下不会直接以 provider error 终止；至少存在 1 条 compact/retry 成功路径
+- [ ] compact / trim / summarize 产生可审计 runtime marker，而不是静默改写历史
+- [ ] 输出被截断时存在 bounded continuation/retry 语义，且不会误报 `done`
+- [ ] diminishing-returns 检测不会变成硬成本 gate，但能阻止明显空转
+- [ ] 现有 `AgentRunner` lane queue / approval gate / durable execution contract 不回退
+
+#### `NEW-RT-09` 子任务拆分（建议 P5A runtime batch R2）
+
+1. **B1 — Tool concurrency metadata normalization**
+   - 为 orchestrator-visible tool surface 引入 orchestrator-side execution policy registry，显式声明 `read_only` / `concurrency_safe` / `stateful` / `approval_required` 等元数据，禁止靠隐式命名猜测。
+   - 当前 MCP protocol 并不提供 tool-level concurrency metadata；首版不得把 naming heuristic 或协议扩展当成前提，unknown tool 默认串行 + fail-closed。
+2. **B2 — In-turn batch partitioning**
+   - `handleAssistantResponse()` 或等价层按“并发安全批 / 串行批”分区执行 tool-use blocks。
+   - read-only / concurrency-safe 批允许并发，mutation / uncertain 批保持串行 fail-closed。
+3. **B3 — Runtime tool allowlist enforcement**
+   - `McpClient` / `ToolCaller` 接收 agent/session-scoped `ToolPermissionView`（或等价 allowlist/denialist）；未授权工具在执行期被拒绝，而不是只靠 prompt 约束。
+   - 最终 deny seam 必须落在 `McpClient.callTool()` 发出 `tools/call` 前；上层可通过 agent-local `ToolCaller` wrapper 传入 permission context，但不得只在 `AgentRunner` prompt 层做软过滤。
+4. **B4 — Delegation permission wiring**
+   - 扩展现有 `TeamPermissionMatrix`，把 delegation / intervention truth 映射到 delegated runtime 的实际 tool visibility / call permission。
+   - 首版必须复用 `team-execution-permissions.ts` 这一现有 authority seam，而不是平行创建第二套 tool permission registry / enforcement structure。
+5. **B5 — Host-path regression coverage**
+   - 对并发 tool execution、blocked tool call、delegated filtering、approval-required tool path 分别补 host-path coverage。
+
+**`NEW-RT-09` 验收口径**:
+- [ ] 单 turn 内连续 read-only / concurrency-safe tool-use blocks 可并发执行，且结果拼装顺序可审计
+- [ ] uncertain / mutating tool-use blocks 继续串行，且不会因分类错误默默提升权限
+- [ ] delegated agent 对未授权工具的调用在 runtime 被 fail-closed 拒绝
+- [ ] `TeamPermissionMatrix` 不再只是 protocol/prompt truth，而是进入 execution-time enforcement
+- [ ] broader `M-22` rollout 仅在本项语义锁定后再继续推进
+
+#### `NEW-RT-10` 子任务拆分（建议 P5A runtime batch R3）
+
+1. **C1 — Agent-scoped session state**
+   - 将 run-level state 与 delegated/agent-local session state 进一步分离；至少明确 message/session lineage、resume cursor、agent-local runtime metadata。
+2. **C2 — Agent-scoped approval state**
+   - 将 `pending_approval` / approval history 从单 run 槽位扩展为 agent-aware collection；首版目标 shape 固定为 `pending_approvals: AgentPendingApproval[]`（或等价 typed map），record 至少包含 `agent_id`、`assignment_id | null`、以及现有 `approval_id/category/packet_path/requested_at/timeout_at` 字段。
+   - root run approval 必须使用保留 `agent_id = "root"`（或等价 sentinel），避免 future delegated runtime 继续竞争同一 `pending_approval` slot。
+3. **C3 — Background-task lifecycle contract**
+   - 在不把 `NEW-LOOP-01` reopen 为 scheduler 的前提下，为 team-local background execution 定义 typed runtime projection：`pending/running/completed/failed/killed`（或等价 contract）、cleanup、resume、terminal semantics。
+   - 首版应明确这是对现有 `ResearchTask` authority 的 runtime projection，而不是再引入第二套 persistent task substrate：`pending -> pending`、`running -> active`、`completed -> completed`、`failed -> blocked`、`killed -> cancelled`，并保留 assignment/session lineage。
+4. **C4 — Sub-agent context / MCP inheritance**
+   - 明确 sub-agent fork/fresh-context semantics、MCP inheritance / additive override、以及 teardown/cleanup contract。
+5. **C5 — Recovery / cleanup tests**
+   - 覆盖 delegated crash/re-entry、agent-local pending approval、cleanup after termination、以及 inherited/blocked MCP visibility 的 regression path。
+
+**`NEW-RT-10` 验收口径**:
+- [ ] delegated runtime 的 session / approval state 不再与 root run 共享单槽位 truth
+- [ ] team-local background tasks 具备明确 terminal / resume / cleanup semantics
+- [ ] background-task lifecycle 是 existing `ResearchTask` + assignment/session state 上的投影，而不是第二套 scheduler/task registry
+- [ ] sub-agent context inheritance 与 MCP inheritance 有 typed contract，而不是只靠 prompt 习惯
+- [ ] 相关语义明确保留在 `EVO-13` / team-local runtime 边界，不外溢到 `EVO-14`
+- [ ] 现有 fleet queue / worker / scheduler authority 不回切 team-local runtime concerns
 
 **原 Batch 8 (M-04 + M-07 + NEW-SKILL-01) → Batch 17**: schema fidelity 测试在 SEM 改造完成后更有意义。
 
@@ -2832,7 +2937,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 > - `P5A`: `EVO-01/02/03`, `NEW-VER-01`, `NEW-SHELL-01`, `EVO-06/07/09/10/11/12/13/14`
 > - `P5B`: `EVO-04/05/08/12a/15/16/17/18/19/20/21`
 > - 该划分是 Phase 内部阅读 / 排期 lens，不新增 `Phase 6`，也不改变现有依赖顺序；若单项目闭环收束与社区外层建设发生取舍，默认先满足 `P5A`。
-> **2026-03-27 governance closeout**: 同日较早的 rebaseline 现已推进到 rebased source-grounded closeout。`main@635e427` 已 landed bounded `REP projection first` slice，而当前 lane 已在 `main@95b0fc0` baseline 上完成 bounded `integrity semantics first` companion closeout；随着后续 `EVO-05` governance rebaseline，当前 Phase 5 汇总现读作 `24 (16 done, 1 in_progress, 3 pending, 4 design_complete)`。`EVO-07` 继续按当前 `packages/rep-sdk` consumer truth 保持 done；`EVO-06` 现也只按其 package-local integrity/gating semantics companion deliverable 关闭为 done，而不宣称 integrity checker runtime、truthful `integrity_report_v1` authority、truthful `reproducibility_report_v1` authority、或更宽 verification runtime 已完成。
+> **2026-03-27 governance closeout**: 同日较早的 rebaseline 现已推进到 rebased source-grounded closeout。`main@635e427` 已 landed bounded `REP projection first` slice，而当前 lane 已在 `main@95b0fc0` baseline 上完成 bounded `integrity semantics first` companion closeout；相关 Phase 5 统计随后继续由 tracker/plan 同步口径统一刷新。`EVO-07` 继续按当前 `packages/rep-sdk` consumer truth 保持 done；`EVO-06` 现也只按其 package-local integrity/gating semantics companion deliverable 关闭为 done，而不宣称 integrity checker runtime、truthful `integrity_report_v1` authority、truthful `reproducibility_report_v1` authority、或更宽 verification runtime 已完成。
 > **产品化约束 (2026-03-09)**: 即使后续提供单一 packaged end-user agent，它也应是构建在 orchestrator/runtime + root composition layer + selected providers 之上的独立 leaf package，而不是把 repo root、`packages/orchestrator/`、或某个 domain-specific CLI 直接提升为产品 agent。
 
 ### EVO-01: idea→理论计算自动执行闭环 ✅
@@ -3372,6 +3477,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 **产品入口非目标 (2026-03-09)**: `EVO-13` 的目标是单项目 / team-local runtime unification，而不是 packaged end-user agent。若未来需要统一的用户入口，应在 `P5A` 收束后以独立 leaf package 形式引入；不得把 `EVO-13` 直接扩张为 repo-root super-agent 或 orchestrator-internal 产品壳。
 
 **2026-03-20 首个 bridge slice**: 当前首批实现以 `packages/orchestrator/src/orch-tools/agent-runtime.ts` 的 `orch_run_execute_agent` 为 team-local bridge 入口，在不复制 `ResearchWorkspace` / task graph / event log SSOT 的前提下，为 delegated runtime 增加 `TeamExecutionState`、delegation permission matrix、checkpoint/restore binding、以及 `cancel` / `cascade_stop` intervention 语义；cross-run scheduler / fleet health 仍明确留在 `EVO-14`。
+**2026-03-31 ratified note (team-local sub-agent semantics)**: runtime follow-up now explicitly absorbs sub-agent context inheritance / fork semantics、agent-scoped pending approvals、MCP/tool permission inheritance + runtime filtering、以及 cleanup / termination semantics。即便以 standalone `NEW-RT-08/09/10` 落地，这些仍属于 `EVO-13` 一侧的 team-local runtime boundary，而不是 `EVO-14` 的 fleet concern。
 
 **验收**:
 - 并行 team 执行中 kill 进程后可从 checkpoint 恢复，已完成角色不重跑
@@ -3385,6 +3491,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - shared seam 由 `@autoresearch/shared` 的 orchestrator tool names 提供；generic tool authority 由 `@autoresearch/orchestrator` 的 `ORCH_TOOL_SPECS` 提供；当前 host adapter / dispatcher authority 由 `packages/hep-mcp/` 通过共享 host path 暴露。
 - `EVO-13` 已经覆盖 **team-local** runtime / recovery / live-status/replay / assignment-local timeout 边界；`EVO-14` 只负责 **cross-run / fleet-level** visibility、queue、scheduler、resource 和 global lifecycle 语义，不能回切 `executeUnifiedTeamRuntime` 的 team-local 语义。
 - 当前真实现状是：cross-root read-only fleet visibility、per-project queue authority、per-project worker/resource authority、manual stale-claim adjudication、operator stale-signal diagnostics、显式 lease/expiry contract、worker claim-acceptance gate、显式 drained-worker unregister contract、以及 explicit manual reassignment 都已存在于当前代码现实；broader lifecycle automation 仍未进入 auto takeover / auto reassignment / daemonized scheduling / second fleet authority/read surface / cross-root mutation orchestration。
+**2026-03-31 boundary reaffirmation**: 不得把 sub-agent context inheritance、agent-scoped approvals、runtime tool filtering、或 background-task session semantics 迁移进 `EVO-14`。这些仍是 team-local delegated runtime concerns；`EVO-14` 继续只拥有 cross-run / fleet-level visibility、queue、scheduler、resource 与 global lifecycle。
 
 **Batch 分层**:
 
@@ -3601,6 +3708,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 ### EVO-12a: 技能自生成 (Skill Genesis from Agent Traces) ★GEP 扩展
 
 > **新增 (2026-02-21)**: 填补 EVO-12 (技能生命周期) 与 EVO-19 (工具进化) 之间的空白。
+> **2026-03-31 SOTA preflight note**: `Trace2Skill` (`arXiv:2603.25158v2`) 的最近语义映射是本项而不是 `EVO-13`。现有 `NEW-LOOP-01` / `EVO-02` / `EVO-13` / `EVO-18` 可视为相邻 substrate，但不等价于论文的 `trajectory -> patch pool -> hierarchical skill consolidation` 主线。详见 `meta/docs/track-b-evo-12a-skill-genesis.md` 与 archive-first preflight: `/Users/fkg/.autoresearch-lab-dev/sota-preflight/2026-03-31/trace2skill-evo12a-absorption-map/preflight.md`。
 
 **背景**: EVO-12 管理已有技能的生命周期，EVO-19 修复已有代码。但两者都不覆盖**从 agent 工作模式中自动提取新技能**的能力。实际中 agent 经常对同类问题执行重复修正（如 markdown 数学环境 LaTeX 转义修复、行首 `=` 导致渲染失败的预防），这些修正模式应自动泛化为可复用技能。
 
@@ -3718,12 +3826,12 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06, NEW-R09 (cut) | 23 (22 done, 1 cut) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (46 done, 4 pending, 1 cut) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (47 done, 3 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (4 done, 4 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, EVO-01~EVO-21, EVO-12a | 24 (17 done, 1 in_progress, 3 pending, 3 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, `NEW-RT-08~10`, EVO-01~EVO-21, EVO-12a | 27 (17 done, 1 in_progress, 6 pending, 3 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **173** — **142 done** |
+| **总计** | **Phase 0–5 remediation items only** | **176** — **144 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 173。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。`NEW-VER-01` 现作为单独的 verification-kernel follow-up item 留在 `P5A`，而不是回写为 `EVO-02` / `EVO-03` / `EVO-13` reopen；`NEW-SHELL-01` 现同样作为单独的 shell-boundary anti-drift follow-up item 留在 `P5A`，而不是回写为 `NEW-LOOP-01` / `EVO-13` / `EVO-14` reopen。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
