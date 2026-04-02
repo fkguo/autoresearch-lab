@@ -11,7 +11,7 @@ The goal is **not** to finish every remaining `M-22` consumer. The goal is to la
 
 - shared `GateSpec` remains the single generic authority source;
 - the bounded consumer is the `research-team` convergence gate path;
-- local convergence gate metadata should stop hand-owning the authoritative gate ids / schema id;
+- local convergence gate metadata should stop hand-owning the authoritative gate ids / `schema_id` / `schema_version`;
 - Python legacy approval mappings and `research_workflow_v1` cleanup remain deferred.
 
 ## Read First
@@ -24,24 +24,28 @@ Implementation lane must read, in order:
 4. `meta/docs/prompts/IMPLEMENTATION_PROMPT_CHECKLIST.md`
 5. prior bounded rollout prompt for context only:
    - `meta/docs/prompts/prompt-2026-03-29-m22-gatespec-ts-approval-consumers-first.md`
-6. live shared authority:
+6. live shared authority (SSOT + shared substrate):
    - `meta/schemas/gate_spec_v1.schema.json`
-   - `meta/generated/python/gate_spec_v1.py`
-   - `meta/generated/python/convergence_gate_result_v1.py`
+   - `meta/schemas/convergence_gate_result_v1.schema.json`  *(SSOT for `schema_id`/`schema_version` + allowed `gate_id` values)*
    - `packages/shared/src/gate-registry.ts`
    - `packages/shared/src/__tests__/gate-registry.test.ts`
-7. current local duplicate-authority path:
+7. generated contract artifacts (informational-only; do **not** introduce a runtime dependency on them for this slice):
+   - `meta/generated/python/gate_spec_v1.py`
+   - `meta/generated/python/convergence_gate_result_v1.py`
+8. current local duplicate-authority path:
    - `skills/research-team/scripts/gates/convergence_schema.py`
    - `skills/research-team/scripts/gates/check_team_convergence.py`
    - `skills/research-team/scripts/gates/check_draft_convergence.py`
-8. adjacent validation / front-door surfaces:
+9. adjacent validation / front-door surfaces:
+   - `skills/research-team/SKILL.md`
+   - `skills/research-team/README.md`
    - `skills/research-team/tests/test_convergence_gate.py`
    - `skills/research-team/tests/test_convergence_gate_json.py`
    - `skills/research-team/FULL_VALIDATION_CONTRACT.md`
    - `skills/research-team/RUNBOOK.md`
    - `skills/research-team/P1_GATE_DOC_ALIGNMENT.md`
    - `skills/research-team/scripts/validation/run_full_contract_validation.sh`
-9. deferred-but-inspected adjacent authorities, so the batch does not overreach:
+10. deferred-but-inspected adjacent authorities, so the batch does not overreach:
    - `packages/hep-autoresearch/src/hep_autoresearch/toolkit/orchestrator_state.py`
    - `packages/hep-autoresearch/src/hep_autoresearch/toolkit/computation.py`
    - `meta/schemas/research_workflow_v1.schema.json`
@@ -58,7 +62,7 @@ Implementation lane must read, in order:
 
 ### In scope
 
-- Make the `research-team` convergence gate path visibly derive its authoritative gate ids and schema id from existing shared/generated `M-22` authority rather than hand-maintained local constants.
+- Make the `research-team` convergence gate path visibly derive its authoritative gate ids and `schema_id`/`schema_version` from existing shared `M-22` authority (SSOT: `meta/schemas/convergence_gate_result_v1.schema.json`) rather than hand-maintained local constants.
 - Narrow or remove duplicated local authority in:
   - `skills/research-team/scripts/gates/convergence_schema.py`
 - Update only the directly affected runtime callers:
@@ -77,6 +81,7 @@ Implementation lane must read, in order:
 - Do not reopen the TS orchestrator approval rollout that already landed.
 - Do not touch Python legacy approval mappings in `packages/hep-autoresearch/**`.
 - Do not touch `meta/schemas/research_workflow_v1.schema.json` or workflow templates.
+- Do not change the shared schema or registry semantics (`meta/schemas/convergence_gate_result_v1.schema.json`, `packages/shared/src/gate-registry.ts`) unless a source-grounded bug requires it; this slice is consumer adoption only.
 - Do not redesign convergence semantics, parsing heuristics, workflow modes, or the broader `research-team` runtime.
 - Do not broaden into repo-wide skill cleanup or `NEW-R08`.
 - Do not claim `M-22` is done after this slice unless the real runtime authority evidence justifies it.
@@ -87,8 +92,15 @@ Implementation lane must read, in order:
 2. This is a consumer-adoption lane, not a schema-creation lane.
 3. Prefer the smallest robust Python-side adapter over broad import churn.
 4. Do not change pass/fail convergence behavior unless the change is strictly required to align authority.
-5. If generated Python artifacts are consumed indirectly, the derivation must still be obvious in source and review evidence.
+5. Prefer reading the SSOT JSON Schema (`meta/schemas/convergence_gate_result_v1.schema.json`) via stdlib `json` for authority derivation; do not introduce a new runtime dependency on `meta/generated/python/**` (e.g. via `pydantic`) just to fetch constants.
 6. Keep the implementation bounded to convergence-gate validation and its directly affected tests/docs.
+7. If the shared schema cannot be located (install/mount mismatch), fail **closed** with an explicit, actionable error message; do not silently fall back to re-hardcoded local gate ids or schema id/version.
+8. If a compatibility path is proposed anyway, it must be justified in the prompt/update packet under the fallback-discipline questions from `IMPLEMENTATION_PROMPT_CHECKLIST.md` (failure mode, why not fix main path, authority impact, and acceptance coverage).
+
+## Packet Assumptions (must be re-verified)
+
+- This slice assumes the `research-team` skill is executed from a worktree where `meta/schemas/` is present (e.g. skill installed via symlink into this repo). Copying only `skills/research-team/**` without `meta/**` is treated as an invalid install for this rollout slice and must fail-closed.
+- `convergence_gate_result_v1` identifiers remain stable in the shared schema; the lane is changing consumer derivation, not renaming schema ids or gate ids.
 
 ## Front-door Surface Audit
 
@@ -96,6 +108,8 @@ Because this slice touches a public skill validation/gate surface, the review pa
 
 - `meta/REDESIGN_PLAN.md` (`M-22` section)
 - `meta/remediation_tracker_v1.json` (`M-22` note)
+- `skills/research-team/SKILL.md`
+- `skills/research-team/README.md`
 - `skills/research-team/FULL_VALIDATION_CONTRACT.md`
 - `skills/research-team/RUNBOOK.md`
 - `skills/research-team/P1_GATE_DOC_ALIGNMENT.md`
@@ -113,7 +127,7 @@ Minimum acceptance for the implementation lane:
 - `python3 -m pytest skills/research-team/tests/test_convergence_gate.py`
 - `python3 -m pytest skills/research-team/tests/test_convergence_gate_json.py`
 - `bash skills/research-team/scripts/validation/run_full_contract_validation.sh`
-- `rg -n "GATE_ID_VALUES|SCHEMA_ID|team_convergence|draft_convergence|convergence_gate_result_v1" skills/research-team/scripts/gates skills/research-team/tests meta/generated/python packages/shared/src/gate-registry.ts meta/REDESIGN_PLAN.md meta/remediation_tracker_v1.json`
+- `rg -n "GATE_ID_VALUES|SCHEMA_ID|SCHEMA_VERSION|team_convergence|draft_convergence|convergence_gate_result_v1" skills/research-team/scripts/gates skills/research-team/tests skills/research-team/SKILL.md skills/research-team/README.md meta/schemas/convergence_gate_result_v1.schema.json meta/generated/python packages/shared/src/gate-registry.ts meta/REDESIGN_PLAN.md meta/remediation_tracker_v1.json`
 
 If the full contract validation is blocked by lane-local environment issues, the lane must still:
 
@@ -132,7 +146,7 @@ Formal trio review is mandatory:
 Rules:
 
 - No fallback reviewer substitution without explicit human approval.
-- Reviewers must check source, callers, tests, and whether the `research-team` convergence path truly derives from shared/generated authority now.
+- Reviewers must check source, callers, tests, and whether the `research-team` convergence path truly derives from shared authority now (and does not reintroduce a third local constant map or a hidden runtime dependency on `meta/generated/python/**`).
 - Reviewers must explicitly check that the lane stayed bounded and did not silently reopen workflow-gate or legacy-approval cleanup.
 - If Gemini or OpenCode initial runs fail to produce a usable source-grounded verdict, prefer same-model rerun with an embedded-source packet rather than shrinking to diff-only review.
 - Formal self-review is also required after trio convergence.
@@ -141,7 +155,7 @@ Rules:
 
 If the batch succeeds, the truthful closeout claim is narrow:
 
-- `research-team` convergence gate validation no longer hand-owns the authoritative gate ids / schema id in local constants.
+- `research-team` convergence gate validation no longer hand-owns the authoritative gate ids / `schema_id` / `schema_version` in local constants.
 - The live convergence gate path visibly derives from shared/generated `M-22` authority.
 - TS approval rollout remains landed, while Python legacy approval mappings and `research_workflow_v1` cleanup remain pending follow-up slices.
 
