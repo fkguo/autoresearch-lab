@@ -1851,10 +1851,14 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - `packages/hep-mcp/src/core/evidenceSemantic.ts` 已不再通过 synthetic paper identity (`run_pdf`) 材化 semantic hits；PDF semantic surface 现在要求真实 `paper_id`，缺失时会在 surface load 与 hit materialization 两处 fail-closed。
 - `packages/hep-mcp/src/tools/registry/projectSchemas.ts` 的 public semantic query front door 现接受 `pdf_page` / `pdf_region`，`packages/hep-mcp/tests/core/writingEvidence.test.ts` 已锁定 same-paper skip、explicit different-paper PDF retrieval、以及 missing/ambiguous identity fail-closed。
 
+**已完成的 bounded runtime slice (2026-04-02)**:
+- `packages/hep-mcp/src/core/writing/evidence.ts` 在 `buildRunPdfEvidence` 之后读取 run-local raw PDF catalog (`${output_prefix}_evidence_catalog.jsonl`)，并材化 shared-authority PDF writing catalog (`${output_prefix}_writing_evidence_catalog.jsonl`)：shared generated `EvidenceCatalogItemV1` + shared generated `EvidenceType` (`pdf_page`/`pdf_region`) + shared generated `PdfLocatorV1`，且为每个 item 注入已 fail-closed 解析出的真实 `paper_id`。PDF 证据进入 writing/semantic retrieval surface 现不再依赖本地 `PdfEvidenceCatalogItemV1` / `PdfLocatorV1` consumer authority。
+- `writing_evidence_meta_v1.json` 的 `pdf.catalog_uri` 现指向上述 shared-authority PDF writing catalog（semantic loader 通过 `artifactNameFromUri(meta.pdf.catalog_uri)` 加载），而不是把 `hep_run_build_pdf_evidence` 的 raw catalog 当作 writing/semantic authority surface。
+- `packages/hep-mcp/src/core/hep/measurements.ts` 删除本地 `EvidenceType` union 与 `EvidenceCatalogItemV1Like`，改为直接消费 shared generated `EvidenceCatalogItemV1` / `EvidenceType`，并通过 `locator.kind === 'latex'` + LaTeX-only `include_types` 显式守卫保持 LaTeX-only 行为（避免无意扩大到 PDF items）。
+- `packages/hep-mcp/tests/core/writingEvidence.test.ts` 断言 semantic hits 不包含 synthetic `run_pdf`，且 PDF hits 必须携带真实 `paper_id`。
+
 **仍 pending 的 runtime authority adoption**:
-- `packages/hep-mcp/src/core/pdf/evidence.ts` 仍保留本地手写 `PdfEvidenceCatalogItemV1` / `PdfLocatorV1` / `PdfEvidenceType`；PDF evidence 仍是 run-local typed surface，未切到 shared generated evidence authority。
-- `packages/hep-mcp/src/core/writing/evidence.ts` 虽已收紧 paper identity fail-closed seam，但 PDF promotion 仍通过本地 `PdfEvidenceCatalogItemV1` / `PdfLocatorV1` path 进入 writing artifacts，而不是直接切到 shared generated evidence authority。
-- `packages/hep-mcp/src/core/hep/measurements.ts` 仍保留本地 `EvidenceType` union（shared generated `EvidenceType` 的 LaTeX-only 子集）与 `EvidenceCatalogItemV1Like`，而非直接消费 shared generated `EvidenceType` / `EvidenceCatalogItemV1`。
+- `packages/hep-mcp/src/core/pdf/evidence.ts` 仍保留本地手写 `PdfEvidenceCatalogItemV1` / `PdfLocatorV1` / `PdfEvidenceType` 作为 run-local raw PDF evidence producer artifact（本 slice 不重写 `hep_run_build_pdf_evidence` 的 raw catalog 形态）。
 - `NEW-CONN-03` 的 `ComputationEvidenceCatalogItemV1` / `hep_run_ingest_skill_artifacts` 已是并行已完成 lane；它不是 `NEW-R05` 未完成部分。
 
 **最小 truthful 下一交付**:
@@ -1868,8 +1872,9 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [x] LaTeX / project evidence build/query/playback 切到 shared generated types
 - [x] `ArtifactRefV1` 通过 `$ref` 组合，无字段重复
 - [x] PDF evidence 不再通过 synthetic paper identity (`run_pdf`) 进入 semantic path
-- [ ] PDF evidence 在 writing / semantic boundary 上切到 shared generated evidence authority
-- [ ] residual consumer-local evidence types / unions (`PdfEvidenceCatalogItemV1`, `measurements.ts` local `EvidenceType`, `EvidenceCatalogItemV1Like`) 在适用边界上被 shared generated types 替代
+- [x] PDF evidence 在 writing / semantic boundary 上切到 shared generated evidence authority
+- [x] residual consumer-local evidence types / unions（`writing/evidence.ts` promotion path、`measurements.ts` local `EvidenceType`、`EvidenceCatalogItemV1Like`）在适用边界上被 shared generated types 替代
+- [ ] （可选/未来）PDF raw producer (`pdf/evidence.ts` / `${output_prefix}_evidence_catalog.jsonl`) 是否也要切到 shared generated evidence authority（本 slice 明确不重写）
 
 ### NEW-R05a: Pydantic v2 代码生成目标 rebaseline ✅ ★深度重构
 
