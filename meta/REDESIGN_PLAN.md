@@ -1,10 +1,18 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.17-draft (v1.9.16 + runtime/sub-agent rebaseline ratified)
-> **日期**: 2026-03-31
-> **基线**: v1.9.16-draft
+> **版本**: 1.9.18-draft (v1.9.17 + runtime follow-up first-slice closeout sync)
+> **日期**: 2026-04-03
+> **基线**: v1.9.17-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.18 Changelog**:
+> - `NEW-RT-08/09/10` 不再只停留在 ratified queue / pending wording：三个 item 的 first bounded implementation slice 现已分别在 lane worktree 落地，并在 formal trio review + self-review 下收敛为 `0` blocking
+> - `NEW-RT-08` 当前真值改写为 `agent-loop robustness first slice landed`：已落地 turn-level usage/window bookkeeping、fail-closed `stop_reason` taxonomy、bounded overflow/truncation recovery、以及 auditable runtime marker / compaction boundary；更宽的 diminishing-returns guard 仍留作后续 slice，因此 item 保持 `in_progress`
+> - `NEW-RT-09` 当前真值改写为 `runtime tool filtering first slice landed`：已落地 execution-time `ToolPermissionView`、`McpClient.callTool()` 前 deny seam、delegated tool visibility wiring、restrictive fallback policy 与 host-path coverage；single-turn concurrency-safe batch orchestration 尚未 landed，因此 item 保持 `in_progress`
+> - `NEW-RT-10` 当前真值改写为 `delegated approval/session/task scoping first slice landed`：已落地 agent-scoped session lineage、delegated pending-approval collection、root approval sentinel read-model、`ResearchTask`-projected background-task lifecycle 与 fail-closed delegated approval intervention；更宽的 sub-agent context / MCP inheritance / cleanup semantics 仍留作后续 slice，因此 item 保持 `in_progress`
+> - 三个 canonical implementation prompt 现作为 checked-in audit trail 一并进入 `meta/docs/prompts/`
+> - Phase 5 汇总现更新为 `27 (17 done, 4 in_progress, 3 pending, 3 design_complete)`；aggregate remediation progress 仍为 `176 — 144 done`
 >
 > **v1.9.17 Changelog**:
 > - 2026-03-31 source-grounded formal trio review 已完成 runtime/sub-agent rebaseline ratification：`Opus = CONVERGED_WITH_AMENDMENTS`、`Gemini-3.1-Pro-Preview = CONVERGED`、`OpenCode(zhipuai-coding-plan/glm-5.1) = CONVERGED_WITH_AMENDMENTS`，三席均 `0` blocking
@@ -2591,6 +2599,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 #### `NEW-RT-08` 子任务拆分（建议 P5A runtime batch R1）
 
+**2026-04-03 bounded first-slice closeout**: `NEW-RT-08` 的首个 bounded runtime slice 已 landed，并已在 lane worktree 上通过 scoped acceptance、formal trio review 与 self-review。当前 live truth 不再是“只有 thin loop baseline”，而是已经具备 turn-level usage/window bookkeeping、fail-closed `stop_reason` normalization、bounded context-overflow / truncation recovery、以及带 runtime markers 的 compaction boundary。该 closeout 仍是 partial 而非 full done：更宽的 diminishing-returns / low-gain-turn guard 仍保留为后续 slice，所以 item status 应保持 `in_progress`。
+
 1. **A1 — Turn-level usage / window accounting**
    - 在 `AgentRunner` / backend response seam 增加 turn-level usage accounting 与 `window_pressure` runtime bookkeeping。
    - 首版必须先把 `chatBackend.createMessage()` 返回的 usage/token metadata 明确 plumbing 到 accounting seam；不能只在现有接口外空谈“补 accounting”，因为当前 `runImpl()` 只消费 `content` 与 `stop_reason`。
@@ -2615,7 +2625,11 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [ ] diminishing-returns 检测不会变成硬成本 gate，但能阻止明显空转
 - [ ] 现有 `AgentRunner` lane queue / approval gate / durable execution contract 不回退
 
+> **2026-04-03 first-slice status**: 上述 full-item 验收口径中，前 1/2/3/5 项已被当前 landed slice 实质覆盖；第 4 项 `diminishing-returns detection` 仍保留为后续 widened slice。
+
 #### `NEW-RT-09` 子任务拆分（建议 P5A runtime batch R2）
+
+**2026-04-03 bounded first-slice closeout**: `NEW-RT-09` 的当前 landed 真值是 `runtime tool filtering first`，而不是 full `in-turn orchestration` done。lane 已将 execution-time `ToolPermissionView`、`TeamPermissionMatrix` 派生的 delegated tool visibility、`McpClient.callTool()` 发起 `tools/call` 之前的 deny seam、以及 restrictive fallback policy 落到 live runtime / host-path tests。formal trio review 与 self-review 均 `0` blocking。仍未 landed 的是 single-turn concurrency-safe batch execution 本身，因此 item 继续保持 `in_progress`，不应被误写成 done。
 
 1. **B1 — Tool concurrency metadata normalization**
    - 为 orchestrator-visible tool surface 引入 orchestrator-side execution policy registry，显式声明 `read_only` / `concurrency_safe` / `stateful` / `approval_required` 等元数据，禁止靠隐式命名猜测。
@@ -2639,7 +2653,11 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [ ] `TeamPermissionMatrix` 不再只是 protocol/prompt truth，而是进入 execution-time enforcement
 - [ ] broader `M-22` rollout 仅在本项语义锁定后再继续推进
 
+> **2026-04-03 first-slice status**: 当前 landed slice 已实质覆盖第 2/3/4/5 项中的 filtering / fail-closed / enforcement boundary；第 1 项 `single-turn concurrency-safe batching` 仍保留为本 item 的后续 widened scope。
+
 #### `NEW-RT-10` 子任务拆分（建议 P5A runtime batch R3）
+
+**2026-04-03 bounded first-slice closeout**: `NEW-RT-10` 的首个 bounded slice 已 landed，并将 team-local delegated runtime 从单 `pending_approval` slot 推进到 agent/assignment/session-aware state：当前代码现实已具备 agent-scoped session lineage、delegated pending-approval collection、root approval sentinel read-model、`ResearchTask`-projected background-task lifecycle、以及 fail-closed delegated approval intervention。formal trio review 在 `Gemini` 原轮 + `OpenCode` same-model embedded rerun + `Opus` 原轮上收敛为 `0` blocking。该 closeout 仍不等于 full done：更宽的 sub-agent context inheritance、MCP inheritance / additive override、以及 cleanup / termination semantics 仍属于本 item 后续 slice。
 
 1. **C1 — Agent-scoped session state**
    - 将 run-level state 与 delegated/agent-local session state 进一步分离；至少明确 message/session lineage、resume cursor、agent-local runtime metadata。
@@ -2661,6 +2679,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [ ] sub-agent context inheritance 与 MCP inheritance 有 typed contract，而不是只靠 prompt 习惯
 - [ ] 相关语义明确保留在 `EVO-13` / team-local runtime 边界，不外溢到 `EVO-14`
 - [ ] 现有 fleet queue / worker / scheduler authority 不回切 team-local runtime concerns
+
+> **2026-04-03 first-slice status**: 当前 landed slice 已实质覆盖第 1/2/3/5/6 项；第 4 项 `sub-agent context inheritance 与 MCP inheritance` 仍是本 item 保留的后续 widened scope。
 
 **原 Batch 8 (M-04 + M-07 + NEW-SKILL-01) → Batch 17**: schema fidelity 测试在 SEM 改造完成后更有意义。
 
@@ -3834,7 +3854,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (47 done, 3 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (4 done, 4 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, `NEW-RT-08~10`, EVO-01~EVO-21, EVO-12a | 27 (17 done, 1 in_progress, 6 pending, 3 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, `NEW-RT-08~10`, EVO-01~EVO-21, EVO-12a | 27 (17 done, 4 in_progress, 3 pending, 3 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
 | **总计** | **Phase 0–5 remediation items only** | **176** — **144 done** |
