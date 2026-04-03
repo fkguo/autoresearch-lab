@@ -1,8 +1,10 @@
 # NEW-R05 Shared Evidence Authority Convergence Plan
 
 > **Date**: 2026-03-31
-> **Status**: Proposed
+> **Status**: Approved
 > **Role**: Planning-only charter for the next bounded `NEW-R05` follow-up after the paper-identity fail-closed slice
+>
+> **Implementation Charter**: `meta/docs/prompts/prompt-2026-04-01-new-r05-shared-evidence-authority-convergence-first.md`
 
 ## Why This Exists
 
