@@ -1,10 +1,15 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.18-draft (v1.9.17 + runtime follow-up first-slice closeout sync)
-> **日期**: 2026-04-03
-> **基线**: v1.9.17-draft
+> **版本**: 1.9.19-draft (v1.9.18 + NEW-RT-09 second-slice closeout sync)
+> **日期**: 2026-04-04
+> **基线**: v1.9.18-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.19 Changelog**:
+> - `NEW-RT-09` 当前真值从 `runtime tool filtering first slice landed` 推进为 `single-turn concurrency-safe batching second slice landed`：orchestrator-owned execution policy 现将单个 assistant turn 划分为 serial vs batch-safe tool groups，只有显式 batch-safe 的 read-only tool group 会并发执行，结果顺序与 fail-closed approval 语义保持可审计，且 shared host path coverage 已锁定相同 authority
+> - `NEW-RT-09` 仍保持 `in_progress`：这次 closeout 只声称 single-turn batching/filtering seam 已落地，不声称更宽的 runtime/session/fleet widening
+> - `NEW-RT-09` tracker / redesign truth 现同步到第二 slice 的 acceptance + review 结果；Phase 5 汇总与 aggregate remediation 统计保持不变
 >
 > **v1.9.18 Changelog**:
 > - `NEW-RT-08/09/10` 不再只停留在 ratified queue / pending wording：三个 item 的 first bounded implementation slice 现已分别在 lane worktree 落地，并在 formal trio review + self-review 下收敛为 `0` blocking
@@ -2629,7 +2634,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 #### `NEW-RT-09` 子任务拆分（建议 P5A runtime batch R2）
 
-**2026-04-03 bounded first-slice closeout**: `NEW-RT-09` 的当前 landed 真值是 `runtime tool filtering first`，而不是 full `in-turn orchestration` done。lane 已将 execution-time `ToolPermissionView`、`TeamPermissionMatrix` 派生的 delegated tool visibility、`McpClient.callTool()` 发起 `tools/call` 之前的 deny seam、以及 restrictive fallback policy 落到 live runtime / host-path tests。formal trio review 与 self-review 均 `0` blocking。仍未 landed 的是 single-turn concurrency-safe batch execution 本身，因此 item 继续保持 `in_progress`，不应被误写成 done。
+**2026-04-04 bounded second-slice closeout**: `NEW-RT-09` 的当前 landed 真值已不再只是 `runtime tool filtering first`。在已落地的 execution-time `ToolPermissionView`、`TeamPermissionMatrix` 派生 delegated tool visibility、`McpClient.callTool()` 发起 `tools/call` 前 deny seam 与 restrictive fallback policy 之上，live orchestrator path 现在还会按 orchestrator-owned execution policy metadata 将单个 assistant turn 的连续 `tool_use` blocks 划分为 serial vs batch-safe groups：只有显式 batch-safe 的 read-only groups 会并发执行，blocked / unknown / stateful / approval-required groups 继续串行并 fail-closed，且 emitted `tool_result` / event order 仍保持可审计。shared hep-mcp host path 也已通过合同测试证明消费同一 batching authority，而不是引入 host-local 并发 wrapper。scoped orchestrator acceptance、hep-mcp host-path acceptance、formal trio review 与 self-review 均已在当前 bounded diff 上收敛为 `0` blocking。item 仍保持 `in_progress`，不应被误写成 done，因为这次 closeout 只声称 single-turn batching/filtering seam 已落地，不声称更宽的 runtime/session/fleet widening。
 
 1. **B1 — Tool concurrency metadata normalization**
    - 为 orchestrator-visible tool surface 引入 orchestrator-side execution policy registry，显式声明 `read_only` / `concurrency_safe` / `stateful` / `approval_required` 等元数据，禁止靠隐式命名猜测。
@@ -2647,13 +2652,13 @@ NEW-MCP-SAMPLING -> NEW-RT-07
    - 对并发 tool execution、blocked tool call、delegated filtering、approval-required tool path 分别补 host-path coverage。
 
 **`NEW-RT-09` 验收口径**:
-- [ ] 单 turn 内连续 read-only / concurrency-safe tool-use blocks 可并发执行，且结果拼装顺序可审计
-- [ ] uncertain / mutating tool-use blocks 继续串行，且不会因分类错误默默提升权限
-- [ ] delegated agent 对未授权工具的调用在 runtime 被 fail-closed 拒绝
-- [ ] `TeamPermissionMatrix` 不再只是 protocol/prompt truth，而是进入 execution-time enforcement
-- [ ] broader `M-22` rollout 仅在本项语义锁定后再继续推进
+- [x] 单 turn 内连续 read-only / concurrency-safe tool-use blocks 可并发执行，且结果拼装顺序可审计
+- [x] uncertain / mutating tool-use blocks 继续串行，且不会因分类错误默默提升权限
+- [x] delegated agent 对未授权工具的调用在 runtime 被 fail-closed 拒绝
+- [x] `TeamPermissionMatrix` 不再只是 protocol/prompt truth，而是进入 execution-time enforcement
+- [x] broader `M-22` rollout 仅在本项语义锁定后再继续推进
 
-> **2026-04-03 first-slice status**: 当前 landed slice 已实质覆盖第 2/3/4/5 项中的 filtering / fail-closed / enforcement boundary；第 1 项 `single-turn concurrency-safe batching` 仍保留为本 item 的后续 widened scope。
+> **2026-04-04 second-slice status**: 当前 bounded truth 已覆盖 B1–B5 的 single-turn batching/filtering seam；item 仍保持 `in_progress`，因为这次 closeout 不声称 cross-turn orchestration、fleet semantics、或其他超出该 seam 的 runtime widening。
 
 #### `NEW-RT-10` 子任务拆分（建议 P5A runtime batch R3）
 
