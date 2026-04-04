@@ -1,6 +1,6 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.19-draft (v1.9.18 + NEW-RT-09 second-slice closeout sync)
+> **版本**: 1.9.19-draft (v1.9.18 + NEW-RT-09 second-slice closeout sync + NEW-RT-10 second-slice closeout sync)
 > **日期**: 2026-04-04
 > **基线**: v1.9.18-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
@@ -10,12 +10,13 @@
 > - `NEW-RT-09` 当前真值从 `runtime tool filtering first slice landed` 推进为 `single-turn concurrency-safe batching second slice landed`：orchestrator-owned execution policy 现将单个 assistant turn 划分为 serial vs batch-safe tool groups，只有显式 batch-safe 的 read-only tool group 会并发执行，结果顺序与 fail-closed approval 语义保持可审计，且 shared host path coverage 已锁定相同 authority
 > - `NEW-RT-09` 仍保持 `in_progress`：这次 closeout 只声称 single-turn batching/filtering seam 已落地，不声称更宽的 runtime/session/fleet widening
 > - `NEW-RT-09` tracker / redesign truth 现同步到第二 slice 的 acceptance + review 结果；Phase 5 汇总与 aggregate remediation 统计保持不变
+> - `NEW-RT-10` 当前真值从 `delegated approval/session/task scoping first slice landed` 推进为 `context + MCP inheritance + cleanup second slice landed`：delegated runtime 现具备 typed session context inheritance（fresh/resumed/forked/synthetic）、typed MCP/tool inheritance（仍锚定 `ToolPermissionView -> McpClient.callTool()` deny seam，override 仍是 permission-matrix bounded + fail-closed），且 terminal/intervention paths 会确定性清理 assignment-local live residue（pending approvals / pending redirect / un-ended sessions）并保留可审计历史 lineage；item 仍保持 `in_progress`
 >
 > **v1.9.18 Changelog**:
 > - `NEW-RT-08/09/10` 不再只停留在 ratified queue / pending wording：三个 item 的 first bounded implementation slice 现已分别在 lane worktree 落地，并在 formal trio review + self-review 下收敛为 `0` blocking
 > - `NEW-RT-08` 当前真值改写为 `agent-loop robustness first slice landed`：已落地 turn-level usage/window bookkeeping、fail-closed `stop_reason` taxonomy、bounded overflow/truncation recovery、以及 auditable runtime marker / compaction boundary；更宽的 diminishing-returns guard 仍留作后续 slice，因此 item 保持 `in_progress`
 > - `NEW-RT-09` 当前真值改写为 `runtime tool filtering first slice landed`：已落地 execution-time `ToolPermissionView`、`McpClient.callTool()` 前 deny seam、delegated tool visibility wiring、restrictive fallback policy 与 host-path coverage；single-turn concurrency-safe batch orchestration 尚未 landed，因此 item 保持 `in_progress`
-> - `NEW-RT-10` 当前真值改写为 `delegated approval/session/task scoping first slice landed`：已落地 agent-scoped session lineage、delegated pending-approval collection、root approval sentinel read-model、`ResearchTask`-projected background-task lifecycle 与 fail-closed delegated approval intervention；更宽的 sub-agent context / MCP inheritance / cleanup semantics 仍留作后续 slice，因此 item 保持 `in_progress`
+> - `NEW-RT-10` 当前真值改写为 `delegated approval/session/task scoping first slice landed`：已落地 agent-scoped session lineage、delegated pending-approval collection、root approval sentinel read-model、`ResearchTask`-projected background-task lifecycle 与 fail-closed delegated approval intervention；该 slice 不包含更宽的 context/MCP inheritance 与 cleanup semantics，因此 item 保持 `in_progress`
 > - 三个 canonical implementation prompt 现作为 checked-in audit trail 一并进入 `meta/docs/prompts/`
 > - Phase 5 汇总现更新为 `27 (17 done, 4 in_progress, 3 pending, 3 design_complete)`；aggregate remediation progress 仍为 `176 — 144 done`
 >
@@ -2667,6 +2668,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 **2026-04-03 bounded first-slice closeout**: `NEW-RT-10` 的首个 bounded slice 已 landed，并将 team-local delegated runtime 从单 `pending_approval` slot 推进到 agent/assignment/session-aware state：当前代码现实已具备 agent-scoped session lineage、delegated pending-approval collection、root approval sentinel read-model、`ResearchTask`-projected background-task lifecycle、以及 fail-closed delegated approval intervention。formal trio review 在 `Gemini` 原轮 + `OpenCode` same-model embedded rerun + `Opus` 原轮上收敛为 `0` blocking。该 closeout 仍不等于 full done：更宽的 sub-agent context inheritance、MCP inheritance / additive override、以及 cleanup / termination semantics 仍属于本 item 后续 slice。
 
+**2026-04-04 bounded second-slice closeout**: `NEW-RT-10` 的第二个 bounded slice 已 landed，并将 “sub-agent context inheritance / MCP inheritance / cleanup semantics” 从 protocol/prompt 约定推进为 typed runtime truth（仍保持 fail-closed + bounded）。当前代码现实已具备：`TeamAssignmentSession.context_kind`（fresh/resumed/forked/synthetic）与 parent/fork lineage；delegated `mcp_tool_inheritance`（team-permission-matrix 基础 + inherit-from-assignment 链 + additive override，仍锚定 `ToolPermissionView -> McpClient.callTool()` enforcement seam 且 override 仍必须被 permission matrix allowlist 约束）；以及 deterministic terminal/intervention cleanup（terminal 状态与 intervention settle 后不会遗留 assignment-local pending approvals / pending redirect / 未结束 session，但历史 lineage 仍可审计）。scoped orchestrator acceptance、hep-mcp host-path acceptance、formal trio review 与 self-review 均已在当前 bounded diff 上收敛为 `0` blocking。item 仍保持 `in_progress`，因为更宽的 delegated-runtime widening（超出本 slice 的 context/fork surface、以及未来 EVO-13 runtime 扩展）仍是后续工作。
+
 1. **C1 — Agent-scoped session state**
    - 将 run-level state 与 delegated/agent-local session state 进一步分离；至少明确 message/session lineage、resume cursor、agent-local runtime metadata。
 2. **C2 — Agent-scoped approval state**
@@ -2688,7 +2691,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 - [ ] 相关语义明确保留在 `EVO-13` / team-local runtime 边界，不外溢到 `EVO-14`
 - [ ] 现有 fleet queue / worker / scheduler authority 不回切 team-local runtime concerns
 
-> **2026-04-03 first-slice status**: 当前 landed slice 已实质覆盖第 1/2/3/5/6 项；第 4 项 `sub-agent context inheritance 与 MCP inheritance` 仍是本 item 保留的后续 widened scope。
+> **2026-04-04 second-slice status**: 当前 landed slices 已实质覆盖第 1/2/3 项，并已补上第 4 项 `sub-agent context inheritance 与 MCP inheritance` 的首个 typed contract + bounded additive override，以及 terminal/intervention cleanup 的确定性语义与回归测试。item 仍保持 `in_progress`，不应误写成 done：更宽的 delegated-runtime widening（超出本 slice 的更广 fork/recovery surface、以及未来 EVO-13 runtime 扩展）仍留作后续工作。
 
 **原 Batch 8 (M-04 + M-07 + NEW-SKILL-01) → Batch 17**: schema fidelity 测试在 SEM 改造完成后更有意义。
 
