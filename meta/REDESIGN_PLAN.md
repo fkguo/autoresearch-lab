@@ -1870,14 +1870,17 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - `packages/hep-mcp/src/core/hep/measurements.ts` 删除本地 `EvidenceType` union 与 `EvidenceCatalogItemV1Like`，改为直接消费 shared generated `EvidenceCatalogItemV1` / `EvidenceType`，并通过 `locator.kind === 'latex'` + LaTeX-only `include_types` 显式守卫保持 LaTeX-only 行为（避免无意扩大到 PDF items）。
 - `packages/hep-mcp/tests/core/writingEvidence.test.ts` 断言 semantic hits 不包含 synthetic `run_pdf`，且 PDF hits 必须携带真实 `paper_id`。
 
-**仍 pending 的 runtime authority adoption**:
-- `packages/hep-mcp/src/core/pdf/evidence.ts` 仍保留本地手写 `PdfEvidenceCatalogItemV1` / `PdfLocatorV1` / `PdfEvidenceType` 作为 run-local raw PDF evidence producer artifact（本 slice 不重写 `hep_run_build_pdf_evidence` 的 raw catalog 形态）。
+**已完成的 bounded runtime slice (2026-04-04)**:
+- `packages/hep-mcp/src/core/pdf/evidence.ts` 现把 raw producer shapes 明确收口为 module-local `RawPdfNormalizedBBox` / `RawPdfLocator` / `RawPdfEvidenceType` / `RawPdfEvidenceCatalogItem`；旧的 exported `PdfBBoxNormalizedV1` / `PdfLocatorV1` / `PdfEvidenceType` / `PdfEvidenceCatalogItemV1` 已移除，因此 `hep_run_build_pdf_evidence` 不再 re-export/shared-looking 的本地 raw types。
+- `packages/hep-mcp/tests/core/pdfEvidence.test.ts` 现直接锁定 raw producer seam：raw catalog items 仍不带 `paper_id`，仍保持 `locator.kind === 'pdf'`，visual region raw output 仍保持 `bbox.coord_origin === 'top_left'`。
+
+**当前 raw producer boundary (2026-04-04)**:
+- `packages/hep-mcp/src/core/pdf/evidence.ts` 仍输出相同的 run-local raw PDF evidence artifact (`${output_prefix}_evidence_catalog.jsonl`)；本轮没有把该 raw artifact 重写为 shared generated evidence contract。当前边界是“显式 raw producer surface”，而不是“残留 shared authority consumer drift”。
 - `NEW-CONN-03` 的 `ComputationEvidenceCatalogItemV1` / `hep_run_ingest_skill_artifacts` 已是并行已完成 lane；它不是 `NEW-R05` 未完成部分。
 
-**最小 truthful 下一交付**:
-- 在已关闭 `run_pdf` / paper-identity seam 之后，继续把 PDF -> writing / semantic boundary 收拢到 shared generated evidence authority，而不是重开整个 evidence stack。
-- 对已符合 shared evidence contract 的 PDF / LaTeX consumer surface，优先改用 shared generated `EvidenceCatalogItemV1` / `PdfLocatorV1` / `EvidenceType`。
-- 移除 `packages/hep-mcp/src/core/hep/measurements.ts` 中本地 `EvidenceType` union、`EvidenceCatalogItemV1Like` 等 residual consumer authority，而不把该收尾错误扩大成 computation evidence 返工。
+**当前 truthful closeout boundary**:
+- 当前 runtime scope 内的 shared consumer authority convergence 已落地：LaTeX / project evidence、writing/semantic PDF promotion、measurements consumer、以及 raw PDF producer naming boundary 均已收口到明确边界。
+- 本 area 仅剩一个可选/未来问题：是否要把 raw PDF producer artifact 本身也切到 shared generated evidence authority；该问题不属于当前 closeout 的必经条件。
 
 **本 item 当前完成态检查**:
 - [x] 证据 schema 通过 JSON Schema Draft 2020-12 验证
