@@ -1,5 +1,7 @@
 # M-22 GateSpec Research-Team Convergence First
 
+> **Status (2026-04-02)**: Landed on `main` as the bounded `research-team` convergence gate consumer adoption (`d7daa1e`). This prompt is retained as the slice audit trail; for post-landing SSOT truth sync, see `meta/docs/prompts/prompt-2026-04-05-m22-gatespec-closeout-sync-after-research-team-convergence.md`.
+
 ## Intent
 
 This is the canonical implementation prompt for the next truthful `M-22` rollout slice after:
@@ -140,8 +142,11 @@ If the full contract validation is blocked by lane-local environment issues, the
 Formal trio review is mandatory:
 
 - `Opus`
-- `Gemini-3.1-Pro-Preview`
+- `Gemini(auto)`
 - `OpenCode(zhipuai-coding-plan/glm-5.1)`
+
+Seat note:
+- `Gemini(auto)` is a reviewer seat name; when invoked via CLI runners it maps to the Gemini model selector `auto` (older artifacts may still record `Gemini-3.1-Pro-Preview` as the historical alias).
 
 Rules:
 
