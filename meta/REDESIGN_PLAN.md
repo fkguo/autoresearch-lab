@@ -1,10 +1,15 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.19-draft (v1.9.18 + NEW-RT-09 second-slice closeout sync + NEW-RT-10 second-slice closeout sync)
-> **日期**: 2026-04-04
-> **基线**: v1.9.18-draft
+> **版本**: 1.9.20-draft (v1.9.19 + NEW-RT-08 second-slice closeout sync)
+> **日期**: 2026-04-05
+> **基线**: v1.9.19-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.20 Changelog**:
+> - `NEW-RT-08` 当前真值从 `agent-loop robustness first slice landed` 推进为 `diminishing-returns guard second slice landed`：live `AgentRunner` 现具备纯结构化、可审计、显式阈值的低增益 guard（重复 tool outcome signature / all-tools-errored → low-gain；`MAX_LOW_GAIN_STREAK=2`；`low_gain_turn` + `diminishing_returns_stop` markers；显式 `done(stopReason=diminishing_returns)`，team runtime 映射为 `needs_recovery`）
+> - `NEW-RT-08` 现可读为 `done`：该 closeout 仅覆盖 bounded diminishing-returns / low-gain-turn guard，不扩展到 `NEW-RT-09`/`NEW-RT-10`/`M-22` 或 fleet semantics
+> - Phase 5 汇总与 aggregate remediation 统计同步到本 slice：Phase 5 → `27 (18 done, 3 in_progress, 3 pending, 3 design_complete)`；aggregate → `176 — 145 done`
 >
 > **v1.9.19 Changelog**:
 > - `NEW-RT-09` 当前真值从 `runtime tool filtering first slice landed` 推进为 `single-turn concurrency-safe batching second slice landed`：orchestrator-owned execution policy 现将单个 assistant turn 划分为 serial vs batch-safe tool groups，只有显式 batch-safe 的 read-only tool group 会并发执行，结果顺序与 fail-closed approval 语义保持可审计，且 shared host path coverage 已锁定相同 authority
@@ -2608,7 +2613,9 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 #### `NEW-RT-08` 子任务拆分（建议 P5A runtime batch R1）
 
-**2026-04-03 bounded first-slice closeout**: `NEW-RT-08` 的首个 bounded runtime slice 已 landed，并已在 lane worktree 上通过 scoped acceptance、formal trio review 与 self-review。当前 live truth 不再是“只有 thin loop baseline”，而是已经具备 turn-level usage/window bookkeeping、fail-closed `stop_reason` normalization、bounded context-overflow / truncation recovery、以及带 runtime markers 的 compaction boundary。该 closeout 仍是 partial 而非 full done：更宽的 diminishing-returns / low-gain-turn guard 仍保留为后续 slice，所以 item status 应保持 `in_progress`。
+**2026-04-03 bounded first-slice closeout**: `NEW-RT-08` 的首个 bounded runtime slice 已 landed，并已在 lane worktree 上通过 scoped acceptance、formal trio review 与 self-review。当前 live truth 不再是“只有 thin loop baseline”，而是已经具备 turn-level usage/window bookkeeping、fail-closed `stop_reason` normalization、bounded context-overflow / truncation recovery、以及带 runtime markers 的 compaction boundary。该 closeout 仍是 partial 而非 full done：更宽的 diminishing-returns / low-gain-turn guard 仍保留为后续 slice，并在 2026-04-05 second slice 中完成 closeout。
+
+**2026-04-05 bounded second-slice closeout**: diminishing-returns / low-gain-turn guard 现已作为真实 runtime authority 落地在 live `AgentRunner` path：低增益判定为纯结构化信号（重复 tool outcome signature 或 all-tools-errored），阈值显式锁定为 `MAX_LOW_GAIN_STREAK=2`，每个 low-gain turn 会 emit `runtime_marker(kind=low_gain_turn)`，触发 stop 时 emit `runtime_marker(kind=diminishing_returns_stop)` 并显式终止为 `done(stopReason=diminishing_returns)`（team runtime 映射为 `needs_recovery`）。该 closeout 不引入语义评分或成本上限，也不 reopen `NEW-RT-09`/`NEW-RT-10` 或 fleet semantics。
 
 1. **A1 — Turn-level usage / window accounting**
    - 在 `AgentRunner` / backend response seam 增加 turn-level usage accounting 与 `window_pressure` runtime bookkeeping。
@@ -2628,13 +2635,15 @@ NEW-MCP-SAMPLING -> NEW-RT-07
    - 为 overflow、truncation、compaction、diminishing-returns 各补 1 条 scoped acceptance/test path，并记录 telemetry/artifact。
 
 **`NEW-RT-08` 验收口径**:
-- [ ] 长会话在 window pressure 下不会直接以 provider error 终止；至少存在 1 条 compact/retry 成功路径
-- [ ] compact / trim / summarize 产生可审计 runtime marker，而不是静默改写历史
-- [ ] 输出被截断时存在 bounded continuation/retry 语义，且不会误报 `done`
-- [ ] diminishing-returns 检测不会变成硬成本 gate，但能阻止明显空转
-- [ ] 现有 `AgentRunner` lane queue / approval gate / durable execution contract 不回退
+- [x] 长会话在 window pressure 下不会直接以 provider error 终止；至少存在 1 条 compact/retry 成功路径
+- [x] compact / trim / summarize 产生可审计 runtime marker，而不是静默改写历史
+- [x] 输出被截断时存在 bounded continuation/retry 语义，且不会误报 `done`
+- [x] diminishing-returns 检测不会变成硬成本 gate，但能阻止明显空转
+- [x] 现有 `AgentRunner` lane queue / approval gate / durable execution contract 不回退
 
-> **2026-04-03 first-slice status**: 上述 full-item 验收口径中，前 1/2/3/5 项已被当前 landed slice 实质覆盖；第 4 项 `diminishing-returns detection` 仍保留为后续 widened slice。
+> **2026-04-03 first-slice status (historical)**: 上述 full-item 验收口径中，前 1/2/3/5 项已被当时的 landed slice 实质覆盖；第 4 项 `diminishing-returns detection` 仍保留为后续 widened slice。
+>
+> **2026-04-05 second-slice status**: 第 4 项 `diminishing-returns detection` 现已作为 bounded structural guard 落地，因此 full-item 验收口径现可读为满足，`NEW-RT-08` status 亦应同步为 `done`。
 
 #### `NEW-RT-09` 子任务拆分（建议 P5A runtime batch R2）
 
@@ -3865,7 +3874,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (47 done, 3 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (4 done, 4 pending) |
-| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, `NEW-RT-08~10`, EVO-01~EVO-21, EVO-12a | 27 (17 done, 4 in_progress, 3 pending, 3 design_complete) |
+| **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, `NEW-RT-08~10`, EVO-01~EVO-21, EVO-12a | 27 (18 done, 3 in_progress, 3 pending, 3 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
 | **总计** | **Phase 0–5 remediation items only** | **176** — **144 done** |

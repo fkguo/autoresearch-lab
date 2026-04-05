@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "plan_version": "1.9.18-draft",
-  "updated_at": "2026-04-03T15:31:55Z",
-  "note": "v1.9.18-draft: `NEW-RT-08/09/10` no longer read as pure Phase 5 pending design items. Their first bounded implementation slices now land in dedicated lane worktrees with local acceptance, formal trio review, and self-review all converged at 0 blocking. Tracker truth therefore moves all three items to `in_progress`, adds their canonical 2026-04-03 implementation prompts as `design_doc`, and rewrites their notes to distinguish landed first-slice authority from still-open wider scope. Phase 5 summary now reads `27 (17 done, 4 in_progress, 3 pending, 3 design_complete)` while aggregate remediation progress remains `176 — 144 done`. Historical carry-forward for earlier rebaselines remains preserved in the relevant item-level notes and `meta/REDESIGN_PLAN.md` changelog sections.",
+  "plan_version": "1.9.20-draft",
+  "updated_at": "2026-04-05T02:55:44Z",
+  "note": "v1.9.20-draft: `NEW-RT-08/09/10` no longer read as pure Phase 5 pending design items. Their first bounded implementation slices landed in dedicated lane worktrees with local acceptance and formal trio review converged at 0 blocking. This sync additionally lands the bounded 2026-04-05 `NEW-RT-08` second-slice diminishing-returns / low-gain-turn guard and moves `NEW-RT-08` to `done` while keeping `NEW-RT-09` and `NEW-RT-10` `in_progress` (their scope remains intentionally bounded). Phase 5 summary now reads `27 (18 done, 3 in_progress, 3 pending, 3 design_complete)` while aggregate remediation progress becomes `176 — 145 done`. Historical carry-forward for earlier rebaselines remains preserved in the relevant item-level notes and `meta/REDESIGN_PLAN.md` changelog sections.",
   "phases": {
     "0": {
       "name": "止血",
@@ -1716,7 +1716,7 @@
         },
         "NEW-RT-08": {
           "title": "Agent Loop Robustness",
-          "status": "in_progress",
+          "status": "done",
           "complexity": "medium",
           "assignee": null,
           "depends_on": [
@@ -1724,9 +1724,10 @@
             "NEW-RT-06",
             "NEW-RT-07"
           ],
-          "design_doc": "meta/docs/prompts/prompt-2026-04-03-new-rt08-agent-loop-robustness-first.md",
+          "design_doc": "meta/docs/prompts/prompt-2026-04-05-new-rt08-diminishing-returns-guard-second-slice.md",
           "source": "claude-code-sourcemap-runtime-audit-2026-03-31",
-          "note": "2026-03-31 governance ratification introduced `NEW-RT-08` as a standalone P5A runtime follow-up item rather than reopening `NEW-RT-01` or `NEW-LOOP-01`. 2026-04-03 bounded first-slice closeout now lands the agent-loop robustness first slice on the lane worktree: live runtime authority includes turn-level usage/window bookkeeping, fail-closed `stop_reason` normalization, bounded context-overflow and truncation recovery, auditable runtime markers, and the history-compaction boundary over real `MessageParam[]` / tool-result history, with scoped orchestrator + hep-mcp acceptance and formal trio review / self-review all converged at 0 blocking. Adopted non-blocking amendments were limited to checking in the canonical prompt and documenting the `total_tokens` fallback assumption near the runtime bookkeeping seam. This item remains `in_progress`, not `done`, because the broader diminishing-returns / low-gain-turn guard and any wider robustness follow-up are still intentionally left for later slices."
+          "completed_at": "2026-04-05",
+          "note": "2026-03-31 governance ratification introduced `NEW-RT-08` as a standalone P5A runtime follow-up item rather than reopening `NEW-RT-01` or `NEW-LOOP-01`. 2026-04-03 bounded first-slice closeout landed turn-level usage/window bookkeeping, fail-closed `stop_reason` normalization, bounded context-overflow and truncation recovery, auditable runtime markers, and a history-compaction boundary over real `MessageParam[]` / tool-result history. 2026-04-05 bounded second-slice closeout now lands an auditable diminishing-returns / low-gain-turn guard on the live `AgentRunner` path: classification is purely structural (repeated tool outcome signature or all tool calls errored), it tracks an explicit `MAX_LOW_GAIN_STREAK = 2`, emits `runtime_marker(kind=low_gain_turn)` per low-gain turn plus `runtime_marker(kind=diminishing_returns_stop)` at trigger, and terminates with explicit `done(stopReason=diminishing_returns)`. Low-gain tracking resets on truncation and context-overflow recovery. Team runtime maps `stopReason=diminishing_returns` to assignment status `needs_recovery` (recoverable, not terminal). Scoped orchestrator regression coverage exercises repeated-outcome, all-errors, and streak-reset behavior; the lane passed targeted orchestrator tests (43/43) and formal trio review converged at 0 blocking. The closeout stays bounded away from runtime tool filtering (`NEW-RT-09`), delegated session/approval scoping (`NEW-RT-10`), and fleet semantics."
         },
         "NEW-RT-09": {
           "title": "In-Turn Tool Orchestration + Runtime Tool Filtering",
