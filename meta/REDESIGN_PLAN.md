@@ -11,7 +11,7 @@
 > - `M-22` section + tracker truth 现对齐已 landed consumer commits：TS approvals (`f0f7a01`) + research-team convergence (`d7daa1e`)
 > - `NEW-RT-08` 当前真值从 `agent-loop robustness first slice landed` 推进为 `diminishing-returns guard second slice landed`：live `AgentRunner` 现具备纯结构化、可审计、显式阈值的低增益 guard（重复 tool outcome signature / all-tools-errored → low-gain；`MAX_LOW_GAIN_STREAK=2`；`low_gain_turn` + `diminishing_returns_stop` markers；显式 `done(stopReason=diminishing_returns)`，team runtime 映射为 `needs_recovery`）
 > - `NEW-RT-08` 现可读为 `done`：该 closeout 仅覆盖 bounded diminishing-returns / low-gain-turn guard，不扩展到 `NEW-RT-09`/`NEW-RT-10`/`M-22` 或 fleet semantics
-> - Phase 5 汇总与 aggregate remediation 统计同步到本 slice：Phase 5 → `27 (18 done, 3 in_progress, 3 pending, 3 design_complete)`；aggregate → `176 — 145 done`
+> - Phase 5 汇总与 aggregate remediation 统计同步到本 slice：Phase 5 → `27 (18 done, 3 in_progress, 3 pending, 3 design_complete)`；aggregate → `176 — 146 done`
 >
 > **v1.9.19 Changelog**:
 > - `NEW-RT-09` 当前真值从 `runtime tool filtering first slice landed` 推进为 `single-turn concurrency-safe batching second slice landed`：orchestrator-owned execution policy 现将单个 assistant turn 划分为 serial vs batch-safe tool groups，只有显式 batch-safe 的 read-only tool group 会并发执行，结果顺序与 fail-closed approval 语义保持可审计，且 shared host path coverage 已锁定相同 authority
@@ -214,7 +214,7 @@ Phase 2B (Pipeline 连通 + 深度集成):
   ├─ NEW-ARXIV-01 arxiv-mcp 独立 MCP (~1700 LOC) ← Phase 2 early add
   ├─ NEW-HEPDATA-01 hepdata-mcp 独立 MCP (~800 LOC) ← Phase 2 early add
   ├─ UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01 ✅
-  ├─ NEW-R07/NEW-R15-impl ✅; NEW-R05/06/08/14 pending; NEW-R10 cut
+  ├─ NEW-R07/NEW-R15-impl ✅; NEW-R05/NEW-R06 ✅; NEW-R08/NEW-R14 pending; NEW-R10 cut
   │
 Phase 3 (扩展性 + 计算连通 + 单研究者研究循环前置):
   ├─ NEW-05a Stage 3 续：idea-engine TS `search.step` / authority-seam baseline 完成 ✅
@@ -1846,7 +1846,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [ ] 跨组件契约测试 CI 通过
 - [ ] 审批三件套产物生成正确（packet_short.md ≤1页, packet.md 全量, approval_packet_v1.json 通过 schema）
 - [ ] `hepar approvals show` + `hepar report render` 命令可用
-- [x] 证据抽象层 schema/codegen substrate 完成；runtime authority adoption 待完成 (NEW-R05)
+- [x] 证据抽象层 schema/codegen substrate + runtime authority adoption 完成 (NEW-R05)
 - [x] hep-autoresearch 测试覆盖门禁 CI 就绪 (NEW-R07)
 - [x] NEW-R15 编排器 MCP 工具实现 (`orch_run_*` + `orch_policy_query`) 可用
 - [x] `computation_manifest_v1.schema.json` 定义完成 (UX-02)
@@ -1862,6 +1862,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 > **来源**: `docs/2026-02-20-deep-refactoring-analysis.md` §6
 
 **依赖**: NEW-01 (codegen pipeline), H-18 (ArtifactRef V1)
+**状态**: done（2026-04-05 SSOT truth sync after raw-PDF removal）
 
 **已完成 substrate**:
 - `meta/schemas/evidence_catalog_item_v1.schema.json` 已作为 evidence SSOT 落地，TS/Python codegen 已产出。
@@ -1869,39 +1870,22 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - `packages/hep-mcp/src/core/evidence.ts` 已切到 shared generated `EvidenceCatalogItemV1` / `LatexLocatorV1` / `PdfLocatorV1`，LaTeX / project evidence build/query/playback 已在该 authority 上运行。
 - `ArtifactRefV1` 仍通过 `$ref` 组合引用，不在 evidence schema 中重复 `sha256` / `size_bytes` 字段。
 
-**已完成的 bounded runtime slice (2026-03-30)**:
-- `packages/hep-mcp/src/core/writing/evidence.ts` 已新增 `WritingPdfSourceInput.paper_id?: string`，并把 PDF paper identity 收紧为：显式 `pdf_source.paper_id` 或同 run 中唯一成功的 LaTeX paper identity；若两者都不存在（或 LaTeX paper identity 多于一个）则 fail-closed。
-- 当同一 paper 在同 run 中已有成功 LaTeX authority 时，writing / semantic path 现会在 `buildRunPdfEvidence` 之前直接跳过 PDF build/promotion，而不是继续下载/解析/生成并行 PDF writing surface。
-- `packages/hep-mcp/src/core/evidenceSemantic.ts` 已不再通过 synthetic paper identity (`run_pdf`) 材化 semantic hits；PDF semantic surface 现在要求真实 `paper_id`，缺失时会在 surface load 与 hit materialization 两处 fail-closed。
-- `packages/hep-mcp/src/tools/registry/projectSchemas.ts` 的 public semantic query front door 现接受 `pdf_page` / `pdf_region`，`packages/hep-mcp/tests/core/writingEvidence.test.ts` 已锁定 same-paper skip、explicit different-paper PDF retrieval、以及 missing/ambiguous identity fail-closed。
+**已完成的 bounded runtime slices (source-grounded, now closed)**:
+- 2026-03-30：paper identity fail-closed seam（当时仍存在 `pdf_source` 分支；该分支在 raw-PDF removal 后已不再是 live workflow surface）。
+- 2026-04-01：shared evidence authority convergence（writing/semantic/measurements consumer 以 shared generated `EvidenceCatalogItemV1` / `EvidenceType` 为 authority；LaTeX-only guards 显式守卫不扩大到非 LaTeX evidence）。
+- 2026-04-04：移除 live raw-PDF producer workflow surface：`packages/hep-mcp/src/core/pdf/evidence.ts` 不再存在，`hep_run_build_pdf_evidence` 不再是公共工具面；`hep_run_build_writing_evidence` 对 `pdf_source` 等 PDF producer inputs fail-closed，仅保留 LaTeX-first `latex_sources` + `bridge_artifact_names`。
 
-**已完成的 bounded runtime slice (2026-04-02)**:
-- `packages/hep-mcp/src/core/writing/evidence.ts` 在 `buildRunPdfEvidence` 之后读取 run-local raw PDF catalog (`${output_prefix}_evidence_catalog.jsonl`)，并材化 shared-authority PDF writing catalog (`${output_prefix}_writing_evidence_catalog.jsonl`)：shared generated `EvidenceCatalogItemV1` + shared generated `EvidenceType` (`pdf_page`/`pdf_region`) + shared generated `PdfLocatorV1`，且为每个 item 注入已 fail-closed 解析出的真实 `paper_id`。PDF 证据进入 writing/semantic retrieval surface 现不再依赖本地 `PdfEvidenceCatalogItemV1` / `PdfLocatorV1` consumer authority。
-- `writing_evidence_meta_v1.json` 的 `pdf.catalog_uri` 现指向上述 shared-authority PDF writing catalog（semantic loader 通过 `artifactNameFromUri(meta.pdf.catalog_uri)` 加载），而不是把 `hep_run_build_pdf_evidence` 的 raw catalog 当作 writing/semantic authority surface。
-- `packages/hep-mcp/src/core/hep/measurements.ts` 删除本地 `EvidenceType` union 与 `EvidenceCatalogItemV1Like`，改为直接消费 shared generated `EvidenceCatalogItemV1` / `EvidenceType`，并通过 `locator.kind === 'latex'` + LaTeX-only `include_types` 显式守卫保持 LaTeX-only 行为（避免无意扩大到 PDF items）。
-- `packages/hep-mcp/tests/core/writingEvidence.test.ts` 断言 semantic hits 不包含 synthetic `run_pdf`，且 PDF hits 必须携带真实 `paper_id`。
-
-**已完成的 bounded runtime slice (2026-04-04)**:
-- `packages/hep-mcp/src/core/pdf/evidence.ts` 现把 raw producer shapes 明确收口为 module-local `RawPdfNormalizedBBox` / `RawPdfLocator` / `RawPdfEvidenceType` / `RawPdfEvidenceCatalogItem`；旧的 exported `PdfBBoxNormalizedV1` / `PdfLocatorV1` / `PdfEvidenceType` / `PdfEvidenceCatalogItemV1` 已移除，因此 `hep_run_build_pdf_evidence` 不再 re-export/shared-looking 的本地 raw types。
-- `packages/hep-mcp/tests/core/pdfEvidence.test.ts` 现直接锁定 raw producer seam：raw catalog items 仍不带 `paper_id`，仍保持 `locator.kind === 'pdf'`，visual region raw output 仍保持 `bbox.coord_origin === 'top_left'`。
-
-**当前 raw producer boundary (2026-04-04)**:
-- `packages/hep-mcp/src/core/pdf/evidence.ts` 仍输出相同的 run-local raw PDF evidence artifact (`${output_prefix}_evidence_catalog.jsonl`)；本轮没有把该 raw artifact 重写为 shared generated evidence contract。当前边界是“显式 raw producer surface”，而不是“残留 shared authority consumer drift”。
-- `NEW-CONN-03` 的 `ComputationEvidenceCatalogItemV1` / `hep_run_ingest_skill_artifacts` 已是并行已完成 lane；它不是 `NEW-R05` 未完成部分。
-
-**当前 truthful closeout boundary**:
-- 当前 runtime scope 内的 shared consumer authority convergence 已落地：LaTeX / project evidence、writing/semantic PDF promotion、measurements consumer、以及 raw PDF producer naming boundary 均已收口到明确边界。
-- 本 area 仅剩一个可选/未来问题：是否要把 raw PDF producer artifact 本身也切到 shared generated evidence authority；该问题不属于当前 closeout 的必经条件。
+**当前 truthful closeout boundary (post raw-PDF removal)**:
+- NEW-R05 在当前 runtime scope 已收敛到 shared generated contracts：LaTeX / project evidence、writing evidence（LaTeX-first + bridge artifacts）、semantic query、以及 measurements consumer 均以 shared generated evidence authority 为准。
+- `pdf_page` / `pdf_region` 仍作为 shared `EvidenceType` 的 generic/eval 词汇保留，但它们不再对应任何 repo-owned raw-PDF producer workflow surface。
 
 **本 item 当前完成态检查**:
 - [x] 证据 schema 通过 JSON Schema Draft 2020-12 验证
 - [x] TS/Python codegen 生成完成
 - [x] LaTeX / project evidence build/query/playback 切到 shared generated types
 - [x] `ArtifactRefV1` 通过 `$ref` 组合，无字段重复
-- [x] PDF evidence 不再通过 synthetic paper identity (`run_pdf`) 进入 semantic path
-- [x] PDF evidence 在 writing / semantic boundary 上切到 shared generated evidence authority
-- [x] residual consumer-local evidence types / unions（`writing/evidence.ts` promotion path、`measurements.ts` local `EvidenceType`、`EvidenceCatalogItemV1Like`）在适用边界上被 shared generated types 替代
-- [ ] （可选/未来）PDF raw producer (`pdf/evidence.ts` / `${output_prefix}_evidence_catalog.jsonl`) 是否也要切到 shared generated evidence authority（本 slice 明确不重写）
+- [x] writing evidence + semantic query + measurements consumer 以 shared generated evidence authority 为准（LaTeX-only guards 显式守卫）
+- [x] live raw-PDF producer tool surface 已移除（`hep_run_build_pdf_evidence` 不再存在；`hep_run_build_writing_evidence` 对 `pdf_source` fail-closed）
 
 ### NEW-R05a: Pydantic v2 代码生成目标 rebaseline ✅ ★深度重构
 
@@ -3876,12 +3860,12 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 |---|---|---|
 | **0 (止血)** | NEW-05, NEW-05a (Stage 1-2), C-01~C-04, H-08, H-14a, H-20, NEW-R02a, NEW-R03a, NEW-R13, NEW-R15-spec, NEW-R16 | 14 ✅ ALL DONE |
 | **1 (统一抽象)** | H-01/H-02/H-03/H-04/H-13/H-15a/H-16a/H-18/H-19/H-11a, M-01/M-14a/M-18/M-19, NEW-01, NEW-CONN-01, NEW-R02/R03b/R04, UX-01/UX-05/UX-06, NEW-R09 (cut) | 23 (22 done, 1 cut) |
-| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (47 done, 3 pending, 1 cut) |
+| **2 (深度集成 + 运行时 + Pipeline 连通)** | H-05/H-07/H-09/H-10/H-11b/H-12/H-15b/H-16b/H-17/H-21, M-02/M-05/M-06/M-20/M-21/M-23, trace-jsonl, NEW-02/03/04, NEW-R05/R05a/R06/R07/R08/R10/R14/R15-impl, UX-02/UX-07, RT-02/RT-03, NEW-VIZ-01, NEW-05a-stage3/start, NEW-05a-{shared-boundary,idea-core-domain-boundary,formalism-contract-boundary,hep-semantic-authority-deep-cleanup,runtime-root-boundary}, NEW-RT-01~04, NEW-CONN-02~04, NEW-IDEA-01, NEW-COMP-01, NEW-WF-01 | 51 (48 done, 2 pending, 1 cut) |
 | **3 (扩展性 + 计算连通 + 单研究者研究循环前置)** | M-03/M-04/M-07~M-10/M-12/M-13/M-15~M-17/M-22/L-08, NEW-06, NEW-R11/12, UX-03/UX-04, RT-01/RT-04, NEW-CONN-05, NEW-COMP-02, NEW-SKILL-01, NEW-RT-05, NEW-05a Stage 3 (complete), NEW-OPENALEX-01, NEW-SEM-01~13, NEW-RT-06/07, NEW-DISC-01, NEW-LITFLOW-01/02, NEW-SEM-06-INFRA/b/d/e/f, NEW-LOOP-01 | 53 (40 done, 13 pending) |
 | **4 (长期演进)** | L-01~L-07, NEW-07 | 8 (4 done, 4 pending) |
 | **5 (端到端闭环、统一执行与研究生态外层（P5A/P5B）)** | `NEW-VER-01`, `NEW-SHELL-01`, `NEW-RT-08~10`, EVO-01~EVO-21, EVO-12a | 27 (18 done, 3 in_progress, 3 pending, 3 design_complete) |
 | **跨 Phase (伞)** | NEW-R01 | 1（bookkeeping only; excluded from total） |
 | **CUT** | NEW-R09, NEW-R10 | 2（bookkeeping only; excluded from total） |
-| **总计** | **Phase 0–5 remediation items only** | **176** — **144 done** |
+| **总计** | **Phase 0–5 remediation items only** | **176** — **146 done** |
 
 > **Note**: 本表自 `v1.9.2-draft` 起与 `meta/remediation_tracker_v1.json` 同步；“总计”仅统计 Phase 0–5 remediation items，`NEW-R01` 作为 bookkeeping row 与 tracker-only `umbrella_items` 一样不计入 173。v1.9.2 新增 `NEW-LOOP-01`，并将近中期执行主干重释为 single-user nonlinear research loop；SOTA retrieval/discovery/routing follow-up（`NEW-DISC-01`, `NEW-RT-06/07`, `NEW-SEM-06-INFRA/b/d/e/f`）与 literature-workflow authority lane（`NEW-LITFLOW-01`, `NEW-LITFLOW-02`）现均已完成 closeout。`NEW-VER-01` 现作为单独的 verification-kernel follow-up item 留在 `P5A`，而不是回写为 `EVO-02` / `EVO-03` / `EVO-13` reopen；`NEW-SHELL-01` 现同样作为单独的 shell-boundary anti-drift follow-up item 留在 `P5A`，而不是回写为 `NEW-LOOP-01` / `EVO-13` / `EVO-14` reopen。Phase 3 剩余项主要集中在 compute / packet-curation / provenance / equation lanes。
