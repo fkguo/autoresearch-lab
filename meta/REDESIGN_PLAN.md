@@ -1,10 +1,16 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.23-draft (v1.9.22 + package legacy first-touch docs rebaseline + post-runtime eval umbrella ratification)
+> **版本**: 1.9.24-draft (v1.9.23 + control-plane object convergence planning bundle)
 > **日期**: 2026-04-07
-> **基线**: v1.9.22-draft
+> **基线**: v1.9.23-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.24 Changelog**:
+> - 当前 next-batch generic-first 主轴已从“继续零碎修 docs / legacy shell”收束为 `CP-OBJ-01 — Orchestrator Control-Plane Object Convergence`，其 checked-in planning bundle 现包括：`meta/docs/plans/2026-04-07-control-plane-object-convergence-plan.md`、`meta/docs/prompts/prompt-2026-04-07-cp-obj-01a-object-map-authority-spec.md`、以及 `meta/docs/2026-04-07-orchestrator-control-plane-object-map.md`
+> - 该 planning bundle 已进入 tracker-only umbrella `CP-OBJ-01`，用于 machine-readable 记录“下一主轴是什么、第一 slice 先锁什么”，但**不**新增 phase-counted remediation item，也**不**改变 aggregate counts
+> - `CP-OBJ-01A` 当前真值是：先锁定 source-grounded object map / authority spec，再推进 typed execution identity seam、delegated session/turn projection、unified operator read model、以及 research-task bridge；这不是 runtime 大重写，也不重开 `NEW-RT-08/09/10`
+> - root/front-door docs 的剩余真实漂移现被明确缩成独立 side lane：当前 guard 已锁住 wording authority，但 `README.md`、`docs/README_zh.md`、`docs/QUICKSTART.md` 的 first-touch ordering/prominence 仍偏 HEP smoke-first；这应作为 separate docs lane 处理，而不是混进 `CP-OBJ-01`
 >
 > **v1.9.23 Changelog**:
 > - `8ad6fa5` 推送后对应的 main CI run `24043955493` 已全绿：此前真实 blocker `CI / build-and-test (22) / Check shell boundary anti-drift` 已被当前 mainline truth 吸收，不再是挂起问题
@@ -2638,6 +2644,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 > - `a6cc685` ratifies a package-local protocol/interface perturbation harness in `packages/hep-mcp/tests/eval/*`, not a new generic runtime policy layer
 >
 > These three slices are now recorded in tracker-only umbrella `POST-RT-EVAL-01`. That machine-readable ratification still does **not** add new phase-counted remediation item ids or alter aggregate counts; it only prevents the current bundle from living solely in prompt/changelog prose.
+>
+> **2026-04-07 next-control-plane planning note**: after current runtime hardening, post-runtime eval ratification, and package-doc/front-door rebaseline, the next generic-first main axis is `CP-OBJ-01 — Orchestrator Control-Plane Object Convergence`. The first bounded slice is `CP-OBJ-01A`, which now lands only a source-grounded object-map / authority-spec bundle (`meta/docs/prompts/prompt-2026-04-07-cp-obj-01a-object-map-authority-spec.md` + `meta/docs/2026-04-07-orchestrator-control-plane-object-map.md`). This planning truth does **not** reopen `NEW-RT-08/09/10`, does **not** add new phase-counted remediation items, and does **not** authorize transcript-as-SSOT or remote/fleet widening. The remaining root docs first-touch ordering cleanup for `README.md`, `docs/README_zh.md`, and `docs/QUICKSTART.md` stays a separate bounded docs lane rather than part of object-model convergence.
 
 #### `NEW-RT-08` 子任务拆分（建议 P5A runtime batch R1）
 
