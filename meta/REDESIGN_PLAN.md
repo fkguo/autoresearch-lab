@@ -331,7 +331,7 @@ autoresearch-lab/                # private monorepo (personal GitHub)
 - **当前已落地的 TS authority**: `packages/idea-engine/` 当前拥有 live `search.step` 与 post-search RPC（`eval.run` / `rank.compute` / `node.promote`）路径所需的 store/idempotency/campaign/budget/domain-pack registry/runtime seam 与 JSON-RPC service surface
 - **当前仍保留的 Python surfaces**: `packages/idea-core/` 仍承载 parity fixtures、MCP bridge fallback、以及未迁入 TS 的方法/模块；`packages/hep-autoresearch/` / `hepar` 仍承载尚未 repoint 的 legacy commands / workflows
 - **缺失的显式 closeout 计划 (2026-03-24 planning completeness correction)**: 当前 repo 仍缺两个单独 bounded retirement slices，不能只停留在“Phase 4+ 退役”的高层口径：
-  - `Pipeline A run-surface repoint / parity / delete`: 收口当前剩余的 Pipeline A Python delegation（现已收窄到 residual non-computation `run` workflows、`doctor` / `bridge` 与相邻 workflow/support surfaces；`autoresearch run --workflow-id computation` 已是 live TS slice）；一旦 TS surface 通过验收，直接删除 `hep-autoresearch` / `hepar`
+  - `Pipeline A run-surface repoint / parity / delete`: 收口当前剩余的 Pipeline A Python delegation（installable public shell 现已进一步收窄：`doctor` / `bridge` 已从 `hepar` / `hep-autoresearch` public surface 退到 internal full parser，仅 residual non-computation `run` workflows 与相邻 workflow/support commands 仍公开；`autoresearch run --workflow-id computation` 已是 live TS slice）；一旦 TS surface 通过验收，直接删除 `hep-autoresearch` / `hepar`
   - `idea-core retire-all closeout`: 在 `packages/idea-engine/` 上完成剩余 parity / bridge 收口；一旦 TS acceptance 稳定，直接删除 Python `idea-core` fallback，而不是再开 Python-first lane
 - **后续迁移方向**: 后续 search/evolution 工作应继续落在 TS `idea-engine` 上，而不是重新把 Python `idea-core` 拉回主 authority
 - **回退/对照**: MCP 桥接作为回退
@@ -373,7 +373,7 @@ autoresearch-lab/                # private monorepo (personal GitHub)
 - [x] TS `idea-engine` 已拥有 live `search.step` + post-search RPC / authority-seam baseline
 - [ ] TS `idea-engine` 尚未完成全部 Python `idea-core` 方法 parity / retire-all closeout
 - [ ] Python `idea-core` 与 `hep-autoresearch` / `hepar` 尚未整体退役
-- [ ] 仍缺剩余 unrepointed Pipeline A command set 的 bounded repoint/delete closeout slice（当前已收窄到 residual non-computation `run` workflows、`doctor` / `bridge` 与相邻 workflow/support surfaces；`autoresearch run --workflow-id computation` 已是 live TS slice）
+- [ ] 仍缺剩余 unrepointed Pipeline A command set 的 bounded repoint/delete closeout slice（installable public shell 现主要剩 residual non-computation `run` workflows 与相邻 workflow/support commands；`doctor` / `bridge` 已不再通过 `hepar` / `hep-autoresearch` public alias 暴露，但 internal full parser 仍保留给 maintainer/eval paths；`autoresearch run --workflow-id computation` 已是 live TS slice）
 - [ ] 仍缺一个 checked-in bounded `idea-core retire-all` closeout slice
 - [ ] TS idea-engine JSON-RPC 接口与 Python idea-core 协议兼容 (相同 method/params/response)
 - [ ] TS idea-engine 通过 Python idea-core 的全部测试用例 (协议等价验证)
@@ -1033,6 +1033,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 - formal review-swarm 在当前 worktree 以 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)` 收敛到 `0` blocking；唯一直接相关 amendment 是把 README 中残留的 `hep-autopilot` 明确并入同一条 legacy lifecycle 语义，其余 reviewer 建议在 self-review 中被登记为非阻塞的 defer / decline
 - checked-in post-repoint doc/CLI cleanup prompt `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md` 已在同日执行：touched operator-facing README / tutorial / workflow / help surfaces 现统一写明 `autoresearch` = canonical lifecycle entrypoint，`hepar` / `hep-autoresearch` / `hep-autopilot` = 同一条 transitional legacy surface，而在当时的批次边界上 `run` / `doctor` / `bridge` 仍是 unrepointed commands；本批不引入 alias、fallback wrapper、第二套 authority，也不顺手推进 run-shell parity
 - **Retrospective planning correction (2026-03-24, amended 2026-04-06)**: 上述 post-repoint doc cleanup 也是最合适的地方去登记下一批 `Pipeline A run-surface repoint / parity / delete` follow-up，因为它在当时的批次边界上把 `run` / `doctor` / `bridge` 明确定义成 unrepointed commands。当前 truth 已进一步收窄：`autoresearch run --workflow-id computation` 已是 live TS slice，剩余 follow-up 聚焦于 residual non-computation Python `run` workflows、`doctor`、`bridge` 与相邻 support surface。该 cleanup batch 保持 wording-only 是对的，但 repo 当时少了一条 checked-in follow-up pointer；现已在后续计划文档中补记。
+- **2026-04-07 follow-up（public-shell narrowing）**: installable `hepar` / `hep-autoresearch` / `hep-autopilot` public shell 现进一步移除了 `doctor` 与 `bridge`，所以这两个命令不再是 operator-facing installable alias 的 live surface；当前只保留在 `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` internal full parser 里供 maintainer/eval/test paths 使用。当前剩余的 public Pipeline A shell 因此进一步收窄到 residual non-computation `run` workflows 与相邻 workflow/support commands；这仍不构成 delete/rehome closeout，本轮不声称 `doctor` / `bridge` 已整体删除。
 
 **变更**:
 
