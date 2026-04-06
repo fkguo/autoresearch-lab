@@ -328,10 +328,10 @@ autoresearch-lab/                # private monorepo (personal GitHub)
 
 **Stage 3 (Phase 2-3, bounded baseline complete)**: idea-core → idea-engine TS 增量重写已建立首个 live TS authority，但未完成全部方法/命令迁移。
 - **Phase 2 先行**: NEW-IDEA-01 (idea-core MCP 桥接) 立即连通 pipeline，不被 TS 重写阻塞
-- **当前已落地的 TS authority**: `packages/idea-engine/` 当前拥有 live `search.step` 路径所需的 store/idempotency/campaign/budget/domain-pack registry/runtime seam 与 JSON-RPC service surface
+- **当前已落地的 TS authority**: `packages/idea-engine/` 当前拥有 live `search.step` 与 post-search RPC（`eval.run` / `rank.compute` / `node.promote`）路径所需的 store/idempotency/campaign/budget/domain-pack registry/runtime seam 与 JSON-RPC service surface
 - **当前仍保留的 Python surfaces**: `packages/idea-core/` 仍承载 parity fixtures、MCP bridge fallback、以及未迁入 TS 的方法/模块；`packages/hep-autoresearch/` / `hepar` 仍承载尚未 repoint 的 legacy commands / workflows
 - **缺失的显式 closeout 计划 (2026-03-24 planning completeness correction)**: 当前 repo 仍缺两个单独 bounded retirement slices，不能只停留在“Phase 4+ 退役”的高层口径：
-  - `Pipeline A run-surface repoint / parity / delete`: 收口当前剩余的 Pipeline A Python delegation（现已收窄到 `run` / `doctor` / `bridge` 与相邻 workflow/support surfaces）；一旦 TS surface 通过验收，直接删除 `hep-autoresearch` / `hepar`
+  - `Pipeline A run-surface repoint / parity / delete`: 收口当前剩余的 Pipeline A Python delegation（现已收窄到 residual non-computation `run` workflows、`doctor` / `bridge` 与相邻 workflow/support surfaces；`autoresearch run --workflow-id computation` 已是 live TS slice）；一旦 TS surface 通过验收，直接删除 `hep-autoresearch` / `hepar`
   - `idea-core retire-all closeout`: 在 `packages/idea-engine/` 上完成剩余 parity / bridge 收口；一旦 TS acceptance 稳定，直接删除 Python `idea-core` fallback，而不是再开 Python-first lane
 - **后续迁移方向**: 后续 search/evolution 工作应继续落在 TS `idea-engine` 上，而不是重新把 Python `idea-core` 拉回主 authority
 - **回退/对照**: MCP 桥接作为回退
@@ -352,7 +352,7 @@ autoresearch-lab/                # private monorepo (personal GitHub)
 |---|---|---|
 | 阶段 1 (NEW-05 同步) | 在 monorepo 中创建 `packages/orchestrator/` (TS)，实现最小状态管理 + MCP client | 低——新代码，不影响现有 |
 | 阶段 2 (Phase 1-2) | 新编排器逐步接管 hep-autoresearch 的功能 (state machine, approval gates, ledger) | 中——功能迁移需验证等价 |
-| 阶段 3 (Phase 2-3) | `packages/idea-engine/` 已建立 `search.step` / authority-seam live TS baseline；剩余方法 parity、legacy bridge 收口与 Python 退役继续后续推进 | 中——仍需持续收口，不能误读为“所有 Python 已消失” |
+| 阶段 3 (Phase 2-3) | `packages/idea-engine/` 已建立 `search.step` + post-search RPC（`eval.run` / `rank.compute` / `node.promote`）live TS baseline；剩余方法 parity、legacy bridge 收口与 Python 退役继续后续推进 | 中——仍需持续收口，不能误读为“所有 Python 已消失” |
 | 阶段 4 (Phase 3) | idea-generator 验证脚本迁移至 TS (JSON Schema 文件本身语言无关，保持不动) | 低——仅 370 行脚本 |
 | 阶段 5 (Phase 4-5) | EVO-13/14/15 直接在 TS 编排器上实现；hep-autoresearch（含 `hepar` alias）+ Python idea-core 退役 | 低——此时 TS 组件已成熟 |
 
@@ -361,18 +361,19 @@ autoresearch-lab/                # private monorepo (personal GitHub)
 | 文件 | 变更 |
 |---|---|
 | `packages/orchestrator/src/{cli.ts,cli-lifecycle.ts,state-manager.ts,ledger-writer.ts,mcp-client.ts}` | 当前 TS lifecycle/control-plane authority |
-| `packages/idea-engine/` | 当前 TS idea engine package；已拥有 live `search.step` 入口 |
+| `packages/idea-engine/` | 当前 TS idea engine package；已拥有 live `search.step` + post-search RPC 入口 |
 | `packages/idea-engine/src/service/search-step-service.ts` | live `search.step` 实现 |
-| `packages/idea-engine/src/service/{search-step-campaign.ts,idempotency.ts}` | `search.step` 的 campaign / idempotency / budget path |
+| `packages/idea-engine/src/service/{post-search-service.ts,eval-run-executor.ts,rank-compute-executor.ts,node-promote-executor.ts}` | live post-search RPC authority（`eval.run` / `rank.compute` / `node.promote`） |
+| `packages/idea-engine/src/service/{search-step-campaign.ts,idempotency.ts}` | `search.step` 与 post-search RPC 共用的 campaign / idempotency / budget path |
 | `packages/idea-engine/src/service/{domain-pack-registry.ts,hep-domain-pack.ts,hep-search-runtime.ts,hep-librarian-recipe-book.ts}` | provider-neutral seam + 当前 provider-local runtime / recipe authority |
 | `packages/idea-engine/src/{store/engine-store.ts,rpc/jsonrpc.ts,service/rpc-service.ts}` | 当前 TS store + JSON-RPC service surface |
 
 **当前高层完成态 / 未完成态对齐**:
 - [x] TS orchestrator 已是 canonical generic lifecycle entrypoint (`autoresearch`)
-- [x] TS `idea-engine` 已拥有 live `search.step` / authority-seam baseline
+- [x] TS `idea-engine` 已拥有 live `search.step` + post-search RPC / authority-seam baseline
 - [ ] TS `idea-engine` 尚未完成全部 Python `idea-core` 方法 parity / retire-all closeout
 - [ ] Python `idea-core` 与 `hep-autoresearch` / `hepar` 尚未整体退役
-- [ ] 仍缺剩余 unrepointed Pipeline A command set 的 bounded repoint/delete closeout slice（当前已收窄到 `run` / `doctor` / `bridge` 与相邻 workflow/support surfaces）
+- [ ] 仍缺剩余 unrepointed Pipeline A command set 的 bounded repoint/delete closeout slice（当前已收窄到 residual non-computation `run` workflows、`doctor` / `bridge` 与相邻 workflow/support surfaces；`autoresearch run --workflow-id computation` 已是 live TS slice）
 - [ ] 仍缺一个 checked-in bounded `idea-core retire-all` closeout slice
 - [ ] TS idea-engine JSON-RPC 接口与 Python idea-core 协议兼容 (相同 method/params/response)
 - [ ] TS idea-engine 通过 Python idea-core 的全部测试用例 (协议等价验证)
@@ -1026,12 +1027,12 @@ branches:     candidate → pending, active → running, abandoned → completed
 
 **2026-03-23 follow-up（`Pipeline A` repoint Batch 1: canonical lifecycle entrypoint）**:
 - `@autoresearch/orchestrator` 现在提供 canonical generic lifecycle bin `autoresearch`
-- 本批只 repoint `init/status/approve/pause/resume/export`；`autoresearch` 不新增 `hepar` / `hep-autoresearch` alias，也不假装提供 `run`
+- 本批只在当时 repoint `init/status/approve/pause/resume/export`；`autoresearch` 不新增 `hepar` / `hep-autoresearch` alias，也尚未在该批次中提供 `run`
 - `autoresearch export` 已改为 TS-native lifecycle command；`autoresearch init` 则改为 TS lifecycle front door，并直接复用 `packages/project-contracts/` 中共享的 checked-in scaffold authority，而不再经由 `hep-autoresearch`
-- `hepar` / `hep-autoresearch` 现在只作为过渡中的 Pipeline A legacy surface 保留，用于尚未 repoint 的 `run` / `doctor` / `bridge` 等命令；两者 lifecycle 语义继续一起移动
+- `hepar` / `hep-autoresearch` 现在只作为过渡中的 Pipeline A legacy surface 保留，用于当时尚未 repoint 的 `run` / `doctor` / `bridge` 等命令；两者 lifecycle 语义继续一起移动
 - formal review-swarm 在当前 worktree 以 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)` 收敛到 `0` blocking；唯一直接相关 amendment 是把 README 中残留的 `hep-autopilot` 明确并入同一条 legacy lifecycle 语义，其余 reviewer 建议在 self-review 中被登记为非阻塞的 defer / decline
-- checked-in post-repoint doc/CLI cleanup prompt `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md` 已在同日执行：touched operator-facing README / tutorial / workflow / help surfaces 现统一写明 `autoresearch` = canonical lifecycle entrypoint，`hepar` / `hep-autoresearch` / `hep-autopilot` = 同一条 transitional legacy surface，`run` / `doctor` / `bridge` 仍是 unrepointed commands；本批不引入 alias、fallback wrapper、第二套 authority，也不顺手推进 run-shell parity
-- **Retrospective planning correction (2026-03-24)**: 上述 post-repoint doc cleanup 也是最合适的地方去登记下一批 `Pipeline A run-surface repoint / parity / delete` follow-up，因为它已经把 `run` / `doctor` / `bridge` 明确定义成 unrepointed commands。该 cleanup batch 保持 wording-only 是对的，但 repo 当时少了一条 checked-in follow-up pointer；现已在后续计划文档中补记。
+- checked-in post-repoint doc/CLI cleanup prompt `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md` 已在同日执行：touched operator-facing README / tutorial / workflow / help surfaces 现统一写明 `autoresearch` = canonical lifecycle entrypoint，`hepar` / `hep-autoresearch` / `hep-autopilot` = 同一条 transitional legacy surface，而在当时的批次边界上 `run` / `doctor` / `bridge` 仍是 unrepointed commands；本批不引入 alias、fallback wrapper、第二套 authority，也不顺手推进 run-shell parity
+- **Retrospective planning correction (2026-03-24, amended 2026-04-06)**: 上述 post-repoint doc cleanup 也是最合适的地方去登记下一批 `Pipeline A run-surface repoint / parity / delete` follow-up，因为它在当时的批次边界上把 `run` / `doctor` / `bridge` 明确定义成 unrepointed commands。当前 truth 已进一步收窄：`autoresearch run --workflow-id computation` 已是 live TS slice，剩余 follow-up 聚焦于 residual non-computation Python `run` workflows、`doctor`、`bridge` 与相邻 support surface。该 cleanup batch 保持 wording-only 是对的，但 repo 当时少了一条 checked-in follow-up pointer；现已在后续计划文档中补记。
 
 **变更**:
 
