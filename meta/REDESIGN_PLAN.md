@@ -331,7 +331,7 @@ autoresearch-lab/                # private monorepo (personal GitHub)
 - **当前已落地的 TS authority**: `packages/idea-engine/` 当前拥有 live `search.step` 路径所需的 store/idempotency/campaign/budget/domain-pack registry/runtime seam 与 JSON-RPC service surface
 - **当前仍保留的 Python surfaces**: `packages/idea-core/` 仍承载 parity fixtures、MCP bridge fallback、以及未迁入 TS 的方法/模块；`packages/hep-autoresearch/` / `hepar` 仍承载尚未 repoint 的 legacy commands / workflows
 - **缺失的显式 closeout 计划 (2026-03-24 planning completeness correction)**: 当前 repo 仍缺两个单独 bounded retirement slices，不能只停留在“Phase 4+ 退役”的高层口径：
-  - `Pipeline A run-surface repoint / parity / delete`: 收口 `run` / `doctor` / `bridge` 与 `autoresearch` 中剩余的 Python delegation；一旦 TS surface 通过验收，直接删除 `hep-autoresearch` / `hepar`
+  - `Pipeline A run-surface repoint / parity / delete`: 收口当前剩余的 Pipeline A Python delegation（现已收窄到 `run` / `doctor` / `bridge` 与相邻 workflow/support surfaces）；一旦 TS surface 通过验收，直接删除 `hep-autoresearch` / `hepar`
   - `idea-core retire-all closeout`: 在 `packages/idea-engine/` 上完成剩余 parity / bridge 收口；一旦 TS acceptance 稳定，直接删除 Python `idea-core` fallback，而不是再开 Python-first lane
 - **后续迁移方向**: 后续 search/evolution 工作应继续落在 TS `idea-engine` 上，而不是重新把 Python `idea-core` 拉回主 authority
 - **回退/对照**: MCP 桥接作为回退
@@ -372,7 +372,7 @@ autoresearch-lab/                # private monorepo (personal GitHub)
 - [x] TS `idea-engine` 已拥有 live `search.step` / authority-seam baseline
 - [ ] TS `idea-engine` 尚未完成全部 Python `idea-core` 方法 parity / retire-all closeout
 - [ ] Python `idea-core` 与 `hep-autoresearch` / `hepar` 尚未整体退役
-- [ ] 仍缺 `autoresearch init/export` 脱 Python bridge 与剩余 unrepointed Pipeline A command set 的 bounded repoint/delete closeout slice
+- [ ] 仍缺剩余 unrepointed Pipeline A command set 的 bounded repoint/delete closeout slice（当前已收窄到 `run` / `doctor` / `bridge` 与相邻 workflow/support surfaces）
 - [ ] 仍缺一个 checked-in bounded `idea-core retire-all` closeout slice
 - [ ] TS idea-engine JSON-RPC 接口与 Python idea-core 协议兼容 (相同 method/params/response)
 - [ ] TS idea-engine 通过 Python idea-core 的全部测试用例 (协议等价验证)
@@ -1027,7 +1027,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 **2026-03-23 follow-up（`Pipeline A` repoint Batch 1: canonical lifecycle entrypoint）**:
 - `@autoresearch/orchestrator` 现在提供 canonical generic lifecycle bin `autoresearch`
 - 本批只 repoint `init/status/approve/pause/resume/export`；`autoresearch` 不新增 `hepar` / `hep-autoresearch` alias，也不假装提供 `run`
-- `autoresearch init` 继续保持 thin composition：shared scaffold authority 仍在 `packages/project-contracts/`，不引入第二套 scaffold authority
+- `autoresearch export` 已改为 TS-native lifecycle command；`autoresearch init` 则改为 TS lifecycle front door，并直接复用 `packages/project-contracts/` 中共享的 checked-in scaffold authority，而不再经由 `hep-autoresearch`
 - `hepar` / `hep-autoresearch` 现在只作为过渡中的 Pipeline A legacy surface 保留，用于尚未 repoint 的 `run` / `doctor` / `bridge` 等命令；两者 lifecycle 语义继续一起移动
 - formal review-swarm 在当前 worktree 以 `Opus` + `Gemini-3.1-Pro-Preview` + `OpenCode(zhipuai-coding-plan/glm-5)` 收敛到 `0` blocking；唯一直接相关 amendment 是把 README 中残留的 `hep-autopilot` 明确并入同一条 legacy lifecycle 语义，其余 reviewer 建议在 self-review 中被登记为非阻塞的 defer / decline
 - checked-in post-repoint doc/CLI cleanup prompt `meta/docs/prompts/prompt-2026-03-21-pipeline-a-retirement-doc-cli-cleanup.md` 已在同日执行：touched operator-facing README / tutorial / workflow / help surfaces 现统一写明 `autoresearch` = canonical lifecycle entrypoint，`hepar` / `hep-autoresearch` / `hep-autopilot` = 同一条 transitional legacy surface，`run` / `doctor` / `bridge` 仍是 unrepointed commands；本批不引入 alias、fallback wrapper、第二套 authority，也不顺手推进 run-shell parity
