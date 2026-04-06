@@ -1,10 +1,15 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.24-draft (v1.9.23 + control-plane object convergence planning bundle)
+> **版本**: 1.9.25-draft (v1.9.24 + CP-OBJ-01B typed execution identity seam)
 > **日期**: 2026-04-07
 > **基线**: v1.9.23-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.25 Changelog**:
+> - `CP-OBJ-01B` 已从 planning/spec 推进为第一刀真实代码 slice：`packages/orchestrator/src/execution-identity.ts` 现集中表达 delegated execution identity（`project_run_id` / `assignment_id` / `runtime_run_id`）及 delegated `manifest_path`，而 `team-execution-scoping.ts`、`team-execution-view.ts`、`team-unified-runtime-support.ts`、`research-loop/delegated-agent-runtime.ts` 现消费同一 seam，保持 `runtime_run_id` / `manifest_path` 线上的字段名与语义不变
+> - 该 slice 已在当前 worktree 上通过 scoped acceptance、formal trio review 与 self-review：`Opus`、`Gemini(auto)`、`OpenCode(zhipuai-coding-plan/glm-5.1)` 均为 `0 blocking`；其中 `Gemini(auto)` 首次 headless review path 因 runner/shell 污染失败，已按仓规完成 same-model embedded-source rerun，不静默换 reviewer 也不 pin 回旧 alias
+> - `CP-OBJ-01` 的 next-code truth 现推进为：`CP-OBJ-01C` 优先收口 delegated runtime session/turn projection；与此同时，root first-touch ordering cleanup 已由 side-lane 审计收束成单独 docs lane `DOCS-FRONTDOOR-01`，继续与 object-model 主轴分离
 >
 > **v1.9.24 Changelog**:
 > - 当前 next-batch generic-first 主轴已从“继续零碎修 docs / legacy shell”收束为 `CP-OBJ-01 — Orchestrator Control-Plane Object Convergence`，其 checked-in planning bundle 现包括：`meta/docs/plans/2026-04-07-control-plane-object-convergence-plan.md`、`meta/docs/prompts/prompt-2026-04-07-cp-obj-01a-object-map-authority-spec.md`、以及 `meta/docs/2026-04-07-orchestrator-control-plane-object-map.md`
@@ -2645,7 +2650,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 >
 > These three slices are now recorded in tracker-only umbrella `POST-RT-EVAL-01`. That machine-readable ratification still does **not** add new phase-counted remediation item ids or alter aggregate counts; it only prevents the current bundle from living solely in prompt/changelog prose.
 >
-> **2026-04-07 next-control-plane planning note**: after current runtime hardening, post-runtime eval ratification, and package-doc/front-door rebaseline, the next generic-first main axis is `CP-OBJ-01 — Orchestrator Control-Plane Object Convergence`. The first bounded slice is `CP-OBJ-01A`, which now lands only a source-grounded object-map / authority-spec bundle (`meta/docs/prompts/prompt-2026-04-07-cp-obj-01a-object-map-authority-spec.md` + `meta/docs/2026-04-07-orchestrator-control-plane-object-map.md`). This planning truth does **not** reopen `NEW-RT-08/09/10`, does **not** add new phase-counted remediation items, and does **not** authorize transcript-as-SSOT or remote/fleet widening. The remaining root docs first-touch ordering cleanup for `README.md`, `docs/README_zh.md`, and `docs/QUICKSTART.md` stays a separate bounded docs lane rather than part of object-model convergence.
+> **2026-04-07 next-control-plane planning note**: after current runtime hardening, post-runtime eval ratification, and package-doc/front-door rebaseline, the next generic-first main axis is `CP-OBJ-01 — Orchestrator Control-Plane Object Convergence`. `CP-OBJ-01A` now exists as the source-grounded object-map / authority-spec bundle (`meta/docs/prompts/prompt-2026-04-07-cp-obj-01a-object-map-authority-spec.md` + `meta/docs/2026-04-07-orchestrator-control-plane-object-map.md`), and `CP-OBJ-01B` now lands the first real code slice by introducing a shared delegated execution identity seam plus delegated manifest-path convergence without changing wire fields. The next intended code slice is `CP-OBJ-01C` for delegated runtime session/turn projection; this truth still does **not** reopen `NEW-RT-08/09/10`, does **not** add new phase-counted remediation items, and does **not** authorize transcript-as-SSOT or remote/fleet widening. The remaining root docs first-touch ordering cleanup for `README.md`, `docs/README_zh.md`, and `docs/QUICKSTART.md` is now named side lane `DOCS-FRONTDOOR-01` and remains separate from object-model convergence.
 
 #### `NEW-RT-08` 子任务拆分（建议 P5A runtime batch R1）
 
