@@ -1,10 +1,24 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.20-draft (v1.9.19 + M-22 closeout truth sync after research-team convergence-gate adoption + NEW-RT-08 second-slice closeout sync)
-> **日期**: 2026-04-05
-> **基线**: v1.9.19-draft
+> **版本**: 1.9.22-draft (v1.9.21 + local post-runtime eval stack truth sync)
+> **日期**: 2026-04-06
+> **基线**: v1.9.21-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.22 Changelog**:
+> - 当前本地 `main` 已不再只停留在 2026-04-05 SOTA ratification / prompt planning：bounded post-runtime eval stack 已分别以 `68a790a`（multi-axis eval outcome contract）、`3da2d2e`（runtime diagnostics bridge artifact）、`a6cc685`（package-local protocol perturbation harness）落地到代码
+> - 这些本地 slice 的 formal review / self-review 证据已存在于 `meta/.review/2026-04-06-post-runtime-*`（gitignored review artifacts，作为 closeout evidence 而非治理 SSOT）
+> - `meta/docs/prompts/prompt-2026-04-05-post-runtime-*.md` 在当前 worktree 上应读取为这些 bounded slice 的 canonical implementation prompts / audit trail，而不再只是“尚未实施的 candidate lanes”
+> - 以上同步**不**单独 ratify 新的 tracker item ids，也**不**改变当前 machine-readable remediation counts；它只把 current local worktree truth 与 `meta/` wording 对齐
+>
+> **v1.9.21 Changelog**:
+> - 2026-04-05 primary-source SOTA audit 已正式记录到 `meta/docs/2026-04-05-primary-source-runtime-eval-sota.md`：证据来源升级为 full-text paper reads + source-code inspection，而不是摘要 / README-level synthesis
+> - 该审计**不改变**既有 runtime-first sequencing：`NEW-RT-08 -> NEW-RT-09 -> NEW-RT-10 -> broader M-22 rollout / future EVO-13 widening` 仍是 source-grounded truth
+> - 它补充了 post-runtime planning input，而不是重开当前 runtime slices：下一批更应关注 multi-axis eval contract、trajectory-level failure diagnostics、protocol/interface perturbation harness，而不是重写已 landed 的 runtime permission / replay substrate
+> - 证据层校正已写明：未来 SOTA 审计应将 `claude-code-sourcemap` 视为 released Claude Code implementation evidence，将 `claw-code` 视为 Rust-first clean-room rewrite + parity scaffold，禁止混为同一 authority layer
+> - 当前代码结构映射也已写明：post-runtime work 应优先扩展现有 `packages/hep-mcp/src/eval/*` substrate，并把 `run-manifest` / `spans.jsonl` / runtime markers 桥接成 shared diagnostic evidence；protocol/interface perturbation 首轮应作为 package-local eval harness，而不是凭空发明 `packages/orchestrator/src/eval/*`
+> - 2026-04-05 时点的三个 post-runtime prompt 文件已补入当前 worktree 的 `meta/docs/prompts/`，当时它们只被 ratify 为 candidate lanes、尚不单独构成新的 tracker item ids：`prompt-2026-04-05-post-runtime-multi-axis-eval-contract-first.md`、`prompt-2026-04-05-post-runtime-runtime-diagnostics-bridge-first.md`、`prompt-2026-04-05-post-runtime-protocol-perturbation-harness-first.md`
 >
 > **v1.9.20 Changelog**:
 > - `M-22` 当前真值同步到已 landed 的 `research-team` convergence gate consumer adoption：移除 `meta/` 中仍将该 slice 描述为 deferred 的旧表述；remaining open scope 现收敛为 Python legacy approval authority + `research_workflow_v1` / workflow-template `WorkflowGateSpec` authority
@@ -2599,6 +2613,15 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 | P5A runtime batch R2 | `NEW-RT-09` | 当前 `McpClient.callTool()` 仍不会在执行期拦截未授权工具，`TeamPermissionMatrix` 也尚未变成 agent-visible tool filter；若先扩 broader `M-22` rollout，只会扩大“有 gate 语义、无 runtime filtering”的 consumer 面 |
 | P5A runtime batch R3 | `NEW-RT-10` | 在已有 loop/task substrate 与 runtime filtering 之上，再补 agent-scoped session / approval / background-task semantics，避免过早把 team-local concern 写进 fleet layer |
 | P5A runtime batch R4+ | broader `M-22` rollout / future `EVO-13` widening | 以上三项完成后，再扩 shared gate consumer 与更宽的 delegated runtime surface，返工风险最低 |
+
+> **2026-04-05 primary-source SOTA ratification**: a deeper audit based on full-text reads of `MiroEval`, `Trace2Skill`, `SWE-Skills-Bench`, `SWE-Replay`, `AGENTRX`, `PIPE`, and `ATBench`, plus source inspection of `codex`, `claude-code-sourcemap`, and `claw-code`, does **not** change the ratified `NEW-RT-08 -> NEW-RT-09 -> NEW-RT-10 -> broader M-22` order. It instead confirms that the clearest post-runtime planning gaps are (1) multi-axis eval contract (`task_success` / `partial_progress` / cost-time-token), (2) trajectory-level failure diagnostics / violation-log artifacts, and (3) protocol/interface perturbation harnesses to detect tool-surface overfitting. Current code-structure fit is also now explicit: these should extend the live `packages/hep-mcp/src/eval/*` substrate and bridge existing runtime artifacts (`run-manifest`, `spans.jsonl`, runtime markers) into shared diagnostic evidence, rather than inventing a separate orchestrator-local eval stack. This memo also fixes the evidence-layer distinction for future audits: `claude-code-sourcemap` should be treated as released Claude Code implementation evidence, while `claw-code` should be treated as a Rust-first clean-room rewrite with parity scaffolding rather than the same authority layer. See `meta/docs/2026-04-05-primary-source-runtime-eval-sota.md`.
+>
+> **Current local worktree post-runtime sync (2026-04-06)**:
+> - `meta/docs/prompts/prompt-2026-04-05-post-runtime-multi-axis-eval-contract-first.md`
+> - `meta/docs/prompts/prompt-2026-04-05-post-runtime-runtime-diagnostics-bridge-first.md`
+> - `meta/docs/prompts/prompt-2026-04-05-post-runtime-protocol-perturbation-harness-first.md`
+>
+> On the current local `main`, these files are no longer just future entrypoints: the corresponding bounded implementations are already present via `68a790a`, `3da2d2e`, and `a6cc685`, with review evidence under `meta/.review/2026-04-06-post-runtime-*`. They still do not by themselves ratify new tracker ids or change machine-readable remediation counts; they remain prompt/audit surfaces until explicit governance ratifies them into the tracker.
 
 #### `NEW-RT-08` 子任务拆分（建议 P5A runtime batch R1）
 
