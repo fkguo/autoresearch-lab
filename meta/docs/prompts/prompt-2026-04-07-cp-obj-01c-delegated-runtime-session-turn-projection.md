@@ -1,6 +1,6 @@
 # CP-OBJ-01C — Delegated Runtime Session/Turn Projection
 
-This is the canonical implementation prompt for the next bounded `CP-OBJ-01` code slice after:
+This is the canonical implementation prompt for the next bounded `CP-OBJ-01` slice after:
 
 - `meta/docs/plans/2026-04-07-control-plane-object-convergence-plan.md`
 - `meta/docs/prompts/prompt-2026-04-07-cp-obj-01a-object-map-authority-spec.md`
@@ -9,112 +9,113 @@ This is the canonical implementation prompt for the next bounded `CP-OBJ-01` cod
 
 ## Goal
 
-Land the smallest real code slice that gives delegated runtime one stable session/turn projection seam without promoting transcripts into authority.
+Land the smallest real code slice that gives delegated runtime a stable session/turn projection seam without promoting transcript history into control-plane authority.
 
 This slice should:
 
-- derive one shared delegated runtime projection from `AgentEvent[]` plus `RunManifest`
-- let delegated runtime and runtime diagnostics consume that same projection seam
-- persist only the minimum stable lineage/terminal subset onto `TeamAssignmentSession`
+- record a compact runtime projection while `AgentRunner` still owns real turn boundaries
+- return that projection from `executeDelegatedAgentRuntime(...)`
+- let runtime diagnostics consume that projection instead of re-deriving everything from scattered raw markers
+- persist the projection on the real `TeamAssignmentSession` when a delegated run actually executes
 
-It should not widen into transcript-as-SSOT, unified operator read-model redesign, or public host-surface expansion.
+It should not widen into operator read-model redesign, public payload expansion, or transcript-as-SSOT migration.
 
 ## Why This Slice
 
-`CP-OBJ-01B` closed the low-level identity seam, but the next drift seam is still visible in current code:
+The current gap is no longer delegated runtime identity; `CP-OBJ-01B` already fixed that seam.
 
-- `TeamAssignmentSession` is real delegated-execution authority, yet it currently stores only coarse lifecycle/checkpoint fields
-- `runtime-diagnostics-bridge.ts` re-derives terminal and runtime-marker meaning directly from `AgentEvent[]`
-- `normalizeTeamScopingState()` still contains `syntheticSession(...)` fallback repair, which is acceptable as bounded legacy fallback but should not be the conceptual center of the common path
+The remaining structural problem is projection loss:
 
-Today the runtime already has useful turn/session evidence:
+- `executeDelegatedAgentRuntime(...)` returns raw `events + manifest + diagnostics summary`, but no stable session/turn projection object
+- `AgentEvent[]` is not sufficient to reconstruct turns later with confidence, especially for tool-use turns that continue without an end-of-turn event
+- `runtime-diagnostics-bridge.ts` currently rescans raw events to infer status/cause/action instead of consuming one canonical runtime projection
+- `TeamAssignmentSession` currently stores lineage/lifecycle/checkpoint state only, so common-path runtime projection disappears and later code falls back to synthetic session repair
 
-- `AgentEvent` terminal events carry `turnCount`
-- runtime markers carry `turnCount`
-- `RunManifest` already records step/checkpoint lineage
+This slice is therefore about source-recorded projection, not about inventing another durable authority family.
 
-What is missing is not “more evidence”; it is a shared projection seam that later `CP-OBJ-01D` can reuse without inventing another read model.
+## Source-grounded External Patterns
 
-## Bounded Design Judgment
+Use these as design patterns only; do not copy their worldview wholesale.
 
-Absorb only the source-grounded patterns that help this slice:
+- `../codex/sdk/typescript/src/thread.ts`
+- `../codex/sdk/typescript/src/events.ts`
+- `../codex/sdk/typescript/src/items.ts`
+- `../claude-code-sourcemap/restored-src/src/remote/sdkMessageAdapter.ts`
+- `../claude-code-sourcemap/restored-src/src/remote/RemoteSessionManager.ts`
 
-- from `../codex/sdk/typescript/src/thread.ts`, `../codex/sdk/typescript/src/events.ts`, and `../codex/sdk/typescript/src/items.ts`
-  - keep durable container identity separate from per-turn execution projection
-  - normalize event/item/turn boundaries explicitly instead of hiding them in one status blob
-- from `../claude-code-sourcemap/restored-src/src/remote/RemoteSessionManager.ts`, `../claude-code-sourcemap/restored-src/src/remote/remotePermissionBridge.ts`, and `../claude-code-sourcemap/restored-src/src/entrypoints/agentSdkTypes.ts`
-  - keep control sideband typed and separate from the message stream
-  - keep session lineage explicit without making transcript history the project-state SSOT
+Absorb only the bounded lessons that fit `autoresearch`:
 
-Do **not** copy:
+- Codex separates thread container identity from turn execution and returns typed `items[]` for a completed turn rather than treating transcript text as the only durable summary.
+- Claude Code keeps control-sideband signals typed beside message flow rather than forcing permission/progress/session state back into raw message content.
 
-- conversation/thread as the root control-plane object
-- remote/UI-first session baggage
-- a giant omnibus message schema
+Do not import:
+
+- transcript/thread as root project-state authority
+- remote/UI-first runtime baggage
+- giant omnibus message schemas
 
 ## Required Reads
 
 1. `AGENTS.md`
-2. `meta/docs/plans/2026-04-07-control-plane-object-convergence-plan.md`
-3. `meta/docs/2026-04-07-orchestrator-control-plane-object-map.md`
-4. `packages/orchestrator/src/execution-identity.ts`
-5. `packages/orchestrator/src/agent-runner-ops.ts`
-6. `packages/orchestrator/src/agent-runner-runtime-state.ts`
-7. `packages/orchestrator/src/agent-runner.ts`
-8. `packages/orchestrator/src/research-loop/delegated-agent-runtime.ts`
-9. `packages/orchestrator/src/runtime-diagnostics-bridge.ts`
-10. `packages/orchestrator/src/team-execution-types.ts`
-11. `packages/orchestrator/src/team-execution-scoping.ts`
-12. `packages/orchestrator/src/team-unified-runtime-support.ts`
-13. `packages/orchestrator/src/team-execution-view.ts`
-14. `packages/orchestrator/tests/research-loop-delegated-agent-runtime.test.ts`
-15. `packages/orchestrator/tests/team-unified-runtime.test.ts`
-16. `packages/hep-mcp/tests/contracts/orchRunExecuteAgent.team.test.ts`
-17. `packages/hep-mcp/tests/contracts/orchRunExecuteAgent.team-view.test.ts`
-18. `packages/hep-mcp/tests/contracts/orchRunExecuteAgent.team-sequential.test.ts`
-19. `packages/hep-mcp/tests/contracts/orchRunExecuteAgent.team-parallel-recovery.test.ts`
-20. `packages/hep-mcp/tests/contracts/orchRunExecuteAgent.team-stage-gated-recovery.test.ts`
+2. `meta/remediation_tracker_v1.json`
+3. `meta/REDESIGN_PLAN.md`
+4. `meta/docs/plans/2026-04-07-control-plane-object-convergence-plan.md`
+5. `meta/docs/2026-04-07-orchestrator-control-plane-object-map.md`
+6. `packages/orchestrator/src/agent-runner.ts`
+7. `packages/orchestrator/src/agent-runner-ops.ts`
+8. `packages/orchestrator/src/agent-runner-runtime-state.ts`
+9. `packages/orchestrator/src/research-loop/delegated-agent-runtime.ts`
+10. `packages/orchestrator/src/runtime-diagnostics-bridge.ts`
+11. `packages/orchestrator/src/team-execution-types.ts`
+12. `packages/orchestrator/src/team-execution-scoping.ts`
+13. `packages/orchestrator/src/team-unified-runtime-support.ts`
+14. `packages/orchestrator/src/team-unified-runtime-types.ts`
+15. `packages/orchestrator/tests/agent-runner.test.ts`
+16. `packages/orchestrator/tests/research-loop-delegated-agent-runtime.test.ts`
+17. `packages/orchestrator/tests/team-unified-runtime.test.ts`
+18. `packages/hep-mcp/tests/contracts/orchRunExecuteAgent.team.test.ts`
+19. `packages/hep-mcp/tests/contracts/orchRunExecuteAgent.team-view.test.ts`
 
 ## Bounded Implementation
 
-- add one internal helper module for delegated runtime session/turn projection over:
-  - `AgentEvent[]`
-  - persisted `RunManifest`
-  - existing delegated runtime identity
-- make `executeDelegatedAgentRuntime(...)` produce that projection once, then reuse it instead of letting downstream consumers recompute terminal/turn meaning independently
-- make `writeRuntimeDiagnosticsBridgeArtifact(...)` consume the shared projection seam rather than rediscovering runtime-marker/terminal lineage from raw events on its own
-- extend `TeamAssignmentSession` only with the minimum stable execution-attempt subset needed for later convergence, for example:
-  - observed turn count
-  - terminal kind / stop reason / error code
-  - keep these as session-local projection fields, not a new global authority family
-- write the session subset during the real common runtime path so live sessions no longer depend on `syntheticSession(...)` for normal successful/approval/recovery flows
-- keep `syntheticSession(...)` only as bounded legacy fallback for incomplete older state, not as a new design center
-- keep current top-level host surfaces bounded:
-  - do not add new public `runtime_diagnostics_*` fields to team-view payloads
-  - do not widen `orch_run_execute_agent` team outputs into transcript or turn dumps
+- add one internal-only projection helper module under `packages/orchestrator/src/research-loop/` for compact delegated runtime projection types plus builder logic
+- record projection data at source while `AgentRunner` still has real turn context
+  - include recovery vs normal dialogue phase
+  - include turn count
+  - include compact counts/signals such as text count, tool call count, marker kinds, approval requested, and terminal outcome
+  - do not inline raw transcript text or full tool results into the projection
+- extend `ExecuteDelegatedAgentRuntimeResult` so delegated runtime returns that projection together with existing raw evidence
+- update `runtime-diagnostics-bridge.ts` to consume the projection for session summary / terminal evidence instead of re-inventing summary from ad hoc scans over raw events alone
+- extend `TeamAssignmentSession` with a nullable runtime-projection field
+  - real launched sessions may receive the projection on merge
+  - freshly opened sessions initialize it to `null`
+  - synthetic/repaired sessions must stay `null` rather than fabricating turn history
+- keep `AgentEvent[]` as low-level evidence; the projection is a compact derived seam, not a replacement authority
 
 ## Explicit No-Go
 
-- no transcript/message history promotion into project-state SSOT
-- no new generic `job` authority
-- no remote/fleet/session-server widening
-- no `CP-OBJ-01D` read-model unification in this slice
-- no public CLI / MCP contract redesign
-- no HEP/domain-pack-specific taxonomy in generic control-plane objects
+- no public CLI / MCP payload widening
+- no new `job` object
+- no transcript/thread promotion into control-plane SSOT
+- no live-status / replay / team-view vocabulary unification; that belongs to `CP-OBJ-01D`
+- no backfill that makes synthetic sessions look like they have authentic turn history
+- no behavior rewrite for existing team status semantics such as `max_turns` or `diminishing_returns`
+- no remote/server/fleet widening
 
 ## Acceptance Commands
 
 - `git diff --check`
-- `pnpm --filter @autoresearch/orchestrator test -- tests/research-loop-delegated-agent-runtime.test.ts tests/team-unified-runtime.test.ts`
+- `pnpm --filter @autoresearch/orchestrator test -- tests/agent-runner.test.ts tests/research-loop-delegated-agent-runtime.test.ts tests/team-unified-runtime.test.ts`
 - `pnpm --filter @autoresearch/orchestrator build`
-- `pnpm --filter @autoresearch/hep-mcp test -- tests/contracts/orchRunExecuteAgent.team.test.ts tests/contracts/orchRunExecuteAgent.team-view.test.ts tests/contracts/orchRunExecuteAgent.team-sequential.test.ts tests/contracts/orchRunExecuteAgent.team-parallel-recovery.test.ts tests/contracts/orchRunExecuteAgent.team-stage-gated-recovery.test.ts`
+- `pnpm --filter @autoresearch/hep-mcp test -- tests/contracts/orchRunExecuteAgent.team.test.ts tests/contracts/orchRunExecuteAgent.team-view.test.ts`
 - `pnpm --filter @autoresearch/hep-mcp build`
 - `python3 - <<'PY'\nimport json\njson.load(open('meta/remediation_tracker_v1.json'))\nprint('tracker-json-ok')\nPY`
 
 ## Review Focus
 
-- confirm delegated runtime now has one shared session/turn projection seam rather than parallel event/bridge/session recomputation
-- confirm `TeamAssignmentSession` gains only bounded projection fields instead of becoming a second transcript/read-model authority
-- confirm runtime diagnostics bridge now consumes the shared projection seam
-- confirm normal runtime/approval/resume flows persist real session lineage without relying on `syntheticSession(...)` on the happy path
-- confirm host-path contracts remain bounded and do not silently widen public payloads
+- confirm turn boundaries are recorded at source instead of being guessed later from raw `AgentEvent[]`
+- confirm recovery paths, truncation/overflow markers, and diminishing-returns markers remain auditable through the projection
+- confirm `runtime-diagnostics-bridge.ts` now consumes the projection seam rather than acting as a second ad hoc projector over raw events
+- confirm synthetic sessions never fabricate runtime projection history
+- confirm public host/team-view payloads do not widen in this slice
+- confirm existing team status semantics stay unchanged; the new seam is projection-only

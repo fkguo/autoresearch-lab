@@ -238,8 +238,8 @@ Pipeline A retirement should continue, but if we keep shrinking legacy shells wi
 这些可以并行准备，但不应抢主轴：
 
 1. root/front-door docs follow-up
-   - `README.md`、`docs/README_zh.md`、`docs/QUICKSTART.md` 的 first-touch ordering 仍偏 HEP-pack-first
-   - 应作为单独 bounded docs lane，而不是混进 `CP-OBJ-01`
+   - `DOCS-FRONTDOOR-01` 已在当前 worktree 上完成 formal closeout：`README.md`、`docs/README_zh.md`、`docs/PROJECT_STATUS.md`、`docs/QUICKSTART.md` 现为 generic-first first-touch ordering，order-aware anti-drift 也已通过 review/self-review 收口
+   - 后续只保留维护义务：若 root front-door truth 变化，需要继续通过 shared guard/test 同步；不再作为 `CP-OBJ-01` 的并行未闭环 lane
 2. residual Pipeline A shrink follow-up
    - 继续审 residual non-computation `run` / support surface
    - 但不要在 object-model 收口前重新把 `hepar` 抬成 authority
@@ -259,4 +259,19 @@ Pipeline A retirement should continue, but if we keep shrinking legacy shells wi
 
 ## Immediate next step
 
-This plan is now ratified into implementation. The first concrete deliverable is `CP-OBJ-01A`: a checked-in object-map / authority-spec prompt plus the corresponding source-grounded object-map doc that every later bounded slice must read before editing runtime code.
+The first two concrete deliverables are now already checked in:
+
+- `CP-OBJ-01A`: object-map / authority-spec bundle
+- `CP-OBJ-01B`: typed delegated execution identity seam
+
+The next runtime slice is now explicitly staged as:
+
+- `meta/docs/prompts/prompt-2026-04-07-cp-obj-01c-delegated-runtime-session-turn-projection.md`
+
+That prompt keeps `CP-OBJ-01C` narrowly on source-recorded delegated runtime projection, nullable session attachment, and diagnostics-bridge convergence.
+
+The parallel root-docs lane is now separately staged as:
+
+- `meta/docs/prompts/prompt-2026-04-07-docs-frontdoor-01-root-first-touch-ordering.md`
+
+That prompt keeps first-touch ordering / anti-drift work out of the runtime main axis.
