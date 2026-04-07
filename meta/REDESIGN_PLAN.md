@@ -1,11 +1,17 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.49-draft (v1.9.48 + literature-gap delete-first closeout + sequenced residual lanes)
+> **版本**: 1.9.50-draft (v1.9.49 + method-design delete/contract lane closeout)
 > **日期**: 2026-04-08
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
 >
+> **v1.9.50 Changelog**:
+> - current worktree closes Lane 1 of `meta/docs/prompts/prompt-2026-04-08-pipeline-a-residual-support-surfaces-sequenced-lanes.md` with delete-first semantics: `method-design` is fully removed from `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` internal parser surface (no compatibility shell/fallback retained), and its direct parser command tests are deleted with the surface
+> - front-door authority classification is re-aligned to that live deletion: `meta/front_door_authority_map_v1.json`, `scripts/lib/front-door-authority-map.mjs`, and `packages/hep-autoresearch/tests/test_public_cli_surface.py` no longer classify `method-design` as a surviving retired-public internal helper; the remaining `retired_public_support_commands` are now exactly `run-card` and `branch`
+> - lane-1 acceptance is green on the current worktree: `git diff --check`; `python3 -m pytest -q packages/hep-autoresearch/tests/test_public_cli_surface.py`; `python3 -m pytest -q packages/hep-autoresearch/tests/test_orchestrator_computation_cli.py packages/hep-autoresearch/tests/test_run_card.py`; `node scripts/check-shell-boundary-anti-drift.mjs`; `pnpm --filter @autoresearch/hep-mcp test -- tests/docs/docToolDrift.test.ts`
+> - residual queue status now advances to the next mandatory lane order without reopening architecture scope: Lane 2 `run-card validate/render` wrapper-only contraction is next active, Lane 3 `branch` state/approval semantics stays queued behind Lane 2, and `paper_reviser` remains parked until a real replacement lane exists
+
 > **v1.9.49 Changelog**:
 > - latest completed upstream `main` CI truth is now GitHub Actions `CI` run `24091874263` (2026-04-07) on head `a6985b7` (`fix: align autoresearch help with live shell truth`), so current closure work still begins from a confirmed green mainline rather than a live blocker
 > - current worktree lands the next delete-first Pipeline A contraction instead of keeping the heaviest remaining parser launcher alive as compatibility residue: `literature-gap` is removed from `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py`, and executable proof is re-homed to `packages/hep-autoresearch/src/hep_autoresearch/toolkit/literature_gap.py`, `packages/hep-autoresearch/tests/test_literature_gap_runner.py`, `packages/literature-workflows/tests/resolve.test.ts`, `packages/orchestrator/tests/autoresearch-cli.test.ts`, and `packages/hep-autoresearch/workflows/C1_literature_gap.md`
