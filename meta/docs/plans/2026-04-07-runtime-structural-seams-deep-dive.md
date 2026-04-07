@@ -208,7 +208,7 @@ interface RuntimePermissionProfileV1 {
   tools: {
     allowed_tool_names: string[];
     execution_policies: Record<string, ToolExecutionPolicy>;
-    inheritance_mode: 'team_permission_matrix' | 'inherit_from_assignment';
+    inheritance_mode: 'runtime_tools' | 'team_permission_matrix' | 'inherit_from_assignment';
     inherit_from_assignment_id?: string;
   };
   sandbox: {
@@ -219,6 +219,9 @@ interface RuntimePermissionProfileV1 {
     mode: 'inherit_gate' | 'request_explicit';
     grant_scope: 'assignment' | 'session';
     reviewer: string | null;
+    assignment_approval_id?: string | null;
+    assignment_approval_packet_path?: string | null;
+    assignment_approval_requested_at?: string | null;
   };
 }
 ```
@@ -232,7 +235,7 @@ interface RuntimePermissionProfileV1 {
 
 ### 为什么排在 transport 之前
 
-- 现在 `buildDelegatedToolPermissionView(...)` 同时喂 protocol `REQUIRED_TOOLS` 与 live runtime filtering，已经证明 permission seam 是真实主轴
+- 现在 `compileDelegatedRuntimePermissionProfile(...)` / `buildDirectRuntimePermissionProfile(...)` 分别为 delegated 与 direct path 生产同一类 permission compile source，再由 `RuntimePermissionProfileV1 -> ToolPermissionView` 喂给 protocol `REQUIRED_TOOLS`、visible-tool filtering 与 call-time deny seam，已经证明 permission seam 是真实主轴
 - 如果 transport 先做，而 permission 仍分散在 matrix/view/wrapper，transport 只会固化现有碎片化语义
 
 ### 不该照搬的点

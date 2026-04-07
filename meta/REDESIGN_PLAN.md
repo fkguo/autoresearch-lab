@@ -1,10 +1,19 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.47-draft (v1.9.46 + doctor/bridge delete-first landed + literature-gap next-lane packet)
+> **版本**: 1.9.48-draft (v1.9.47 + RuntimePermissionProfileV1 first slice + front-door blind-spot locks)
 > **日期**: 2026-04-07
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.48 Changelog**:
+> - latest completed upstream `main` CI truth is now GitHub Actions `CI` run `24089384177` (2026-04-07) on head `ccb091a` (`plan: queue literature gap delete lane`), so the current structural follow-up still begins from a confirmed green mainline rather than a live blocker
+> - current worktree lands the next runtime structural seam in the already-ratified order `DelegatedRuntimeHandleV1 -> RuntimePermissionProfileV1 -> DelegatedRuntimeTransport`: new internal module `packages/orchestrator/src/runtime-permission-profile.ts` now makes runtime permission a typed compile authority, direct and delegated runtime paths both compile through that profile seam, and `ToolPermissionView` is reduced to a compiled runtime view rather than the source of permission truth
+> - the same slice keeps public boundaries fixed while widening internal authority correctness: `compileDelegatedRuntimePermissionProfile(...)` now folds `TeamPermissionMatrix` + `mcp_tool_inheritance` + assignment approval metadata into the shared profile, `buildDirectRuntimePermissionProfile(...)` covers the direct non-team runtime path, and sandbox/network/approval slots now exist as typed carry-first authority fields without widening `team_state`, `live_status`, `replay`, `assignment_results`, or hep-mcp host payloads
+> - current front-door drift truth is also re-aligned to the already-landed delete-first retirement: `meta/remediation_tracker_v1.json` / `meta/front_door_authority_map_v1.json` no longer describe `doctor` / `bridge` as surviving internal support commands, `literature-gap` is the only remaining internal support launcher residue, and `method-design` / `run-card` / `branch` are explicitly treated as retired-public maintainer helpers; the shared boundary fixture now also locks the previously uncovered `packages/hep-autoresearch/docs/ORCHESTRATOR_INTERACTION.md` and `packages/hep-autoresearch/docs/WORKFLOWS.zh.md`
+> - targeted acceptance is green on the current worktree: `git diff --check`; `pnpm --filter @autoresearch/orchestrator test -- tests/runtime-permission-profile.test.ts tests/research-loop-delegated-agent-runtime.test.ts tests/mcp-client-sampling.test.ts`; `pnpm --filter @autoresearch/orchestrator test -- tests/team-unified-runtime.test.ts tests/team-unified-runtime-sequential.test.ts tests/team-unified-runtime-parallel-recovery.test.ts tests/team-execution-runtime.test.ts tests/orchestrator.test.ts`; `pnpm --filter @autoresearch/orchestrator build`; `pnpm --filter @autoresearch/hep-mcp test -- tests/contracts/orchRunExecuteAgent.team.test.ts tests/contracts/orchRunExecuteAgent.team-sequential.test.ts tests/contracts/orchRunExecuteAgent.team-parallel-recovery.test.ts tests/contracts/orchRunExecuteAgent.team-stage-gated-recovery.test.ts`
+> - formal review + self-review now also converge with `0` blocking on the final worktree: `Opus = CONVERGED`, `Gemini(auto) = CONVERGED` via same-model embedded-source rerun after the canonical review-mode runner stalled in `run_gemini.sh` proxy/bootstrap, and `OpenCode(zhipuai-coding-plan/glm-5.1) = CONVERGED_WITH_AMENDMENTS`; directly related adopted amendments were the delegated additive-inheritance invariant comment and symmetric delegated execution-policy coverage, while helper dedup / `buildDelegatedToolPermissionView(...)` cleanup are explicitly carried forward as later bounded follow-up cleanup rather than left as chat-only debt
+> - next closure queue stays bounded and delete-first: `literature-gap` still needs consumer proof moved off the parser before honest deletion, while `method-design` / `run-card` / `branch` remain later cleanup slices and `paper_reviser` still waits for a real replacement lane
 >
 > **v1.9.47 Changelog**:
 > - latest upstream `main` CI before this follow-up remains green and the current head now carries the landed `doctor` / `bridge` delete-first slice on top of that baseline: internal parser wrappers `doctor` and `bridge` are removed from `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` instead of remaining as maintainer/eval compatibility residue
@@ -2854,6 +2863,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 **2026-04-04 bounded second-slice closeout**: `NEW-RT-09` 的当前 landed 真值已不再只是 `runtime tool filtering first`。在已落地的 execution-time `ToolPermissionView`、`TeamPermissionMatrix` 派生 delegated tool visibility、`McpClient.callTool()` 发起 `tools/call` 前 deny seam 与 restrictive fallback policy 之上，live orchestrator path 现在还会按 orchestrator-owned execution policy metadata 将单个 assistant turn 的连续 `tool_use` blocks 划分为 serial vs batch-safe groups：只有显式 batch-safe 的 read-only groups 会并发执行，blocked / unknown / stateful / approval-required groups 继续串行并 fail-closed，且 emitted `tool_result` / event order 仍保持可审计。shared hep-mcp host path 也已通过合同测试证明消费同一 batching authority，而不是引入 host-local 并发 wrapper。scoped orchestrator acceptance、hep-mcp host-path acceptance、formal trio review 与 self-review 均已在当前 bounded diff 上收敛为 `0` blocking。item 仍保持 `in_progress`，不应被误写成 done，因为这次 closeout 只声称 single-turn batching/filtering seam 已落地，不声称更宽的 runtime/session/fleet widening。
 
+**2026-04-07 bounded third-slice status**: 当前 worktree 把这条 execution-time boundary 继续上提为 typed compile-authority seam，而不是继续让 `ToolPermissionView` 承担 compile truth。新 `packages/orchestrator/src/runtime-permission-profile.ts` 现在集中表达 `allowed_tool_names`、`execution_policies`、`inheritance_mode` 与 carry-first sandbox/network/approval metadata；`buildDirectRuntimePermissionProfile(...)` 覆盖 direct non-team runtime path，`compileDelegatedRuntimePermissionProfile(...)` 则把 `TeamPermissionMatrix`、`mcp_tool_inheritance` 与 assignment approval metadata 编译进同一 profile，再由 `RuntimePermissionProfileV1 -> ToolPermissionView` 进入 call-time deny seam / visible-tool filtering。scoped runtime-profile tests、既有 team runtime 回归、build 与 hep-mcp host-path contracts 已全部通过；formal trio review 现已在最终 worktree 上收敛为 `0` blocking（`Opus = CONVERGED`、`Gemini(auto) = CONVERGED` via same-model embedded-source rerun after canonical proxy/bootstrap stall、`OpenCode = CONVERGED_WITH_AMENDMENTS`），self-review 同轮吸收了 additive-inheritance invariant comment 与 delegated execution-policy coverage。item 仍保持 `in_progress`，因为此 slice 只关闭 compile-authority seam，不引入 transport / remote session / broader runtime widening。
+
 1. **B1 — Tool concurrency metadata normalization**
    - 为 orchestrator-visible tool surface 引入 orchestrator-side execution policy registry，显式声明 `read_only` / `concurrency_safe` / `stateful` / `approval_required` 等元数据，禁止靠隐式命名猜测。
    - 当前 MCP protocol 并不提供 tool-level concurrency metadata；首版不得把 naming heuristic 或协议扩展当成前提，unknown tool 默认串行 + fail-closed。
@@ -2861,10 +2872,10 @@ NEW-MCP-SAMPLING -> NEW-RT-07
    - `handleAssistantResponse()` 或等价层按“并发安全批 / 串行批”分区执行 tool-use blocks。
    - read-only / concurrency-safe 批允许并发，mutation / uncertain 批保持串行 fail-closed。
 3. **B3 — Runtime tool allowlist enforcement**
-   - `McpClient` / `ToolCaller` 接收 agent/session-scoped `ToolPermissionView`（或等价 allowlist/denialist）；未授权工具在执行期被拒绝，而不是只靠 prompt 约束。
+   - `McpClient` / `ToolCaller` 的 deny seam 必须消费由 `RuntimePermissionProfileV1` 编译出的 agent/session-scoped runtime view，而不是继续让 `ToolPermissionView` 自己承担 compile authority；未授权工具在执行期被拒绝，而不是只靠 prompt 约束。
    - 最终 deny seam 必须落在 `McpClient.callTool()` 发出 `tools/call` 前；上层可通过 agent-local `ToolCaller` wrapper 传入 permission context，但不得只在 `AgentRunner` prompt 层做软过滤。
 4. **B4 — Delegation permission wiring**
-   - 扩展现有 `TeamPermissionMatrix`，把 delegation / intervention truth 映射到 delegated runtime 的实际 tool visibility / call permission。
+   - 扩展现有 `TeamPermissionMatrix`，把 delegation / intervention truth 映射到 delegated runtime 的实际 tool visibility / call permission，并先编译成 shared `RuntimePermissionProfileV1`，而不是直接散落在 matrix/view/runtime wrapper 间。
    - 首版必须复用 `team-execution-permissions.ts` 这一现有 authority seam，而不是平行创建第二套 tool permission registry / enforcement structure。
 5. **B5 — Host-path regression coverage**
    - 对并发 tool execution、blocked tool call、delegated filtering、approval-required tool path 分别补 host-path coverage。
@@ -2884,6 +2895,8 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 
 **2026-04-04 bounded second-slice closeout**: `NEW-RT-10` 的第二个 bounded slice 已 landed，并将 “sub-agent context inheritance / MCP inheritance / cleanup semantics” 从 protocol/prompt 约定推进为 typed runtime truth（仍保持 fail-closed + bounded）。当前代码现实已具备：`TeamAssignmentSession.context_kind`（fresh/resumed/forked/synthetic）与 parent/fork lineage；delegated `mcp_tool_inheritance`（team-permission-matrix 基础 + inherit-from-assignment 链 + additive override，仍锚定 `ToolPermissionView -> McpClient.callTool()` enforcement seam 且 override 仍必须被 permission matrix allowlist 约束）；以及 deterministic terminal/intervention cleanup（terminal 状态与 intervention settle 后不会遗留 assignment-local derived pending approvals / pending redirect / 未结束 session，但历史 lineage 仍可审计）。随后 2026-04-07 的 projection-guard follow-up 进一步把 `TeamExecutionState.pending_approvals` 从 persisted authority 中删除，并将 `live_status.pending_approvals` 固定为 assignment metadata 上的现算 view。scoped orchestrator acceptance、hep-mcp host-path acceptance、formal trio review 与 self-review 均已在当前 bounded diff 上收敛为 `0` blocking。item 仍保持 `in_progress`，因为更宽的 delegated-runtime widening（超出本 slice 的 context/fork surface、以及未来 EVO-13 runtime 扩展）仍是后续工作。
 
+**2026-04-07 structural follow-up**: delegated runtime 现在不再把 permission truth 以 raw `ToolPermissionView` 形式线程化到执行器，而是与 direct non-team path 一样走 shared `RuntimePermissionProfileV1` compile seam。当前代码现实是：assignment-local approval metadata、`TeamPermissionMatrix` delegation truth、`mcp_tool_inheritance`、以及 direct host-runtime defaults 都先进入 typed permission profile，再由 runtime 统一编译成 visible-tool / deny surface；该变化保持 team-local scope，不新增 second approval registry，也不 widening team/public payloads。
+
 1. **C1 — Agent-scoped session state**
    - 将 run-level state 与 delegated/agent-local session state 进一步分离；至少明确 message/session lineage、resume cursor、agent-local runtime metadata。
 2. **C2 — Delegated approval authority boundary**
@@ -2893,7 +2906,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
    - 在不把 `NEW-LOOP-01` reopen 为 scheduler 的前提下，为 team-local background execution 定义 typed runtime projection：`pending/running/completed/failed/killed`（或等价 contract）、cleanup、resume、terminal semantics。
    - 首版应明确这是对现有 `ResearchTask` authority 的 runtime projection，而不是再引入第二套 persistent task substrate：`pending -> pending`、`running -> active`、`completed -> completed`、`failed -> blocked`、`killed -> cancelled`，并保留 assignment/session lineage。
 4. **C4 — Sub-agent context / MCP inheritance**
-   - 明确 sub-agent fork/fresh-context semantics、MCP inheritance / additive override、以及 teardown/cleanup contract。
+   - 明确 sub-agent fork/fresh-context semantics、MCP inheritance / additive override、以及 teardown/cleanup contract，并让这类 permission truth 先进入 shared `RuntimePermissionProfileV1`，而不是继续停留在 prompt/protocol-only 或 raw view threading。
 5. **C5 — Recovery / cleanup tests**
    - 覆盖 delegated crash/re-entry、agent-local pending approval、cleanup after termination、以及 inherited/blocked MCP visibility 的 regression path。
 

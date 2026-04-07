@@ -86,6 +86,9 @@ interface RuntimePermissionProfileV1 {
     mode: 'inherit_gate' | 'request_explicit';
     grant_scope: 'session' | 'assignment';
     reviewer: string | null;
+    assignment_approval_id?: string | null;
+    assignment_approval_packet_path?: string | null;
+    assignment_approval_requested_at?: string | null;
   };
 }
 ```
@@ -148,8 +151,8 @@ Tests / supporting evidence:
 3. Rework delegated permission compilation so:
    - team permission matrix + inheritance resolve into `RuntimePermissionProfileV1`
    - `ToolPermissionView` is produced from that profile, not vice versa
-4. Thread optional `runtime_permission_profile` through delegated runtime execution.
-5. Add the same profile seam for the direct non-team runtime path without breaking existing behavior.
+4. Thread `permissionProfile` through delegated runtime execution and compile the runtime view from it inside the shared runtime entrypoint.
+5. Add the same profile seam for the direct non-team runtime path and construct that profile explicitly at the callsite rather than relying on an implicit runtime default.
 6. Keep sandbox/network/approval slots typed in the profile even if first-slice enforcement remains limited to current tool-view/runtime-gate behavior.
 7. Add focused tests proving:
    - delegated and direct paths both compile from the new profile seam
@@ -205,3 +208,8 @@ Before closeout, self-review must confirm:
 3. no permission semantics remain hidden only inside wrapper-local branching when they should live in the profile.
 4. sandbox/network/approval slots exist as typed profile authority even if first-slice enforcement remains bounded.
 5. the structural order still remains `DelegatedRuntimeHandleV1 -> RuntimePermissionProfileV1 -> DelegatedRuntimeTransport`.
+
+## Follow-up Cleanup
+
+- If this slice lands without helper dedup, explicitly carry forward a later cleanup to collapse duplicate runtime-tool-name filtering helpers between `runtime-permission-profile.ts` and `team-execution-permissions.ts`.
+- Reassess whether `buildDelegatedToolPermissionView(...)` should survive as a convenience wrapper once downstream callers have fully moved to the shared profile seam; if it remains unused, delete or repurpose it in a later bounded slice instead of letting it silently fossilize.
