@@ -103,7 +103,7 @@
 2026-04-07 status:
 
 - 已在当前 current-worktree 进一步收口：installable `idea-mcp` public host 现为 TS `idea-engine` only；旧的 `IDEA_MCP_BACKEND` / `IDEA_CORE_PATH` knobs 改为 fail-closed，child-process Python bridge path 已删除，不再保留 compatibility path。
-- public tool inventory 现与默认 backend 对齐，只保留 `idea_campaign_init`, `idea_campaign_status`, `idea_search_step`, `idea_eval_run`。
+- public tool inventory 现与 installable public host 对齐，只保留 `idea_campaign_init`, `idea_campaign_status`, `idea_search_step`, `idea_eval_run`。
 - 当前 deferred methods 需要在后续 asset/contract authority follow-up 中统一重分层，而不是悄悄回流到 installable public inventory：`campaign.topup`、`campaign.pause`、`campaign.resume`、`campaign.complete`，以及旧 eight-tool bridge 里同样已退出当前 public surface 的 `node.get`、`node.list`。
 - 当前下一跳已变成 default asset/contract authority follow-up，而不是 compatibility backend hygiene：TS 还在复用部分 Python-side contract/domain-pack assets，`rank.compute` / `node.promote` 也尚未被提升为当前 public MCP inventory。
 
@@ -132,7 +132,7 @@ source-grounded deep dive 已单独落成：`meta/docs/plans/2026-04-07-runtime-
   - 这是 `Seam B/C/D` 的 authority baseline
 - Sidecar 1：为 `Seam B` 产出 implementation packet，按 `run residue -> diagnostics/bridge truth -> authoring/support cleanup` 三切片拆开
 - Sidecar 2：为 `Seam C` 产出 projection-only guard packet，明确哪些 surfaces 只能做 summary/projection
-- Sidecar 3：为 `Seam D` 产出 `idea-engine` first-cut authority packet
+- Sidecar 3：为 post-`Seam D` 的 `idea-engine` asset/contract authority follow-up 产出 source-grounded packet，而不是重新打开 host compatibility 争论
 - 研究侧 lane：继续深挖三条结构 seam 的源码证据，但默认先产计划/ADR，不直接抢实现带宽
 
 ## Post-Seam-D Execution Order

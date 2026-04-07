@@ -1,5 +1,7 @@
 # Prompt: 2026-04-07 Next Batch — Idea-Engine Default-Host Authority First Cut
 
+> Status note (later on 2026-04-07): this prompt is a historical first-cut packet only. Current repo truth has since advanced one step further: installable `idea-mcp` is now TS-only, the public Python compatibility backend/fallback path is deleted, and `IDEA_MCP_BACKEND` / `IDEA_CORE_PATH` must fail closed. Do not reuse this prompt to reintroduce compatibility semantics.
+
 ## Why this lane exists now
 
 Current generic-first sequencing already moved `idea-engine default-host authority first cut` into the immediate batch (`Seam D`) instead of the later structural runtime seams.
