@@ -1,10 +1,14 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.30-draft (v1.9.29 + CP-OBJ-01E landed)
+> **版本**: 1.9.31-draft (v1.9.30 + M-22A prompt locked)
 > **日期**: 2026-04-07
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.31 Changelog**:
+> - 新增 checked-in implementation prompt `meta/docs/prompts/prompt-2026-04-07-m22a-python-legacy-root-authority-retirement.md`，把 `M-22A` 明确锁定为：删除或 repoint Python legacy root approval/run authority residue，而不是笼统地“继续清理 hepar”；其目标是切断 `packages/hep-autoresearch` internal/full entry chain 对 root lifecycle/approval state 的第二套 ownership，同时保留必要的 provider-local / maintainer-local adapter surface
+> - 该 prompt 明确把 `doctor` / `bridge` 继续限定为 provider-local surface，并要求 current lane 通过 front-door audit、orchestrator + hep-autoresearch targeted acceptance、以及 formal trio review / self-review 证明 retained Python surface 不再充当第二个 root orchestrator；`M-22B` (`research_workflow_v1` / workflow-template residue cleanup) 继续保持为此后单独的 follow-on slice
 >
 > **v1.9.30 Changelog**:
 > - `CP-OBJ-01E` 已在当前 worktree landed：`packages/orchestrator/src/computation/feedback-followups.ts` 现从 canonical `ResearchTask` + delegated handoff 构造 `research_task_ref`，并通过 `primeDelegatedFollowupTeamState(...)` 在 live launch 前预写 internal task-ref sidecar registry；`packages/orchestrator/src/team-unified-runtime.ts` 再把同一 canonical ref 同步到 assignment/session/checkpoint 的 lineage 映射中，使 delegated follow-up 不再在进入 team runtime 后退化成只有 `task_id` / `task_kind` 的字符串面
