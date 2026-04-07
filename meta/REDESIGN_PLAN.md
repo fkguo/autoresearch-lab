@@ -1,10 +1,16 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.36-draft (v1.9.35 + public-run residue first cut + front-door authority map fixture)
+> **版本**: 1.9.37-draft (v1.9.36 + public paper_reviser failure-finalization fix + authority-map parity guard)
 > **日期**: 2026-04-07
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.37 Changelog**:
+> - latest known upstream `main` CI truth is now the next green run after `a53805f`: GitHub Actions `CI` run `24068160029` (2026-04-07) succeeded on head `a53805f` (`refactor: classify front doors and narrow public hepar run`), so current mainline health is green even before the same-day follow-up regression fix below
+> - current worktree then lands a bounded health follow-up on that exact slice instead of jumping ahead with the regression still open: public `hepar run --workflow-id paper_reviser` no longer crashes on structured workflow errors when the installable wrapper lacks internal-only `--allow-errors`, and state now correctly fails closed instead of leaving `.autoresearch/state.json` stuck in `running`
+> - the same follow-up also closes the first authority-map parity hole: `meta/front_door_authority_map_v1.json` now restores `export` inside internal lifecycle-adapter classification, `scripts/lib/front-door-authority-map.mjs` now uses the same surface ids/source anchors as the JSON fixture, and `packages/hep-mcp/tests/docs/docToolDrift.test.ts` now asserts JS-helper/JSON parity so the front-door fixture cannot silently fork again
+> - current targeted acceptance reran successfully on this follow-up: `git diff --check`, `python3 -m pytest packages/hep-autoresearch/tests/test_public_cli_surface.py -q`, `python3 -m pytest packages/hep-autoresearch/tests/test_paper_reviser_workflow.py -q`, `pnpm --filter @autoresearch/hep-mcp test -- tests/docs/docToolDrift.test.ts`, `node scripts/check-shell-boundary-anti-drift.mjs`
 >
 > **v1.9.36 Changelog**:
 > - latest known upstream `main` CI truth is now the next green run: GitHub Actions `CI` run `24064934823` (2026-04-07) succeeded on head `c7d1162` (`docs: add next generic closure implementation prompts`), so the current lane is advancing closure work on top of a green mainline rather than chasing an inherited blocker
@@ -1123,6 +1129,7 @@ branches:     candidate → pending, active → running, abandoned → completed
 - **2026-04-07 follow-up（public-shell narrowing, phase 1）**: installable `hepar` / `hep-autoresearch` / `hep-autopilot` public shell 先移除了 `doctor`、`bridge` 与 `literature-gap`，所以这些命令都不再是 operator-facing installable alias 的 live surface；它们当前只保留在 `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` internal full parser 里供 maintainer/eval/test paths 使用。
 - **2026-04-07 follow-up（public-shell narrowing, phase 2）**: canonical prompt `meta/docs/prompts/prompt-2026-04-07-pipeline-a-public-computation-run-retirement.md` 随后进一步把 installable public `hepar run --workflow-id computation` 退到 native TS `autoresearch run --workflow-id computation` front door，同时保留 internal full parser computation path 给 maintainer/eval/test coverage。当前剩余的 public Pipeline A shell 因此才真正收窄到 residual non-computation `run` workflows 与相邻 workflow/support commands；这仍不构成 delete/rehome closeout，本轮不声称这些 internal full-parser compatibility paths 已整体删除。
 - **2026-04-07 follow-up（public-shell narrowing, phase 3 + authority-map first cut）**: `meta/docs/prompts/prompt-2026-04-07-next-batch-public-run-residue-retirement.md` 与 `prompt-2026-04-07-next-batch-front-door-authority-map.md` 的首刀现已落到 current worktree：installable public `hepar run --workflow-id ...` 进一步精确收窄到只剩 `paper_reviser`，`ingest` / `reproduce` / `revision` / `literature_survey_polish` / `shell_adapter_smoke` 都被降为 internal full-parser coverage；同时新增 `meta/front_door_authority_map_v1.json` + `scripts/lib/front-door-authority-map.mjs`，把 `autoresearch_cli`、`hepar_public_shell`、`hepar_internal_full_parser` 与 `orchestrator_mcp_tools_spec` 明确分类成独立 live surfaces，并由 `packages/orchestrator/tests/autoresearch-cli.test.ts`、`packages/hep-mcp/tests/docs/docToolDrift.test.ts`、`packages/hep-autoresearch/tests/test_public_cli_surface.py` 共同 fail-close。package-level tutorial / interaction docs 也同步停止把 retired public `ingest` / `reproduce` / `revision` 路径教回 front door。
+- **2026-04-07 same-day health fix（public `paper_reviser` failure finalization + authority-map parity guard）**: the immediately following bounded fix keeps this slice truthful instead of leaving two fresh regressions behind: `cmd_run()` now treats `allow_errors` as an internal-only optional flag so installable public `paper_reviser` failures fail closed instead of crashing with `AttributeError`, `packages/hep-autoresearch/tests/test_paper_reviser_workflow.py` now covers that public structured-error path, and the front-door authority fixture now restores `export` in the internal lifecycle-adapter group while `packages/hep-mcp/tests/docs/docToolDrift.test.ts` asserts JS-helper/JSON parity for surface ids, owners, source anchors, and internal command groups.
 
 **变更**:
 
