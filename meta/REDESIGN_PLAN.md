@@ -1,10 +1,16 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.26-draft (v1.9.25 + next-wave bundle)
+> **版本**: 1.9.27-draft (v1.9.26 + CP-OBJ-01C closeout)
 > **日期**: 2026-04-07
-> **基线**: v1.9.25-draft
+> **基线**: v1.9.26-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.27 Changelog**:
+> - `CP-OBJ-01C` 已在当前 worktree landed：`AgentRunner` 现于真实 dialogue/recovery turn 边界 source-record compact delegated runtime projection，`executeDelegatedAgentRuntime(...)` 返回同一 `runtime_projection` seam，`runtime-diagnostics-bridge.ts` 改为直接消费该 seam，而 `TeamAssignmentSession.runtime_projection` 只在真实 launched session 上保存最小稳定 sideband
+> - 该 closeout 继续保持 bounded：projection 仍挂在既有 `runtime_run_id` / manifest 容器下作为 internal derived sideband；synthetic/repaired session 维持 `runtime_projection = null`；public host/team-view payload 未扩大，也没有引入 transcript-as-SSOT、generic `job` / `thread` authority
+> - `meta/.review/2026-04-07-cp-obj-01c-r1/` 的 formal trio review + self-review 已在当前 worktree 收敛为 `0` blocking；`Gemini(auto)` 保持原 reviewer seat，仅在 `run_gemini.sh` proxy-env bootstrap 失败后按仓规完成 same-model embedded-source rerun（显式 proxy env），未更换 reviewer
+> - `CP-OBJ-01` 的 next-code truth 现前移为 `CP-OBJ-01D`：下一刀应围绕 unified operator read model 收口 operator-facing vocabulary / read-model projection，而 `CP-OBJ-01E` 继续保留为 research-task bridge into live execution
 >
 > **v1.9.26 Changelog**:
 > - `d218f26` 对应的最新 mainline CI run `24056686215` 已全绿，当前 `main` 没有新的真实 blocker；下一批 closure work 可以从“追 CI”切回“推进主轴 + side lane”
@@ -2657,7 +2663,7 @@ NEW-MCP-SAMPLING -> NEW-RT-07
 >
 > These three slices are now recorded in tracker-only umbrella `POST-RT-EVAL-01`. That machine-readable ratification still does **not** add new phase-counted remediation item ids or alter aggregate counts; it only prevents the current bundle from living solely in prompt/changelog prose.
 >
-> **2026-04-07 next-control-plane planning note**: after current runtime hardening, post-runtime eval ratification, package-doc/front-door rebaseline, and the now-formally-closed root first-touch ordering cleanup, the next generic-first main axis remains `CP-OBJ-01 — Orchestrator Control-Plane Object Convergence`. `CP-OBJ-01A` now exists as the source-grounded object-map / authority-spec bundle (`meta/docs/prompts/prompt-2026-04-07-cp-obj-01a-object-map-authority-spec.md` + `meta/docs/2026-04-07-orchestrator-control-plane-object-map.md`), `CP-OBJ-01B` is landed as the typed delegated execution identity seam, and the next intended code slice is `CP-OBJ-01C` via `meta/docs/prompts/prompt-2026-04-07-cp-obj-01c-delegated-runtime-session-turn-projection.md`. That slice remains explicitly bounded to a shared session/turn projection seam over `AgentEvent` / `RunManifest` / `TeamAssignmentSession`, with diagnostics bridge consumption and bounded session-side projection persistence but without public payload widening; it still does **not** reopen `NEW-RT-08/09/10`, does **not** add new phase-counted remediation items, and does **not** authorize transcript-as-SSOT or remote/fleet widening. The separate docs lane `DOCS-FRONTDOOR-01` is now formally closed via `meta/docs/prompts/prompt-2026-04-07-docs-frontdoor-01-root-first-touch-ordering.md`, `README.md`, `docs/README_zh.md`, `docs/PROJECT_STATUS.md`, `docs/QUICKSTART.md`, the upgraded order-aware front-door anti-drift checks, and zero-blocking formal review/self-review.
+> **2026-04-07 next-control-plane planning note**: after current runtime hardening, post-runtime eval ratification, package-doc/front-door rebaseline, and the now-formally-closed root first-touch ordering cleanup, the next generic-first main axis remains `CP-OBJ-01 — Orchestrator Control-Plane Object Convergence`. `CP-OBJ-01A` now exists as the source-grounded object-map / authority-spec bundle (`meta/docs/prompts/prompt-2026-04-07-cp-obj-01a-object-map-authority-spec.md` + `meta/docs/2026-04-07-orchestrator-control-plane-object-map.md`), `CP-OBJ-01B` is landed as the typed delegated execution identity seam, and `CP-OBJ-01C` is now landed via `meta/docs/prompts/prompt-2026-04-07-cp-obj-01c-delegated-runtime-session-turn-projection.md` plus the source-recorded projection seam in `AgentRunner` / delegated runtime / diagnostics bridge / nullable real-session persistence. The next intended code slice is therefore `CP-OBJ-01D`: unify operator-facing read-model vocabulary and projection consumption on top of the landed identity + runtime_projection seams, while still avoiding public host/team payload widening, transcript-as-SSOT, new generic `job` / `thread` authority, or remote/fleet widening. `CP-OBJ-01E` remains after that as the bounded research-task bridge into live execution rather than a reopen of `NEW-RT-08/09/10`. The separate docs lane `DOCS-FRONTDOOR-01` is now formally closed via `meta/docs/prompts/prompt-2026-04-07-docs-frontdoor-01-root-first-touch-ordering.md`, `README.md`, `docs/README_zh.md`, `docs/PROJECT_STATUS.md`, `docs/QUICKSTART.md`, the upgraded order-aware front-door anti-drift checks, and zero-blocking formal review/self-review.
 
 #### `NEW-RT-08` 子任务拆分（建议 P5A runtime batch R1）
 
