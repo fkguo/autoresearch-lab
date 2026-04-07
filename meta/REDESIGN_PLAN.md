@@ -1,10 +1,23 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.38-draft (v1.9.37 + idea-engine default-host authority first cut)
+> **版本**: 1.9.40-draft (v1.9.39 + runtime structural seam deep dive)
 > **日期**: 2026-04-07
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.40 Changelog**:
+> - latest known upstream `main` CI truth remains green at GitHub Actions `CI` run `24071319690` (2026-04-07) on head `21a5c8d` (`refactor: default idea-mcp host to idea-engine`), so the current lane continues next-batch planning from a healthy mainline rather than a live blocker
+> - new checked-in lane-C deep dive `meta/docs/plans/2026-04-07-runtime-structural-seams-deep-dive.md` now grounds the deeper runtime batch in current orchestrator source (`execution-identity.ts`, `team-execution-scoping.ts`, `team-unified-runtime-support.ts`, `delegated-agent-runtime.ts`, `team-execution-permissions.ts`, `tool-execution-policy.ts`) plus mature reference code from Codex and Claude Code, instead of leaving the three seam names at slogan level
+> - the deep dive narrows the actual structural execution order to `DelegatedRuntimeHandleV1 -> RuntimePermissionProfileV1 -> DelegatedRuntimeTransport`: handle comes first because identity / lineage / artifact refs are still reconstructed across multiple call paths, permission profile comes second because tool/sandbox/approval/source semantics are still split across matrix/view/host inputs, and transport must only arrive after those carriers exist
+> - the same memo also locks the main non-goals for this batch: no transcript-as-SSOT pivot, no durable `job` / `turn` promotion, no websocket-first remote/session clone, no fleet/lease widening, and no UI-centric permission-context import from Claude Code
+>
+> **v1.9.39 Changelog**:
+> - latest known upstream `main` CI truth is now GitHub Actions `CI` run `24071319690` (2026-04-07) on head `21a5c8d` (`refactor: default idea-mcp host to idea-engine`), so the current lane still advances from a healthy mainline rather than a live blocker
+> - current worktree then closes the same host-authority seam instead of preserving backward-compat baggage: installable `packages/idea-mcp/` is now TS `idea-engine` only, the legacy `IDEA_MCP_BACKEND` / `IDEA_CORE_PATH` knobs fail closed, and the child-process Python `idea-core` bridge path is deleted rather than retained as a public compatibility backend
+> - the same slice keeps the exact installable public MCP surface at `campaign.init`, `campaign.status`, `search.step`, and `eval.run`; anti-drift tests now lock TS-only host truth (`server.test.ts` rejects legacy envs, `rpc-client.test.ts` exercises only in-process TS error/close semantics, `rpc-client.integration.test.ts` no longer preserves a Python round-trip path)
+> - current targeted acceptance reran successfully on this slice: `git diff --check`, `pnpm --filter @autoresearch/idea-engine build`, `pnpm --filter @autoresearch/idea-engine test`, `pnpm --filter @autoresearch/idea-mcp build`, `pnpm --filter @autoresearch/idea-mcp test`
+> - immediate next seams are therefore no longer “explicit compatibility backend hygiene” but projection-only operator/read-model guard (`pending_approvals` projection authority + fleet enqueue read-model authority), residual Pipeline A public support-surface retirement, and the later `idea-engine` default asset/contract authority follow-up before deeper runtime-handle / transport / permission-lattice work
 >
 > **v1.9.38 Changelog**:
 > - latest known upstream `main` CI truth remains green at GitHub Actions `CI` run `24068633123` (2026-04-07) on head `f657527` (`fix: close public paper reviser and map regressions`), so the current lane continues generic-first closure work from a healthy mainline rather than a live blocker
@@ -40,7 +53,7 @@
 > - `M-22A/M-22B` 的 formal trio review 现已在当前 worktree truthful 收敛为 `0` blocking：`Opus` current review-mode packet = `CONVERGED`；`Gemini(auto)` 使用 same-scope embedded-source artifact = `CONVERGED`（canonical review-mode runner 仍因 `run_gemini.sh` 继承带终端控制字符的 proxy env 而无产出，这被记录为 reviewer runner failure，而不是源码 blocking）；`OpenCode(zhipuai-coding-plan/glm-5.1)` same-model embedded-source rerun = `CONVERGED`
 > - 当前 closeout 的 self-review 也已重新按顺序跑通关键 acceptance：`bash meta/scripts/codegen.sh`、`git diff --check`、`pnpm --filter @autoresearch/orchestrator test -- tests/autoresearch-cli.test.ts`、`pnpm --filter @autoresearch/hep-mcp test -- --run tests/contracts/orchRunApprove.test.ts tests/contracts/executeManifestInvalidDelegatedLaunchContract.test.ts`、`python3 -m pytest packages/hep-autoresearch/tests/test_public_cli_surface.py -q`
 > - reviewer amendments 现已 truthful 收束为 non-blocking only：comment-level authority-clarification amendments 已体现在 current worktree；remaining worthwhile follow-up 仅是把 internal-only Python `status` / web `/status` 继续往 canonical status projection 收束，这属于下一批 residual provider-local support-surface lane，而不是当前 `M-22A/M-22B` closeout blocker
-> - 下一批 closure 也已先落成 checked-in planning material：`meta/docs/plans/2026-04-07-next-batch-generic-closure-plan.md` 给出 generic-first 四条 immediate seams 与后续三条 structural seams 的总视图；`meta/docs/plans/2026-04-07-next-batch-generic-command-taxonomy-and-projection-guard.md` 细化 front-door authority map 与 projection-only guard 的顺序；`meta/docs/plans/2026-04-07-next-batch-residual-support-surface-closure.md` 则把 residual Pipeline A support-surface retirement/classification 拆成可独立实施的三切片。对应 implementation prompts 现已拆成四个明确 lane：`meta/docs/prompts/prompt-2026-04-07-next-batch-front-door-authority-map.md`、`meta/docs/prompts/prompt-2026-04-07-next-batch-public-run-residue-retirement.md`、`meta/docs/prompts/prompt-2026-04-07-next-batch-projection-only-operator-read-model-guard.md`、`meta/docs/prompts/prompt-2026-04-07-next-batch-idea-engine-default-host-authority-first-cut.md`
+> - 下一批 closure 也已先落成 checked-in planning material：`meta/docs/plans/2026-04-07-next-batch-generic-closure-plan.md` 给出 generic-first 四条 immediate seams 与后续三条 structural seams 的总视图；`meta/docs/plans/2026-04-07-next-batch-generic-command-taxonomy-and-projection-guard.md` 细化 front-door authority map 与 projection-only guard 的顺序；`meta/docs/plans/2026-04-07-next-batch-residual-support-surface-closure.md` 则把 residual Pipeline A support-surface retirement/classification 拆成可独立实施的三切片；新增 `meta/docs/plans/2026-04-07-runtime-structural-seams-deep-dive.md` 则把后续 structural seams 的真正落地顺序和非目标钉成 source-grounded truth。对应 implementation prompts 现已拆成四个明确 lane：`meta/docs/prompts/prompt-2026-04-07-next-batch-front-door-authority-map.md`、`meta/docs/prompts/prompt-2026-04-07-next-batch-public-run-residue-retirement.md`、`meta/docs/prompts/prompt-2026-04-07-next-batch-projection-only-operator-read-model-guard.md`、`meta/docs/prompts/prompt-2026-04-07-next-batch-idea-engine-default-host-authority-first-cut.md`
 >
 > **v1.9.33 Changelog**:
 > - `M-22A` 的当前 truthful first cut 已在本 worktree landed：`packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` 现把 `init/pause/resume/approve/export` 收成 thin adapters，转发到 canonical `autoresearch`；installable public `hep-autoresearch` / `hepar` shell 进一步移除了 direct root lifecycle/approval mutation verbs `start`、`checkpoint`、`request-approval`、`reject`；`packages/hep-autoresearch/src/hep_autoresearch/web/app.py` 也已收成 read-only diagnostics（仅 `GET /status` + `GET /logs`）而不再持有 root lifecycle/approval mutation authority
@@ -1841,18 +1854,18 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 > **来源**: Dual-Mode 架构收敛 — idea-core 孤岛连通
 > **性质**: 过渡方案 (桥接)，终态是 idea-engine TS 重写 (NEW-05a Stage 3)
-> **Historical rebaseline (2026-04-07)**: `NEW-IDEA-01` 仍保持 `done`，但 live truth 已不是“public `idea-mcp` 默认直连 Python `idea-core`”。当前 first cut 之后，installable `idea-mcp` 的 active public host path 默认是 in-process TS `idea-engine`；Python `idea-core` 只作为显式 compatibility backend (`IDEA_MCP_BACKEND=idea-core-python`) 保留。public MCP tool inventory 也已从旧的 eight-tool bridge 收窄到 exact public surface：`campaign.init`、`campaign.status`、`search.step`、`eval.run`。这不是 `idea-core retire-all`，也不代表 TS-side contract/domain-pack assets 已全部脱离 Python-side snapshots；剩余 follow-up 仍是 default asset authority / broader parity / retire-all closeout，而不是恢复 Python-first default host.
+> **Historical rebaseline (2026-04-07)**: `NEW-IDEA-01` 仍保持 `done`，但 live truth 已进一步从“TS default host first cut”收紧为“installable public path 只有 TS host”。当前 current-worktree follow-up 之后，`idea-mcp` 的 active public host path 只剩 in-process TS `idea-engine`；旧的 Python `idea-core` host path、`IDEA_MCP_BACKEND` 选择器与 `IDEA_CORE_PATH` knob 已从 installable public surface 删除并改为 fail-closed。public MCP tool inventory 也继续维持 exact public surface：`campaign.init`、`campaign.status`、`search.step`、`eval.run`。这不是 `idea-core retire-all`，也不代表 TS-side contract/domain-pack assets 已全部脱离 Python-side snapshots；剩余 follow-up 仍是 default asset authority / broader parity / retire-all closeout，而不是恢复任何 Python-side host fallback.
 
 **依赖**: H-01, H-02, H-03, H-16a
 **估计**: ~400-800 LOC
 
-**内容**: 历史上该桥接以 MCP 工具暴露 `idea-core` API；当前 live first cut 则把 installable public host 默认切到 TS `idea-engine` 的 active public surface（`campaign.init`, `campaign.status`, `search.step`, `eval.run`），并把 Python `idea-core` 降为显式 compatibility backend，而不是 silent default authority。
+**内容**: 历史上该桥接以 MCP 工具暴露 `idea-core` API；当前 live truth 则把 installable public host 完全收口到 TS `idea-engine` 的 active public surface（`campaign.init`, `campaign.status`, `search.step`, `eval.run`），并删除 public Python host compatibility path / env knobs，而不是继续维持第二条低质量 fallback authority。
 
 **验收**:
 - [x] MCP 工具可创建 campaign 并执行 search step
 - [x] idea-core 评估结果可通过 MCP 返回
 - [x] 错误通过 McpError (retryable) 传播
-- [x] installable `idea-mcp` 默认 host authority 已切到 TS `idea-engine`，而 Python `idea-core` 仅保留为显式 compatibility backend
+- [x] installable `idea-mcp` host authority 已收口为 TS `idea-engine` only，legacy Python host path / env knobs 已删除并 fail closed
 - [x] public MCP inventory 不再宣称 default host 无法服务的 lifecycle methods
 
 ### NEW-COMP-01: Computation MCP 工具表面设计 (Phase 2 late) ✅

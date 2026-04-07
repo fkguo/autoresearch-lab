@@ -10,10 +10,10 @@
 2. **当前仍需闭环的 immediate seams**
    - residual Pipeline A support-surface retirement / classification
    - projection-only operator/read-model guard
-3. **紧随其后的三条结构 seam**
+3. **紧随其后的三条结构 seam（建议批内顺序）**
    - `DelegatedRuntimeHandleV1`
-   - `DelegatedRuntimeTransport`
    - `RuntimePermissionProfileV1`
+   - `DelegatedRuntimeTransport`
 
 已落地的两条 seam 先把 front-door taxonomy 与 idea host default authority 稳住；剩余两条 immediate seams 继续解决“今天还有哪些 support/projection surface 在抢 authority”；后三条结构 seam 则解决“runtime 内部还缺哪些 typed seam 才能稳态扩大”。
 
@@ -102,27 +102,29 @@
 
 2026-04-07 status:
 
-- 已 landed 作为 bounded first cut：`idea-mcp` 默认 backend 现为 TS `idea-engine`，Python `idea-core` 仅能通过显式 `IDEA_MCP_BACKEND=idea-core-python` 保留为 compatibility path。
+- 已在当前 current-worktree 进一步收口：installable `idea-mcp` public host 现为 TS `idea-engine` only；旧的 `IDEA_MCP_BACKEND` / `IDEA_CORE_PATH` knobs 改为 fail-closed，child-process Python bridge path 已删除，不再保留 compatibility path。
 - public tool inventory 现与默认 backend 对齐，只保留 `idea_campaign_init`, `idea_campaign_status`, `idea_search_step`, `idea_eval_run`。
 - 当前 deferred methods 需要在后续 asset/contract authority follow-up 中统一重分层，而不是悄悄回流到 installable public inventory：`campaign.topup`、`campaign.pause`、`campaign.resume`、`campaign.complete`，以及旧 eight-tool bridge 里同样已退出当前 public surface 的 `node.get`、`node.list`。
-- 这仍不是 `idea-core retire-all`：TS 还在复用 Python-side contract/domain-pack assets，`rank.compute` / `node.promote` 也尚未被提升为当前 public MCP inventory。
+- 当前下一跳已变成 default asset/contract authority follow-up，而不是 compatibility backend hygiene：TS 还在复用部分 Python-side contract/domain-pack assets，`rank.compute` / `node.promote` 也尚未被提升为当前 public MCP inventory。
 
 ## Following Structural Batch: Three Deeper Runtime Seams
+
+source-grounded deep dive 已单独落成：`meta/docs/plans/2026-04-07-runtime-structural-seams-deep-dive.md`。该 deep dive 明确建议 structural batch 按 `Handle -> PermissionProfile -> Transport` 落地，而不是先做 transport 再回头补 identity / permission authority。
 
 ### `DelegatedRuntimeHandleV1`
 
 - 给 delegated lane 一个 first-class runtime handle，而不是继续把 `session` 当 assignment projection。
 - 重点是 canonical handle / lineage，不是扩大 public payload。
 
-### `DelegatedRuntimeTransport`
-
-- 把 lane coordination / remote worker transport 从 runtime state 与 fleet lease 中拆开。
-- transport 负责 delivery/activity；runtime state 继续负责 canonical execution lineage。
-
 ### `RuntimePermissionProfileV1`
 
 - 把 tools/fs/network/approval_mode/reviewer/source 收成 typed permission lattice。
 - 后续 prompt/runtime/approval 统一从这份 typed profile 编译，不再散落在 wrapper/help/runner 层。
+
+### `DelegatedRuntimeTransport`
+
+- 把 lane coordination / remote worker transport 从 runtime state 与 fleet lease 中拆开。
+- transport 负责 delivery/activity；runtime state 继续负责 canonical execution lineage。
 
 ## 推荐并行方式
 
@@ -133,11 +135,32 @@
 - Sidecar 3：为 `Seam D` 产出 `idea-engine` first-cut authority packet
 - 研究侧 lane：继续深挖三条结构 seam 的源码证据，但默认先产计划/ADR，不直接抢实现带宽
 
+## Post-Seam-D Execution Order
+
+当前 `idea-mcp` host seam 已进一步收口为 TS-only，因此下一轮并行队列应直接转向下面 5 条 lane：
+
+1. `Seam C / Slice A1`: 删除 `TeamExecutionState.pending_approvals` 这条 persisted projection authority。
+   目标：`approve` intervention 只基于 assignment 自身 canonical approval metadata；`live_status.pending_approvals` 退回现算 view。
+   低冲突文件：`packages/orchestrator/src/team-execution-interventions.ts`、`packages/orchestrator/src/team-execution-scoping.ts`、`packages/orchestrator/src/team-execution-types.ts`、相邻 tests。
+2. `Seam C / Slice A2`: 让 `fleet enqueue` 脱离 `run-read-model` 存在性判断。
+   目标：新增 raw `runExists` / equivalent helper，只基于 current state + raw ledger/artifact presence 判定 run 是否已知，不再把 read-model projection 倒灌成 mutation gate。
+   低冲突文件：`packages/orchestrator/src/orch-tools/fleet-queue-tools.ts`、`packages/orchestrator/src/orch-tools/run-read-model.ts`、相邻 fleet tests。
+3. `Seam B / Public workflow authority`: 退役 installable public `hepar run --workflow-id paper_reviser`。
+   目标：切断 legacy Python public shell 最后一条 workflow authority，而不是继续让 `run` 维持 residual public authority。
+   风险：会碰 shell inventory/docs/tests，需与后两条 public-shell lane 串行。
+4. `Seam B / Public authoring-spec authority`: 退役 `method-design` 与 `run-card validate|render` 的 public installable authority。
+   目标：把 computation authoring/spec validation 从 legacy Python public shell 移走，不再让它们看起来是 generic front door。
+   风险：同样会改 shell inventory/docs/tests，建议接在 `paper_reviser` lane 之后。
+5. `Seam B / Public utility-support cleanup`: de-publicize `branch`, `smoke-test`, `migrate`, 并重新判定 `approvals show` / `report render` / `logs` / `context` / `propose` / `skill-propose` 的去向。
+   目标：优先切掉低价值 public legacy utilities，再决定 remaining operator/support surfaces 是 repoint 还是删除。
+   并行方式：`smoke-test` + `migrate` 可先做快刀 lane；`branch` 与 operator/support surfaces 先做 owner/design 侦察后再实现。
+
 ## 完成判据
 
 下一批至少应达到：
 
 - checked-in `front_door_authority_map` 或等价 authority fixture 已存在，后续不再依赖聊天记忆判断 command boundary
-- residual Pipeline A support surfaces 的去向写入持久 SSOT，而不是只留在 census 输出里
-- projection-only guard 成为可机检 contract，而不是 reviewer 口头共识
-- `idea-engine` default-host authority first cut 拿到 checked-in plan/prompt，后续实现不必再重做 authority census
+- `Seam C` 至少完成一个 source-grounded projection-only fix（优先 `pending_approvals` 或 fleet enqueue read-model authority），而不是继续停留在 census/口头结论
+- residual Pipeline A public support surfaces 的去向写入持久 SSOT，而不是只留在 census 输出里
+- installable public legacy workflow/authoring/spec shell authority 至少再减少一个真实 survivor，而不是只新增“后续会删”的说明
+- `idea-engine` host seam 不再需要 compatibility packet；后续只剩 asset/contract authority cleanup，而不是重新争论 host fallback
