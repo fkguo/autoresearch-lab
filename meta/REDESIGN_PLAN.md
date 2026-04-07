@@ -1,10 +1,14 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.31-draft (v1.9.30 + M-22A prompt locked)
+> **版本**: 1.9.32-draft (v1.9.31 + M-22B prompt locked)
 > **日期**: 2026-04-07
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.32 Changelog**:
+> - 新增 checked-in cleanup prompt `meta/docs/prompts/prompt-2026-04-07-m22b-workflow-template-residue-cleanup.md`，把 `M-22B` 明确锁定为：删除 `research_workflow_v1` / `workflow-templates` 的 schema/codegen/test residue，并把 workflow authority 真相重新钉回 recipe path；这不是新的 workflow 设计题，也不是 fresh census lane
+> - 该 prompt 明确要求从已完成的 census 真相出发，清掉 `meta/schemas/research_workflow_v1.schema.json`、`meta/schemas/workflow-templates/*.json`、相邻 generated TS/Python bindings、以及 `packages/hep-mcp/tests/core/researchWorkflowSchema.test.ts` 这类旧锁定面，并通过 `make codegen-check` + recipe-path acceptance + formal trio review / self-review 证明 recipe authority 是唯一 surviving path
 >
 > **v1.9.31 Changelog**:
 > - 新增 checked-in implementation prompt `meta/docs/prompts/prompt-2026-04-07-m22a-python-legacy-root-authority-retirement.md`，把 `M-22A` 明确锁定为：删除或 repoint Python legacy root approval/run authority residue，而不是笼统地“继续清理 hepar”；其目标是切断 `packages/hep-autoresearch` internal/full entry chain 对 root lifecycle/approval state 的第二套 ownership，同时保留必要的 provider-local / maintainer-local adapter surface
