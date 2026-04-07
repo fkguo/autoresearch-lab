@@ -1,10 +1,17 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.45-draft (v1.9.44 + DelegatedRuntimeHandleV1 internal launch seam first slice)
+> **版本**: 1.9.46-draft (v1.9.45 + RuntimePermissionProfileV1 / doctor+bridge next-lane packets)
 > **日期**: 2026-04-07
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.46 Changelog**:
+> - latest completed upstream `main` CI truth is now GitHub Actions `CI` run `24086231177` (2026-04-07) on head `9bf3ed9` (`docs: clarify delegated runtime handle seams`), so the next batch begins from a confirmed green mainline after the delegated runtime handle closeout rather than from stale pre-closeout CI evidence
+> - the next structural implementation packet is now checked in at `meta/docs/prompts/prompt-2026-04-07-runtime-permission-profile-v1.md`, carrying the already-ratified structural order `DelegatedRuntimeHandleV1 -> RuntimePermissionProfileV1 -> DelegatedRuntimeTransport` into a concrete first-slice implementation lane instead of leaving the permission-profile seam at planning depth
+> - the residual Pipeline A retirement queue is now source-grounded beyond the generic audit: `doctor` + `bridge` are the first delete-first internal parser slice, followed by `literature-gap` rebaseline-to-delete, `method-design` + `run-card` authoring-helper contraction, `branch` state-semantics cleanup, and `paper_reviser` only after a real replacement lane exists
+> - that first residual delete packet is now checked in at `meta/docs/prompts/prompt-2026-04-08-pipeline-a-doctor-bridge-delete-first.md`, so the next retirement lane can delete the legacy parser shells directly without re-elevating provider-local diagnostics/bridge wrappers into a new compatibility authority
+> - immediate next execution therefore splits into two parallel lanes with bounded scope: implement `RuntimePermissionProfileV1` as the typed internal compile authority in orchestrator runtime code, and delete `doctor` / `bridge` from the internal Python parser while rebaselining docs/tests/front-door locks around the surviving lower-level authorities only
 >
 > **v1.9.45 Changelog**:
 > - latest completed upstream `main` CI truth remains GitHub Actions `CI` run `24079336525` (2026-04-07) on head `a622bba` (`refactor: close idea-engine contract and data-root leaks`), so this lane still executes from a green mainline instead of reopening CI firefighting
