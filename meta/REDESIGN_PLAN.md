@@ -1,10 +1,17 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.46-draft (v1.9.45 + RuntimePermissionProfileV1 / doctor+bridge next-lane packets)
+> **版本**: 1.9.47-draft (v1.9.46 + doctor/bridge delete-first landed + literature-gap next-lane packet)
 > **日期**: 2026-04-07
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.47 Changelog**:
+> - latest upstream `main` CI before this follow-up remains green and the current head now carries the landed `doctor` / `bridge` delete-first slice on top of that baseline: internal parser wrappers `doctor` and `bridge` are removed from `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` instead of remaining as maintainer/eval compatibility residue
+> - front-door truth now matches that deletion across live package docs and drift locks: `meta/front_door_authority_map_v1.json`, `scripts/lib/front-door-authority-map.mjs`, `scripts/lib/front-door-boundary-authority.mjs`, package README/tutorial/interaction wording, and `packages/hep-autoresearch/docs/WORKFLOWS.md` now all describe `doctor` / `bridge` as deleted, not as surviving internal parser commands
+> - the same slice also rebaselines current governance wording away from deleted wrappers: `meta/ECOSYSTEM_DEV_CONTRACT.md` no longer treats `hepar doctor` / `bridge` as live CI or config-observability authority, and instead points current lower-level MCP contract/tool-inventory checks at `packages/hep-mcp`
+> - targeted acceptance passed on the delete-first slice: `git diff --check`; `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m pytest -q packages/hep-autoresearch/tests/test_public_cli_surface.py packages/hep-autoresearch/tests/test_mcp_doctor_and_bridge_cli.py packages/hep-autoresearch/tests/test_doctor_entrypoints_cli.py`; `node scripts/check-shell-boundary-anti-drift.mjs`; `pnpm --filter @autoresearch/hep-mcp test -- tests/docs/docToolDrift.test.ts`
+> - the next residual lane is now checked in as `meta/docs/prompts/prompt-2026-04-08-pipeline-a-literature-gap-rebaseline-to-delete.md`: unlike `doctor` / `bridge`, `literature-gap` still acts as the heaviest checked-in launcher-consumer path, so the next batch must first move consumer proof off the parser shell and then delete that shell honestly
 >
 > **v1.9.46 Changelog**:
 > - latest completed upstream `main` CI truth is now GitHub Actions `CI` run `24086231177` (2026-04-07) on head `9bf3ed9` (`docs: clarify delegated runtime handle seams`), so the next batch begins from a confirmed green mainline after the delegated runtime handle closeout rather than from stale pre-closeout CI evidence
