@@ -1,10 +1,22 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.32-draft (v1.9.31 + M-22B prompt locked)
+> **版本**: 1.9.34-draft (v1.9.33 + M-22A/M-22B formal closeout truth sync)
 > **日期**: 2026-04-07
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.34 Changelog**:
+> - `M-22A/M-22B` 的 formal trio review 现已在当前 worktree truthful 收敛为 `0` blocking：`Opus` current review-mode packet = `CONVERGED`；`Gemini(auto)` 使用 same-scope embedded-source artifact = `CONVERGED`（canonical review-mode runner 仍因 `run_gemini.sh` 继承带终端控制字符的 proxy env 而无产出，这被记录为 reviewer runner failure，而不是源码 blocking）；`OpenCode(zhipuai-coding-plan/glm-5.1)` same-model embedded-source rerun = `CONVERGED`
+> - 当前 closeout 的 self-review 也已重新按顺序跑通关键 acceptance：`bash meta/scripts/codegen.sh`、`git diff --check`、`pnpm --filter @autoresearch/orchestrator test -- tests/autoresearch-cli.test.ts`、`pnpm --filter @autoresearch/hep-mcp test -- --run tests/contracts/orchRunApprove.test.ts tests/contracts/executeManifestInvalidDelegatedLaunchContract.test.ts`、`python3 -m pytest packages/hep-autoresearch/tests/test_public_cli_surface.py -q`
+> - reviewer amendments 现已 truthful 收束为 non-blocking only：comment-level authority-clarification amendments 已体现在 current worktree；remaining worthwhile follow-up 仅是把 internal-only Python `status` / web `/status` 继续往 canonical status projection 收束，这属于下一批 residual provider-local support-surface lane，而不是当前 `M-22A/M-22B` closeout blocker
+>
+> **v1.9.33 Changelog**:
+> - `M-22A` 的当前 truthful first cut 已在本 worktree landed：`packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` 现把 `init/pause/resume/approve/export` 收成 thin adapters，转发到 canonical `autoresearch`；installable public `hep-autoresearch` / `hepar` shell 进一步移除了 direct root lifecycle/approval mutation verbs `start`、`checkpoint`、`request-approval`、`reject`；`packages/hep-autoresearch/src/hep_autoresearch/web/app.py` 也已收成 read-only diagnostics（仅 `GET /status` + `GET /logs`）而不再持有 root lifecycle/approval mutation authority
+> - `M-22B` 也已在当前 worktree landed：`meta/schemas/research_workflow_v1.schema.json`、`meta/schemas/workflow-templates/*.json`、相邻 generated TS/Python bindings、以及 `packages/hep-mcp/tests/core/researchWorkflowSchema.test.ts` 已被删除；surviving workflow authority 现只剩 `workflow_recipe_v1` + `packages/literature-workflows` + `meta/recipes`
+> - `NEW-WF-01` 的历史 truth 已随本轮 rebaseline：它仍保留为过去完成过的 schema-design item，但不再代表 live executable workflow authority；当前 live truth 必须读 recipe path，而不是已删除的 graph schema/template family
+> - 当前 worktree 上与上述收口直接相关的 acceptance 已通过：`git diff --check`、`bash meta/scripts/codegen.sh`、`pytest packages/hep-autoresearch/tests/test_public_cli_surface.py`、`pnpm --filter @autoresearch/orchestrator test -- tests/autoresearch-cli.test.ts tests/orchestrator.test.ts`、`pnpm --filter @autoresearch/hep-mcp test`、`pnpm --filter @autoresearch/shared build`、`pnpm --filter @autoresearch/shared test`、`pnpm -r test`
+> - 上述 remainder closeout 的 formal review / self-review 现也已 source-grounded 收口：`Opus` 当前 review-mode packet = `CONVERGED`；`Gemini(auto)` embedded-source packet = `CONVERGED`；`OpenCode(zhipuai-coding-plan/glm-5.1)` same-model embedded-source rerun = `CONVERGED`。formal self-review 则在 `npx gitnexus analyze --force` 之后结合 `detect_changes(scope=unstaged)` 与当前 targeted acceptance 再复核，仍为 `0` blocking
 >
 > **v1.9.32 Changelog**:
 > - 新增 checked-in cleanup prompt `meta/docs/prompts/prompt-2026-04-07-m22b-workflow-template-residue-cleanup.md`，把 `M-22B` 明确锁定为：删除 `research_workflow_v1` / `workflow-templates` 的 schema/codegen/test residue，并把 workflow authority 真相重新钉回 recipe path；这不是新的 workflow 设计题，也不是 fresh census lane
@@ -885,6 +897,8 @@ branches:     candidate → pending, active → running, abandoned → completed
 > **Consumer rollout narrowing (2026-04-02, research-team convergence)**: the `research-team` convergence gate path now derives authoritative `gate_id` values plus `schema_id`/`schema_version` from the shared JSON Schema SSOT `meta/schemas/convergence_gate_result_v1.schema.json` (fail-closed when the schema is unavailable). Local convergence gate metadata no longer hand-owns those identifiers in `skills/research-team/scripts/gates/convergence_schema.py`.
 >
 > **2026-03-31 ratified sequencing note (runtime-first)**: broader `M-22` rollout should no longer be treated as the immediate next runtime priority. Source-grounded reason: `McpClient.callTool()` still dispatches any requested tool without runtime allowlist enforcement, while `TeamPermissionMatrix` currently only constrains delegation / intervention structure rather than actual tool visibility at execution time. Widening GateSpec into more runtime consumers before `NEW-RT-09` / `NEW-RT-10` would therefore broaden surfaces that can name gates while tool filtering and permission inheritance remain prompt/protocol-only. Ratified order: land `NEW-RT-09` / `NEW-RT-10` first, then resume broader `M-22` rollout beyond the current TS approvals-first slice.
+>
+> **2026-04-07 remainder closeout (M-22A first cut + M-22B residue removal)**: the deferred remainder is no longer “future tense” in aggregate. `packages/hep-autoresearch` no longer owns generic root lifecycle mutations for `init/pause/resume/approve/export`; those commands now thin-pass through canonical `autoresearch`, the installable public legacy shell excludes direct root-mutation verbs `start` / `checkpoint` / `request-approval` / `reject`, and `web/app.py` is now read-only diagnostics. Separately, `research_workflow_v1` / `workflow-templates` and their generated/test residue have been removed from live schema/codegen/test surfaces, leaving recipe-based workflow authority as the only surviving live path. `M-22` therefore remains in progress only for the narrower residual provider-local non-computation `run` workflows / support surfaces and adjacent maintainer-local cleanup, not for generic lifecycle or workflow authority itself.
 
 **依赖**: H-04 (Gate Registry)
 **关联**: C-01 (审批超时)
@@ -896,14 +910,14 @@ branches:     candidate → pending, active → running, abandoned → completed
 | `packages/shared/src/gate-registry.ts` | shared gate registry + `getGateSpec` / `validateGates` / fail-closed concrete gate entries |
 | `packages/shared/src/__tests__/gate-registry.test.ts` | registry uniqueness / taxonomy / fail-closed / audit-required coverage |
 | `packages/orchestrator/src/{state-manager.ts,orch-tools/common.ts,orch-tools/control.ts,orch-tools/schemas.ts}` | first rollout slice target: replace duplicated TS approval gate / policy-key / query-filter authority with shared GateSpec-derived authority while preserving A1–A5 public wire shapes |
-| `packages/hep-autoresearch/src/hep_autoresearch/toolkit/{orchestrator_state.py,computation.py}` | adjacent Python legacy approval authority; explicitly deferred from the first rollout slice |
+| `packages/hep-autoresearch/src/hep_autoresearch/toolkit/{orchestrator_state.py,computation.py}` | historical adjacent Python legacy approval/workflow logic; root lifecycle ownership has now been collapsed by `M-22A`, but residual provider-local non-computation workflow/support logic still keeps broader retirement/repoint work open |
 | `skills/research-team/scripts/gates/convergence_schema.py` | bounded consumer adoption landed: derive convergence gate ids + schema id/version from shared JSON Schema SSOT (`meta/schemas/convergence_gate_result_v1.schema.json`) and fail closed when the schema is unavailable |
-| `meta/schemas/research_workflow_v1.schema.json` | adjacent unused `WorkflowGateSpec` authority; defer rather than fold into the first approval rollout |
+| `meta/schemas/research_workflow_v1.schema.json` | historical `WorkflowGateSpec` / graph-schema residue; retired by `M-22B` once recipe-based workflow authority became the sole live path |
 
 **验收检查点**:
 - [x] `packages/orchestrator` approval/query/state-validation/read-model path live-reads shared `GateSpec` authority for A1–A5 while preserving existing public ids, `expected_approvals`, `approval_packet_v1`, approval policy operation keys, and approvals-list behavior
 - [x] `A0` remains compatibility-only for query/filter surfaces and is not introduced as a `GateSpec v1` entry
-- [x] Python legacy approval mappings and `research_workflow_v1` / workflow-template cleanup remain explicitly deferred rather than implied by the landed consumer slices
+- [x] The originally deferred Python legacy approval mappings and `research_workflow_v1` / workflow-template cleanup are now handled via the 2026-04-07 remainder cuts: `M-22A` collapses Python root lifecycle/approval mutations to thin adapters + read-only diagnostics, and `M-22B` removes the old workflow/schema/template residue from live schema/codegen/test surfaces
 - [x] `research-team` convergence gate consumer adoption is now landed: convergence metadata derives `gate_id` + schema id/version from shared SSOT (`meta/schemas/convergence_gate_result_v1.schema.json`) and fails closed if that SSOT is unavailable
 - [x] `fail_behavior` 默认为 `fail-closed`，且当前 shared registry entries/test guards 已锁定 fail-closed posture
 
@@ -1825,6 +1839,8 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 > **来源**: Dual-Mode 架构收敛 — Must-Design-Now #1
 > **扩展 (Pipeline 连通性审计)**: schema 定义 entry point variants
+>
+> **Historical rebaseline (2026-04-07)**: `NEW-WF-01` remains done only as a historical schema-design slice. After recipe-based workflow authority (`packages/literature-workflows` + `meta/schemas/workflow_recipe_v1.schema.json` + `meta/recipes`) became the sole live path, `M-22B` removed `research_workflow_v1.schema.json`, `meta/schemas/workflow-templates/*.json`, the generated TS/Python bindings, and `packages/hep-mcp/tests/core/researchWorkflowSchema.test.ts`. Do not read this item as the current executable workflow authority.
 
 **依赖**: UX-04
 **估计**: ~100 LOC (schema)
