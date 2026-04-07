@@ -2,19 +2,20 @@
 
 ## 目标
 
-当前 command-inventory / `orch_*` exact-spec guard 已落地，因此下一批不应该再回到“继续零碎修 legacy shell 文案”的节奏。新的目标是把 generic-first 主线收成两层：
+当前 command-inventory / `orch_*` exact-spec guard 已落地，而且同日 follow-up 已把 `idea-engine` default-host authority first cut 落到代码与测试上，因此下一批不应该再回到“继续零碎修 legacy shell 文案”的节奏。新的目标是把 generic-first 主线收成两层：
 
-1. **立即闭环的四条 seam**
+1. **已落地并可继续依赖的 immediate seams**
    - `front_door_authority_map`
+   - `idea-engine` default-host authority first cut
+2. **当前仍需闭环的 immediate seams**
    - residual Pipeline A support-surface retirement / classification
    - projection-only operator/read-model guard
-   - `idea-engine` default-host authority first cut
-2. **紧随其后的三条结构 seam**
+3. **紧随其后的三条结构 seam**
    - `DelegatedRuntimeHandleV1`
    - `DelegatedRuntimeTransport`
    - `RuntimePermissionProfileV1`
 
-前四条解决“今天还有哪些 surface 在抢 authority”；后三条解决“runtime 内部还缺哪些 typed seam 才能稳态扩大”。
+已落地的两条 seam 先把 front-door taxonomy 与 idea host default authority 稳住；剩余两条 immediate seams 继续解决“今天还有哪些 support/projection surface 在抢 authority”；后三条结构 seam 则解决“runtime 内部还缺哪些 typed seam 才能稳态扩大”。
 
 ## 深挖后的 SOTA 依据
 
@@ -98,6 +99,13 @@
 - `packages/idea-engine/src/service/rpc-service.ts`
 - `packages/idea-engine/src/service/post-search-service.ts`
 - `packages/shared/src/tool-names.ts`
+
+2026-04-07 status:
+
+- 已 landed 作为 bounded first cut：`idea-mcp` 默认 backend 现为 TS `idea-engine`，Python `idea-core` 仅能通过显式 `IDEA_MCP_BACKEND=idea-core-python` 保留为 compatibility path。
+- public tool inventory 现与默认 backend 对齐，只保留 `idea_campaign_init`, `idea_campaign_status`, `idea_search_step`, `idea_eval_run`。
+- 当前 deferred methods 需要在后续 asset/contract authority follow-up 中统一重分层，而不是悄悄回流到 installable public inventory：`campaign.topup`、`campaign.pause`、`campaign.resume`、`campaign.complete`，以及旧 eight-tool bridge 里同样已退出当前 public surface 的 `node.get`、`node.list`。
+- 这仍不是 `idea-core retire-all`：TS 还在复用 Python-side contract/domain-pack assets，`rank.compute` / `node.promote` 也尚未被提升为当前 public MCP inventory。
 
 ## Following Structural Batch: Three Deeper Runtime Seams
 

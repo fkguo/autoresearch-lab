@@ -1,10 +1,18 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.37-draft (v1.9.36 + public paper_reviser failure-finalization fix + authority-map parity guard)
+> **版本**: 1.9.38-draft (v1.9.37 + idea-engine default-host authority first cut)
 > **日期**: 2026-04-07
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.38 Changelog**:
+> - latest known upstream `main` CI truth remains green at GitHub Actions `CI` run `24068633123` (2026-04-07) on head `f657527` (`fix: close public paper reviser and map regressions`), so the current lane continues generic-first closure work from a healthy mainline rather than a live blocker
+> - current worktree then lands the next bounded generic-first slice on that green baseline: `packages/idea-mcp/` now defaults its active public host path to in-process TS `idea-engine`, while the Python `idea-core` path survives only as an explicit compatibility backend selected via `IDEA_MCP_BACKEND=idea-core-python`
+> - the same slice narrows the installable public `idea-mcp` tool inventory to the exact default-host-supported set with direct tool-level contract coverage: `campaign.init`, `campaign.status`, `search.step`, and `eval.run`; unsupported lifecycle methods (`campaign.topup/pause/resume/complete`) are no longer advertised on the public MCP surface
+> - default-host anti-drift is now explicit and test-backed: `packages/idea-mcp/tests/server.test.ts` locks backend selection / fail-closed env parsing, `rpc-client.test.ts` proves the default path stays in-process TS without spawning `idea-core`, and `rpc-client.integration.test.ts` keeps the Python path only as an explicit compatibility backend
+> - current targeted acceptance reran successfully on this slice: `git diff --check`, `pnpm --filter @autoresearch/idea-engine build`, `pnpm --filter @autoresearch/idea-engine test`, `pnpm --filter @autoresearch/idea-mcp build`, `pnpm --filter @autoresearch/idea-mcp test`
+> - immediate next seams are therefore no longer `idea-engine` default-host first cut but projection-only operator/read-model guard, residual Pipeline A support-surface classification / retirement, and the later `idea-engine` default asset/contract authority follow-up before deeper runtime-handle / transport / permission-lattice work
 >
 > **v1.9.37 Changelog**:
 > - latest known upstream `main` CI truth is now the next green run after `a53805f`: GitHub Actions `CI` run `24068160029` (2026-04-07) succeeded on head `a53805f` (`refactor: classify front doors and narrow public hepar run`), so current mainline health is green even before the same-day follow-up regression fix below
@@ -1833,16 +1841,19 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 
 > **来源**: Dual-Mode 架构收敛 — idea-core 孤岛连通
 > **性质**: 过渡方案 (桥接)，终态是 idea-engine TS 重写 (NEW-05a Stage 3)
+> **Historical rebaseline (2026-04-07)**: `NEW-IDEA-01` 仍保持 `done`，但 live truth 已不是“public `idea-mcp` 默认直连 Python `idea-core`”。当前 first cut 之后，installable `idea-mcp` 的 active public host path 默认是 in-process TS `idea-engine`；Python `idea-core` 只作为显式 compatibility backend (`IDEA_MCP_BACKEND=idea-core-python`) 保留。public MCP tool inventory 也已从旧的 eight-tool bridge 收窄到 exact public surface：`campaign.init`、`campaign.status`、`search.step`、`eval.run`。这不是 `idea-core retire-all`，也不代表 TS-side contract/domain-pack assets 已全部脱离 Python-side snapshots；剩余 follow-up 仍是 default asset authority / broader parity / retire-all closeout，而不是恢复 Python-first default host.
 
 **依赖**: H-01, H-02, H-03, H-16a
 **估计**: ~400-800 LOC
 
-**内容**: MCP 工具暴露 idea-core Python API: `campaign.*`, `search.step`, `eval.run`。通过 JSON-RPC 调用现有 idea-core Python 进程。
+**内容**: 历史上该桥接以 MCP 工具暴露 `idea-core` API；当前 live first cut 则把 installable public host 默认切到 TS `idea-engine` 的 active public surface（`campaign.init`, `campaign.status`, `search.step`, `eval.run`），并把 Python `idea-core` 降为显式 compatibility backend，而不是 silent default authority。
 
 **验收**:
 - [x] MCP 工具可创建 campaign 并执行 search step
 - [x] idea-core 评估结果可通过 MCP 返回
 - [x] 错误通过 McpError (retryable) 传播
+- [x] installable `idea-mcp` 默认 host authority 已切到 TS `idea-engine`，而 Python `idea-core` 仅保留为显式 compatibility backend
+- [x] public MCP inventory 不再宣称 default host 无法服务的 lifecycle methods
 
 ### NEW-COMP-01: Computation MCP 工具表面设计 (Phase 2 late) ✅
 
