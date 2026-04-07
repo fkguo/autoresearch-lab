@@ -1727,25 +1727,26 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [x] `--api-key-env` 传环境变量名，API key 不出现在进程列表/日志/artifact
 - [x] `run_openai_compat.sh` 可调用 DeepSeek/Qwen/vLLM 端点
 
-### NEW-VIZ-01: Graph Visualization Layer — 通用 schema + 5 domain adapters ✅ Phase 2 Batch 6 ★infra
+### NEW-VIZ-01: Graph Visualization Layer — 通用 schema + 4 active domain adapters ✅ Phase 2 Batch 6 ★infra
 
 > **设计文档**: `docs/graph-visualization-layer.md` (9 轮双模型审查收敛: Codex READY + Gemini READY)
+> **Historical rebaseline (2026-04-07)**: the original deliverable landed with 5 adapters, but the live shared tree now intentionally retains only 4 active adapters after deleting `idea-map`. Do not treat `idea-map` as a compatibility or dormant shared authority surface.
 
 **依赖**: 无前置依赖 (通用基础设施)
 
-**现状**: `render_claim_graph.py` (~458 LOC) 直接将 Claim DAG 渲染为 Graphviz DOT/PNG/SVG。五个子系统 (Claim DAG, Memory Graph, Literature graph, Idea map, Progress graph) 各自生成类型化有向图，缺少统一可视化层。
+**现状**: `render_claim_graph.py` (~458 LOC) 直接将 Claim DAG 渲染为 Graphviz DOT/PNG/SVG。当前 live 共享可视化层覆盖四个 active 子系统 (Claim DAG, Memory Graph, Literature graph, Progress graph)；历史上的 `idea-map` adapter 已删除，不再作为共享 authority 保留。
 
 **变更**:
 
 | 文件 | 变更 |
 |---|---|
 | `packages/shared/src/graph-viz/types.ts` | UniversalNode/UniversalEdge 通用接口 + render options + Adapter 接口 |
-| `packages/shared/src/graph-viz/adapters/` + `packages/shared/src/memory-graph/viz-adapter.ts` | 5 个 domain adapter: claim, memory, literature, idea, progress |
+| `packages/shared/src/graph-viz/adapters/` + `packages/shared/src/memory-graph/viz-adapter.ts` | 4 个 active domain adapter: claim, memory, literature, progress |
 | `packages/shared/src/graph-viz/{render,graphviz}.ts` | Graphviz DOT/PNG/SVG 渲染 + JSON 导出 |
 
 **验收**:
 - [x] UniversalNode/UniversalEdge schema 支持任意 domain metadata
-- [x] 5 个 adapter 各自产出 universal graph 并可渲染为 DOT/SVG
+- [x] 4 个 active adapter 各自产出 universal graph 并可渲染为 DOT/SVG
 - [x] claim adapter 覆盖 `render_claim_graph.py` 的输入/渲染能力（当前 pipeline 仍走 legacy Python，接线延后到 TS 迁移阶段）
 
 ### NEW-RT-01: TS AgentRunner (Phase 2 early) ✅
@@ -1863,6 +1864,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 > **来源**: Dual-Mode 架构收敛 — idea-core 孤岛连通
 > **性质**: 过渡方案 (桥接)，终态是 idea-engine TS 重写 (NEW-05a Stage 3)
 > **Historical rebaseline (2026-04-07)**: `NEW-IDEA-01` 仍保持 `done`，但 live truth 已进一步从“TS default host first cut”收紧为“installable public path 只有 TS host”。当前 current-worktree follow-up 之后，`idea-mcp` 的 active public host path 只剩 in-process TS `idea-engine`；旧的 Python `idea-core` host path、`IDEA_MCP_BACKEND` 选择器与 `IDEA_CORE_PATH` knob 已从 installable public surface 删除并改为 fail-closed。public MCP tool inventory 也继续维持 exact public surface：`campaign.init`、`campaign.status`、`search.step`、`eval.run`。这不是 `idea-core retire-all`，也不代表 TS-side contract/domain-pack assets 已全部脱离 Python-side snapshots；剩余 follow-up 仍是 default asset authority / broader parity / retire-all closeout，而不是恢复任何 Python-side host fallback.
+> **Discovery truth rebaseline (2026-04-07)**: checked-in `idea-engine` agent-card/discovery capability truth must now match that same exact public TS host surface. Legacy lifecycle/node/ranking methods are not to be kept as aspirational discovery claims or compatibility promises.
 
 **依赖**: H-01, H-02, H-03, H-16a
 **估计**: ~400-800 LOC
@@ -1875,6 +1877,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [x] 错误通过 McpError (retryable) 传播
 - [x] installable `idea-mcp` host authority 已收口为 TS `idea-engine` only，legacy Python host path / env knobs 已删除并 fail closed
 - [x] public MCP inventory 不再宣称 default host 无法服务的 lifecycle methods
+- [x] checked-in `idea-engine` discovery card 只宣称当前 TS public host 实际可服务的方法
 
 ### NEW-COMP-01: Computation MCP 工具表面设计 (Phase 2 late) ✅
 
@@ -1999,7 +2002,7 @@ A5 时将执行: Ward 恒等式 + 规范不变性 + SM 极限比对
 - [x] 审批 packet_short 包含各 gate 特定上下文，人类可直接判断 (UX-07)
 - [x] research-team 工具访问: full 模式 MCP 工具 + 溯源 clean-room + hard-fail 门禁 (RT-02)
 - [x] research-team runner 抽象: 自定义 runner + API 可配置 + key 脱敏 (RT-03)
-- [x] Graph Visualization Layer: UniversalNode/Edge schema + 5 domain adapters 可渲染 (NEW-VIZ-01)
+- [x] Graph Visualization Layer: UniversalNode/Edge schema + 4 active domain adapters 可渲染；`idea-map` 已退役 (NEW-VIZ-01)
 - [x] arxiv-mcp: `arxiv_search` + `arxiv_paper_source` + `arxiv_get_metadata` 可用，hep-mcp 聚合通过 (NEW-ARXIV-01)
 - [ ] 无 Phase 0/1 回归
 
