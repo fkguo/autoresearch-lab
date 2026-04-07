@@ -1,10 +1,18 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.44-draft (v1.9.43 + Pipeline A delete-first wrapper removal)
+> **版本**: 1.9.45-draft (v1.9.44 + DelegatedRuntimeHandleV1 internal launch seam first slice)
 > **日期**: 2026-04-07
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.45 Changelog**:
+> - latest completed upstream `main` CI truth remains GitHub Actions `CI` run `24079336525` (2026-04-07) on head `a622bba` (`refactor: close idea-engine contract and data-root leaks`), so this lane still executes from a green mainline instead of reopening CI firefighting
+> - current worktree lands the delegated runtime handle first slice as a bounded internal seam: new `packages/orchestrator/src/delegated-runtime-handle.ts` defines `DelegatedRuntimeHandleV1` (identity + lineage + artifact refs), `team-execution-scoping.ts` now uses `openAssignmentSession(...) -> { session, handle }` as canonical producer, and `team-unified-runtime-support.ts` threads that handle through `prepareAssignmentOutcome -> executeLaunch -> mergeLaunchOutcome` instead of ad hoc runtime-id/path rebuilds
+> - `packages/orchestrator/src/research-loop/delegated-agent-runtime.ts` now accepts optional `delegated_runtime_handle`; when provided it fail-closes on `runId !== handle.identity.runtime_run_id` and prefers `handle.artifacts.*` refs, while direct non-team execution remains supported as the unchanged public contract
+> - this slice explicitly preserves public boundary truth: no new handle field leaks to `team_state`, `live_status`, `replay`, `assignment_results`, or hep-mcp host payloads; anti-leak assertions are now covered in team runtime tests
+> - scoped acceptance is green on this bounded slice: `git diff --check`; `pnpm --filter @autoresearch/orchestrator test -- tests/delegated-runtime-handle.test.ts tests/execution-identity.test.ts tests/research-loop-delegated-agent-runtime.test.ts`; `pnpm --filter @autoresearch/orchestrator test -- tests/team-unified-runtime.test.ts tests/team-unified-runtime-sequential.test.ts tests/team-unified-runtime-parallel-recovery.test.ts`; `pnpm --filter @autoresearch/orchestrator test -- tests/team-execution-runtime.test.ts tests/team-execution-state.test.ts tests/orchestrator.test.ts`; `pnpm --filter @autoresearch/orchestrator build`; `pnpm --filter @autoresearch/hep-mcp test -- tests/contracts/orchRunExecuteAgent.team.test.ts tests/contracts/orchRunExecuteAgent.team-sequential.test.ts tests/contracts/orchRunExecuteAgent.team-parallel-recovery.test.ts tests/contracts/orchRunExecuteAgent.team-stage-gated-recovery.test.ts tests/contracts/orchRunExecuteAgent.team-view.test.ts`
+> - immediate next seams now move to the next structural order slot without changing non-goals: continue `RuntimePermissionProfileV1` compile-authority closure, then `DelegatedRuntimeTransport`, while keeping transcript/job/turn/fleet widening out of scope
 >
 > **v1.9.44 Changelog**:
 > - latest completed upstream `main` CI truth is now GitHub Actions `CI` run `24079336525` (2026-04-07) on head `a622bba` (`refactor: close idea-engine contract and data-root leaks`), so current closure work continues from a green mainline rather than a live blocker
