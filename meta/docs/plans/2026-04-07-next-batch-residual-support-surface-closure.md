@@ -11,6 +11,76 @@ Source-ground and constrain the remaining Pipeline A support surface so that:
 - the installable public shell never regains generic lifecycle/control-plane authority
 - docs/tests reflect the same authority taxonomy rather than relying on unstated assumptions
 
+## Current source-grounded split
+
+The current residual surface is no longer one undifferentiated “legacy CLI” blob. It now breaks into three concrete implementation slices:
+
+1. **public residual non-computation `run`**
+   - still the highest-risk leftover because it remains a real Python workflow orchestrator rather than a thin compatibility wrapper
+2. **internal diagnostics / bridge truth**
+   - `doctor`, `bridge`, and `literature-gap` are already internal-only on the installable shell, but normative contract and package-local docs still need rebaseline
+3. **adjacent authoring / support residue**
+   - `run-card`, `method-design`, and nearby action docs still project Python-side authoring paths more strongly than they should
+
+## Recommended implementation split
+
+### Slice 1: public residual non-computation `run`
+
+Scope:
+
+- the public `run --workflow-id` survivors that still live on installable `hepar`
+- exact workflow inventory, direct CLI coverage, and package-doc authority wording
+
+Goal:
+
+- shrink `run` from “real Python workflow authority” into either a smaller compatibility wrapper or an internal-only surface
+- if any public workflow survives, each survivor must have direct CLI contract coverage rather than only eval anchors or implied doc wording
+
+Suggested acceptance:
+
+- `python3 -m pytest packages/hep-autoresearch/tests/test_public_cli_surface.py packages/hep-autoresearch/tests/test_paper_reviser_workflow.py packages/hep-autoresearch/tests/test_adapter_gate_resolution_cli.py -q`
+- `pnpm --filter @autoresearch/hep-mcp test -- tests/docs/docToolDrift.test.ts`
+- `node scripts/check-shell-boundary-anti-drift.mjs`
+
+### Slice 2: internal diagnostics / bridge truth rebaseline
+
+Scope:
+
+- `doctor`
+- `bridge`
+- `literature-gap`
+- normative contract and maintainer-facing docs that still talk about these surfaces as if they were public default behavior
+
+Goal:
+
+- keep code/tests where useful for maintainer/eval coverage
+- make the only valid public truth “internal full parser / maintainer-only compatibility surface”
+- stop `meta/ECOSYSTEM_DEV_CONTRACT.md` and adjacent docs from re-promoting them into public contract authority
+
+Suggested acceptance:
+
+- `python3 -m pytest packages/hep-autoresearch/tests/test_doctor_entrypoints_cli.py packages/hep-autoresearch/tests/test_mcp_doctor_and_bridge_cli.py packages/hep-autoresearch/tests/test_literature_gap_cli.py packages/hep-autoresearch/tests/test_public_cli_surface.py -q`
+
+### Slice 3: adjacent authoring / support cleanup
+
+Scope:
+
+- `run-card validate|render`
+- `method-design`
+- package-local docs that still present legacy Python authoring/run paths as default operations
+
+Goal:
+
+- keep only bounded support surfaces that still earn their existence
+- ensure docs frame them as package-local compatibility tooling rather than current front-door behavior
+- add direct CLI coverage wherever a support command remains public
+
+Suggested acceptance:
+
+- `python3 -m pytest packages/hep-autoresearch/tests/test_method_design_cli.py packages/hep-autoresearch/tests/test_orchestrator_computation_cli.py packages/hep-autoresearch/tests/test_migrate.py -q`
+- `node scripts/check-shell-boundary-anti-drift.mjs`
+- `git diff --check`
+
 ## Tasks
 
 1. **Census current support surfaces**
@@ -28,7 +98,8 @@ Source-ground and constrain the remaining Pipeline A support surface so that:
    - Make sure front-door scripts (`scripts/check-shell-boundary-anti-drift.mjs`, `scripts/lib/front-door-boundary-authority.mjs`) read the same inventory so they can fail closed when doc/test drift occurs.
 
 4. **Document follow-up decisions**
-   - Record in this plan a simple timeline for the remaining steps: e.g., `doctor`/`bridge` internal-only guard, `literature-gap` retirement path, and the eventual deletion/repoint of the non-computation `run` workflows.
+   - Record the recommended sequence explicitly as `run residue -> diagnostics/bridge truth rebaseline -> adjacent authoring/support cleanup`.
+   - Capture which surfaces are expected to survive as bounded compatibility helpers and which should be deleted or repointed.
    - Capture acceptance commands + review requirements so downstream implementation lanes can build from this plan without re-deriving the scope.
 
 ## Deliverables
@@ -36,16 +107,13 @@ Source-ground and constrain the remaining Pipeline A support surface so that:
 - A checked-in command/surface inventory or classification table for the residual support surfaces
 - A downstream implementation prompt that can be handed to an implementation lane without redoing the census
 - A front-door/projection-only review checklist that points reviewers at the exact files/tests to challenge
+- A stable slice order that prevents `run` / contract drift / authoring docs from being mixed into one oversized cleanup
 
 ## Acceptance shape
 
 - The plan produces a checked-in inventory of residual support surfaces with a classification for each command/tool.
 - Front-door docs and test suites can depend directly on that inventory (for example `scripts/check-shell-boundary-anti-drift.mjs` reading it and `docToolDrift.test.ts` validating it).
-- Acceptance commands for the eventual implementation lane include:
-  - `python3 -m pytest packages/hep-autoresearch/tests/test_public_cli_surface.py -q`
-  - `pnpm --filter @autoresearch/hep-mcp test -- tests/docs/docToolDrift.test.ts tests/toolContracts.test.ts tests/contracts/crossComponentToolSubset.test.ts`
-  - `node scripts/check-shell-boundary-anti-drift.mjs`
-  - `git diff --check`
+- Acceptance commands for the eventual implementation lane should be selected per slice from the sets above rather than treated as one monolithic retirement gate.
 
 ## Dependencies & constraints
 

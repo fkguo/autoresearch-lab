@@ -1,10 +1,18 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.34-draft (v1.9.33 + M-22A/M-22B formal closeout truth sync)
+> **版本**: 1.9.35-draft (v1.9.34 + command/spec authority guard + next closure resequencing)
 > **日期**: 2026-04-07
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
+>
+> **v1.9.35 Changelog**:
+> - latest known upstream `main` CI truth is green again: GitHub Actions `CI` run `24063019091` (2026-04-07) succeeded on head `711154f` (`refactor: retire M-22 legacy lifecycle and workflow residue`), so current mainline no longer inherits the older failed-run assumption from `24061318142`
+> - current worktree lands a front-door command/spec authority closeout rather than another wording-only sweep: `packages/orchestrator/src/cli-command-inventory.ts` now single-sources top-level `autoresearch` public commands for parser/help, installable `hepar` public shell now fail-closes against exact `PUBLIC_SHELL_COMMANDS`, and `meta/docs/orchestrator-mcp-tools-spec.md` now exact-matches live `orch_*` registry truth
+> - one directly related front-door doc amendment was adopted in-scope during self-review: `docs/ARCHITECTURE.md` no longer lists a stale exact `orch_*` subset and instead stays at family-level summary while delegating exact inventory to `meta/docs/orchestrator-mcp-tools-spec.md`
+> - current targeted acceptance reran successfully on the bounded slice: `git diff --check`, `pnpm --filter @autoresearch/orchestrator test -- tests/autoresearch-cli.test.ts tests/package-boundary.test.ts`, `python3 -m pytest packages/hep-autoresearch/tests/test_public_cli_surface.py -q`, `pnpm --filter @autoresearch/hep-mcp test -- tests/docs/docToolDrift.test.ts tests/toolContracts.test.ts tests/contracts/crossComponentToolSubset.test.ts`, `node scripts/check-shell-boundary-anti-drift.mjs`
+> - formal trio review is now truthfully converged at `0` blocking in `meta/.review/2026-04-07-command-inventory-guard-r2/`: `Opus = CONVERGED`, `Gemini(auto) = CONVERGED` via same-model direct normalization after review-mode runner failure, and `OpenCode(zhipuai-coding-plan/glm-5.1) = CONVERGED` via same-model embedded-source normalization; formal self-review also stayed `0` blocking
+> - next-batch planning is now resequenced from the earlier three-lane wording into four immediate generic-first seams: front-door authority map, residual Pipeline A support-surface retirement/classification, projection-only operator/read-model guard, and `idea-engine` default-host authority first cut; deeper runtime-handle / transport / permission-lattice work is queued as the following structural batch rather than mixed into the immediate cleanup
 >
 > **v1.9.34 Changelog**:
 > - `M-22A/M-22B` 的 formal trio review 现已在当前 worktree truthful 收敛为 `0` blocking：`Opus` current review-mode packet = `CONVERGED`；`Gemini(auto)` 使用 same-scope embedded-source artifact = `CONVERGED`（canonical review-mode runner 仍因 `run_gemini.sh` 继承带终端控制字符的 proxy env 而无产出，这被记录为 reviewer runner failure，而不是源码 blocking）；`OpenCode(zhipuai-coding-plan/glm-5.1)` same-model embedded-source rerun = `CONVERGED`

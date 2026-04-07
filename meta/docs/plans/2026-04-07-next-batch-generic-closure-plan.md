@@ -2,144 +2,134 @@
 
 ## 目标
 
-在 `M-22A` / `M-22B` 收口之后，下一批不应回到“继续随手清理 hepar”式的散点修补，而应围绕三个 generic-first 目标推进：
+当前 command-inventory / `orch_*` exact-spec guard 已落地，因此下一批不应该再回到“继续零碎修 legacy shell 文案”的节奏。新的目标是把 generic-first 主线收成两层：
 
-1. 把 command / surface authority 盘成可机检的 inventory，避免 legacy/internal surfaces 靠文案暗示漂移。
-2. 把 residual Pipeline A support surface 收窄成真正的 provider-local compatibility residue，并给出 delete / repoint / keep-internal-only 的明确去向。
-3. 把 bridge / fleet / diagnostics / read-model 继续锁成 projection-only seams，避免第二套 lifecycle/session/control-plane authority 从 operator surface 长出来。
+1. **立即闭环的四条 seam**
+   - `front_door_authority_map`
+   - residual Pipeline A support-surface retirement / classification
+   - projection-only operator/read-model guard
+   - `idea-engine` default-host authority first cut
+2. **紧随其后的三条结构 seam**
+   - `DelegatedRuntimeHandleV1`
+   - `DelegatedRuntimeTransport`
+   - `RuntimePermissionProfileV1`
 
-## SOTA 依据
+前四条解决“今天还有哪些 surface 在抢 authority”；后三条解决“runtime 内部还缺哪些 typed seam 才能稳态扩大”。
 
-本批规划不是凭印象拍脑袋，而是参考了两套成熟 agent runtime 的实际源码分层：
+## 深挖后的 SOTA 依据
 
-- `../codex/codex-rs/app-server-protocol/src/protocol/v2.rs`
-  - 把 thread/session/approval/permissions 暴露成 typed protocol，而不是 UI/bridge 约定。
-- `../codex/codex-rs/protocol/src/approvals.rs`
-  - approval request 带显式 decision set、permission/profile、network context、scope，而不是 ad hoc bool gate。
-- `../codex/codex-rs/mcp-server/src/exec_approval.rs`
-  - approval 通过异步 elicitation 回灌到 canonical thread，而不是让 MCP bridge 自己拥有执行 authority。
-- `../codex/codex-rs/exec-server/src/server/registry.rs`
-  - 进程执行与文件系统 RPC 独立成 exec server，control-plane 只调协议。
-- `../claude-code-sourcemap/restored-src/src/services/tools/toolOrchestration.ts`
-  - tool orchestration 先按 concurrency-safe / mutating 分区，避免把所有工具调用混成一层。
-- `../claude-code-sourcemap/restored-src/src/utils/permissions/permissions.ts`
-  - permission engine 单独分层，source / reason / persistence 明确，不让 UI 或 tool wrapper 偷偷定义权限语义。
-- `../claude-code-sourcemap/restored-src/src/utils/sessionState.ts`
-  - session 只有 `idle | running | requires_action` 这类 canonical state，而 pending-action 详情作为 projection metadata 对外传播。
-- `../claude-code-sourcemap/restored-src/src/bridge/sessionRunner.ts`
-  - bridge 只转发 session 活动和 permission request，不直接拥有 session authority。
+这轮规划不再停留在 README/摘要层，而是直接参考了 Codex 与 Claude Code 的源码分层：
 
-对 autoresearch 的直接启示：
+- `../codex/codex-rs/app-server/src/thread_state.rs`
+  - canonical thread/session state 自己保留 durable handle 与 lineage，不让 operator summary 反向成为 authority。
+- `../codex/codex-rs/app-server-protocol/src/protocol/thread_history.rs`
+  - protocol 层显式区分 canonical history object 与 presentation/projection metadata。
+- `../claude-code-sourcemap/restored-src/src/remote/RemoteSessionManager.ts`
+  - remote session transport 是单独层，不和本地 session authority 混在一起。
+- `../claude-code-sourcemap/restored-src/src/remote/SessionsWebSocket.ts`
+  - websocket/remote updates 传播的是 session activity，不是新的 control-plane authority。
+- `../codex/codex-rs/protocol/src/permissions.rs`
+  - permission/profile 是 typed lattice，而不是 scattered booleans。
+- `../claude-code-sourcemap/restored-src/src/tools/AgentTool/runAgent.ts`
+  - delegate/run-agent surface 显式带 permissions/source/seat context，而不是让 tool wrapper 自己偷定义权限语义。
 
-- `autoresearch` 应继续是唯一 generic mutation front door。
-- `hepar` / web / bridge / fleet / read-model 只能是 compatibility shell 或 projection layer。
-- 需要一个显式 command inventory / state-surface inventory，而不只是文案漂移测试。
+对 autoresearch 的直接启示是：
 
-## Lane A: Command Inventory + Authority Taxonomy Gate
+- `autoresearch` 继续是唯一 generic mutation front door。
+- legacy shell、bridge、web、fleet/status、read-model 都只能是 compatibility 或 projection layer。
+- 下一步需要的是 typed authority map / handle / transport / permission seams，而不是继续堆 ad hoc wording guards。
 
-### 目标
+## Immediate Batch: Four Seams
 
-建立一份 checked-in、可机检的 command/surface inventory，明确每个 entrypoint 属于哪一类：
+### Seam A: `front_door_authority_map`
 
-- canonical public
-- compatibility public
-- internal-only maintainer/eval/regression
+目标：
 
-### 为什么现在做
-
-当前 anti-drift 主要锁 wording：
-
-- `scripts/check-shell-boundary-anti-drift.mjs`
-- `scripts/lib/front-door-boundary-authority.mjs`
-- `packages/hep-autoresearch/tests/test_public_cli_surface.py`
-
-它们能防 public drift，但还没有一份“全命令 authority map”。这会让 `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` 里仍然存在的 internal-only commands (`start` / `checkpoint` / `request-approval` / `reject` / `doctor` / `bridge` / `literature-gap`) 只能靠人脑记忆判断边界。
-
-### 建议产物
-
-- 一个 checked-in inventory 文件，覆盖至少：
-  - `autoresearch` CLI commands
+- 把当前已分散落地的三条 exact authority seam 升级成 checked-in typed authority map：
+  - `autoresearch` top-level public commands
   - installable `hepar` public shell commands
-  - `hep_autoresearch.orchestrator_cli` internal-only commands
-  - provider-local MCP / bridge helper surfaces（若会被 docs/help/operator 触及）
-- 一个同步测试，验证：
-  - inventory <-> help text
-  - inventory <-> public CLI rejection tests
-  - inventory <-> front-door wording fixture
+  - exact `orch_*` MCP tool inventory
+- 明确每个 surface 属于 `canonical_public`、`compatibility_public`、`internal_only`
+- 让 docs drift guard / help contract / public-shell rejection 尽量从同一份 authority map 派生
 
-### 非目标
+为什么是第一条：
 
-- 不在这个 lane 里直接 repoint/delete 大量 Python logic
-- 不把 package-local support surfaces 一次性全删掉
+- 当前 closeout 已证明“单一跨 TS/Python 大总表”不是正确答案；真正缺的是能表达 **每个 authority surface 自己的 exact truth** 的 typed map。
+- 这条 seam 一旦 landed，后续 residual support-surface 收口和 projection-only guard 都不需要反复 fresh census。
 
-## Lane B: Residual Pipeline A Support-Surface Closure
+### Seam B: residual Pipeline A support-surface retirement / classification
 
-### 目标
+目标：
 
-对 `M-22` 剩余面做 source-grounded 分类和收口，重点是：
+- 把 `M-22` 剩余面收窄到真正的 provider-local compatibility residue，而不是继续让 `hepar run` / support commands 维持“还能操作，所以像 authority”。
+- 明确每个残余 surface 的 `delete` / `repoint` / `keep-internal-only` 去向。
 
-- residual non-computation `run` workflows
-- `doctor`
-- `bridge`
-- `literature-gap` internal full-parser path
-- internal-only `start` / `checkpoint` / `request-approval` / `reject`
+当前最需要切的三个子面：
 
-### 为什么现在做
+1. public residual non-computation `run`
+2. `doctor` / `bridge` / `literature-gap` contract rebaseline
+3. `run-card` / `method-design` 与 package-local action docs 的相邻 authoring/support cleanup
 
-`M-22A` 已把 generic lifecycle authority 收回 `autoresearch`，但 `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` 仍保留大量 support/internal parser 逻辑。下一步真正要回答的不是“hepar 还剩什么”，而是：
+### Seam C: projection-only operator/read-model guard
 
-- 哪些必须 delete
-- 哪些必须 repoint 到 TS
-- 哪些可以 bounded keep，但必须显式 internal-only
+目标：
 
-### 建议顺序
+- 把 `CP-OBJ-01C/01D/01E` 已经形成的 runtime/read-model 分层，转成更明确的 anti-drift guard。
+- 防止 `fleet`、`bridge`、`live_status`、`assignment_results`、diagnostics summary 再次长出 lifecycle/session/task authority。
 
-1. 先用 Lane A 的 inventory 定边界
-2. 再把 `doctor` / `bridge` / residual non-computation `run` 做分组 closeout
-3. 最后处理 internal-only lifecycle-adjacent residue（如 `reject` parity 去向）
+收口方向：
 
-### 非目标
+- 为 projection/read-model surface 增加 authority-completeness / projection-only 断言
+- 若需要 blocked-on context，只传播 canonical blocked-on projection，不传播审批 ownership
+- 明确 `job` / durable `turn` 仍不是这一批要升格的新 authority family
 
-- 不重开 generic lifecycle authority
-- 不把 HEP provider-local functionality 误上提为 generic orchestrator scope
+### Seam D: `idea-engine` default-host authority first cut
 
-## Lane C: Projection-Only Control-Plane Guardrails
+目标：
 
-### 目标
+- 先把默认 host authority 指向 TS `idea-engine` / `idea-mcp` 组合，而不是继续让 legacy `idea-core` / Python residue 在默认 public path 上维持模糊 authority。
+- 第一刀聚焦 public method inventory 和 host default authority，不追求一次性 retire-all。
 
-把现有 runtime / fleet / diagnostics / bridge / read-model 的“只能当 projection”的约束，转成更明确的 checked-in guardrails。
+当前聚焦文件：
 
-### 当前依据
+- `packages/idea-mcp/src/server.ts`
+- `packages/idea-mcp/src/rpc-client.ts`
+- `packages/idea-mcp/src/tool-registry.ts`
+- `packages/idea-engine/src/service/rpc-service.ts`
+- `packages/idea-engine/src/service/post-search-service.ts`
+- `packages/shared/src/tool-names.ts`
 
-- `packages/orchestrator/src/team-execution-bridge.ts`
-- `packages/orchestrator/src/team-execution-scoping.ts`
-- `packages/orchestrator/src/team-unified-runtime-support.ts`
-- `packages/orchestrator/src/orch-tools/fleet-status-diagnostics.ts`
-- `meta/REDESIGN_PLAN.md` 中已 landed 的 `CP-OBJ-01C/01D/01E` 叙事
+## Following Structural Batch: Three Deeper Runtime Seams
 
-### 具体机会
+### `DelegatedRuntimeHandleV1`
 
-- 给 projection/read-model surfaces 增加更明确的 “authority completeness / projection-only” anti-drift assertions
-- 防止 `fleet`, `bridge`, `live_status`, `assignment_results`, diagnostics summary 重新承载 lifecycle/session/task authority
-- 评估是否需要一个更 generic 的 “blocked action / requires action” projection seam，让 operator surfaces 传播 canonical blocked-on context，但不拥有审批状态本身
+- 给 delegated lane 一个 first-class runtime handle，而不是继续把 `session` 当 assignment projection。
+- 重点是 canonical handle / lineage，不是扩大 public payload。
 
-### 非目标
+### `DelegatedRuntimeTransport`
 
-- 不在这一批把 `job` / durable `turn` 引入为新 authority family
-- 不重写 public team payload
-- 不引入新的 shell/UI/front-end authority
+- 把 lane coordination / remote worker transport 从 runtime state 与 fleet lease 中拆开。
+- transport 负责 delivery/activity；runtime state 继续负责 canonical execution lineage。
 
-## 建议并行方式
+### `RuntimePermissionProfileV1`
 
-- 主线程优先推进 Lane A
-  - 它是 Lane B/C 的边界基线
-- Sidecar 1 推 Lane B 的 source-grounded surface census + cut proposal
-- Sidecar 2 推 Lane C 的 guardrail/projection audit + prompt/spec 草案
+- 把 tools/fs/network/approval_mode/reviewer/source 收成 typed permission lattice。
+- 后续 prompt/runtime/approval 统一从这份 typed profile 编译，不再散落在 wrapper/help/runner 层。
+
+## 推荐并行方式
+
+- 主线程优先推进 `Seam A`
+  - 这是 `Seam B/C/D` 的 authority baseline
+- Sidecar 1：为 `Seam B` 产出 implementation packet，按 `run residue -> diagnostics/bridge truth -> authoring/support cleanup` 三切片拆开
+- Sidecar 2：为 `Seam C` 产出 projection-only guard packet，明确哪些 surfaces 只能做 summary/projection
+- Sidecar 3：为 `Seam D` 产出 `idea-engine` first-cut authority packet
+- 研究侧 lane：继续深挖三条结构 seam 的源码证据，但默认先产计划/ADR，不直接抢实现带宽
 
 ## 完成判据
 
-下一批至少要达到：
+下一批至少应达到：
 
-- 有一份 checked-in inventory / plan / prompt 能让后续 lane 不再反复重新 census
-- residual support surfaces 的去向（delete / repoint / keep internal-only）写入持久 SSOT
-- projection-only 约束不再只存在于 chat 解释或 reviewer 口头意见里
+- checked-in `front_door_authority_map` 或等价 authority fixture 已存在，后续不再依赖聊天记忆判断 command boundary
+- residual Pipeline A support surfaces 的去向写入持久 SSOT，而不是只留在 census 输出里
+- projection-only guard 成为可机检 contract，而不是 reviewer 口头共识
+- `idea-engine` default-host authority first cut 拿到 checked-in plan/prompt，后续实现不必再重做 authority census
