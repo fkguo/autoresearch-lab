@@ -3,6 +3,7 @@
 > 日期：2026-02-12  
 > 目标：把“长期运行 agent 的 harness 工程纪律”抽取成 **可执行的设计规则**，用于后续 `idea-generator`（idea-core）与 `hepar`（控制平面）的实现与集成。  
 > 原则：研究质量优先（audit-first / replayable），不把 prompt 技巧当架构；把“能落到契约/产物/门禁”的内容写清楚。
+> 定位：保留的工程调研附录，不是当前 package-level SSOT。
 
 ---
 

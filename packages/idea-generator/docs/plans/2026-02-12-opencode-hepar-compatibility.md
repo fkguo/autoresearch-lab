@@ -3,6 +3,7 @@
 > 日期：2026-02-12  
 > 目标：评估 `opencode` 作为 **coding agent runtime** 的可借鉴点，并给出对 `hepar`（控制平面）与 `idea-generator`（idea-core + adapter）的兼容方案与改造清单。  
 > 原则：研究质量优先、可审计（artifact-first）、不在本 repo 落地 hepar 代码改写（仅记录为后续开发输入）。
+> 定位：保留的兼容性调研附录，不是当前 package-level SSOT。
 
 ---
 
