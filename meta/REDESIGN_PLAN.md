@@ -1,11 +1,17 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.51-draft (v1.9.50 + post-closeout CI truth sync)
+> **版本**: 1.9.52-draft (v1.9.51 + run-card contraction and front-door blind-spot locks)
 > **日期**: 2026-04-08
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
 >
+> **v1.9.52 Changelog**:
+> - the next mandatory residual support-surface lane is now implemented and acceptance-green on the current worktree: parser-level `run-card validate/render` wrappers are removed from `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py`, public/internal surface classification no longer treats `run-card` as a surviving retired-public helper, and regression coverage is re-centered on live computation/run-card substrate semantics plus explicit parser rejection
+> - the front-door blind-spot guardrail sidecar is now landed for lanes B/C/A: `packages/hep-mcp/tests/docs/docToolDrift.test.ts`, `scripts/lib/front-door-boundary-authority.mjs`, `packages/orchestrator/tests/autoresearch-cli.test.ts`, `docs/URI_REGISTRY.md`, `packages/hep-autoresearch/examples/schrodinger_ho/README.md`, and `packages/hep-autoresearch/workflows/C1_literature_gap.md` now fail-closed on narrative invariants, exact live URI ownership, and maintainer-only legacy fixture wording
+> - current acceptance for these two slices is green: `git diff --check`; `python3 -m pytest -q packages/hep-autoresearch/tests/test_run_card.py packages/hep-autoresearch/tests/test_orchestrator_computation_cli.py packages/hep-autoresearch/tests/test_adapter_gate_resolution_cli.py packages/hep-autoresearch/tests/test_public_cli_surface.py`; `pnpm --filter @autoresearch/orchestrator test -- tests/autoresearch-cli.test.ts tests/package-boundary.test.ts`; `node scripts/check-shell-boundary-anti-drift.mjs`; `pnpm --filter @autoresearch/hep-mcp test -- tests/docs/docToolDrift.test.ts`
+> - immediate queue therefore advances again without reopening compatibility scope: Lane 3 `branch` state/approval semantics is now the next mandatory Pipeline A residual lane, while blind-spot Lane D plan/tracker digest is absorbed by the current sync and `paper_reviser` remains parked until a real replacement lane exists
+
 > **v1.9.51 Changelog**:
 > - latest completed upstream `main` CI truth is GitHub Actions `CI` run `24094551538` (2026-04-07) on head `1349e7b` (`refactor: delete legacy literature gap shell`), and the exact failing job/step is `python-test` -> `Python tests (hep-autoresearch)` rather than build/lint/package-level TS fallout
 > - the concrete blocker was a stale test import in `packages/hep-autoresearch/tests/test_project_root_isolation.py`: the test still imported `_mcp_env` from `hep_autoresearch.orchestrator_cli` after `_mcp_env` authority had already moved to `packages/hep-autoresearch/src/hep_autoresearch/toolkit/literature_gap.py`; current worktree now anchors the test on the live owner instead of reintroducing parser-level compatibility authority
