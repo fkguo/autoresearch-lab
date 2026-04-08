@@ -48,15 +48,15 @@ This checklist defines generic (domain-agnostic) quality-gate contracts. It must
   - Must include core-loop artifact refs and `failed_approach_count>=1` to prevent skip-step completion claims.
 
 ## Example Artifacts (minimal)
-- `docs/fixtures/quality-gates/scope_classification_v1.ecosystem_validation.example.json`
-- `docs/fixtures/quality-gates/scope_classification_v1.publication_ready.example.json`
-- `docs/fixtures/quality-gates/method_fidelity_contract_v1.example.json`
-- `docs/fixtures/quality-gates/literature_search_evidence_v2.example.json`
-- `docs/fixtures/quality-gates/numerics_method_selection_v1.example.json`
-- `docs/fixtures/quality-gates/numerics_validation_report_v1.example.json`
-- `docs/fixtures/quality-gates/portability_report_v1.example.json`
-- `docs/fixtures/quality-gates/core_loop_execution_audit_v1.example.json`
-- `docs/fixtures/quality-gates/milestone_gate_v1.example.json`
+- `docs/fixtures/quality-gates/scope_classification_v1.ecosystem_validation.fixture.json`
+- `docs/fixtures/quality-gates/scope_classification_v1.publication_ready.fixture.json`
+- `docs/fixtures/quality-gates/method_fidelity_contract_v1.fixture.json`
+- `docs/fixtures/quality-gates/literature_search_evidence_v2.fixture.json`
+- `docs/fixtures/quality-gates/numerics_method_selection_v1.fixture.json`
+- `docs/fixtures/quality-gates/numerics_validation_report_v1.fixture.json`
+- `docs/fixtures/quality-gates/portability_report_v1.fixture.json`
+- `docs/fixtures/quality-gates/core_loop_execution_audit_v1.fixture.json`
+- `docs/fixtures/quality-gates/milestone_gate_v1.fixture.json`
 
 ## Validation Commands
 - `python3 scripts/validate_quality_schemas.py`
