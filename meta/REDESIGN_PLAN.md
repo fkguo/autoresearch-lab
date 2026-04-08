@@ -1,11 +1,16 @@
 # Autoresearch 生态圈重构方案 (Redesign Plan)
 
-> **版本**: 1.9.50-draft (v1.9.49 + method-design delete/contract lane closeout)
+> **版本**: 1.9.51-draft (v1.9.50 + post-closeout CI truth sync)
 > **日期**: 2026-04-08
 > **基线**: v1.9.27-draft
 > **重构项总数**: 176 项（以 Phase 0–5 remediation items 为准；不含跨 Phase bookkeeping row `NEW-R01` 与 tracker-only `umbrella_items`）
 > **编排**: Claude Opus 4.6
 >
+> **v1.9.51 Changelog**:
+> - latest completed upstream `main` CI truth is GitHub Actions `CI` run `24094551538` (2026-04-07) on head `1349e7b` (`refactor: delete legacy literature gap shell`), and the exact failing job/step is `python-test` -> `Python tests (hep-autoresearch)` rather than build/lint/package-level TS fallout
+> - the concrete blocker was a stale test import in `packages/hep-autoresearch/tests/test_project_root_isolation.py`: the test still imported `_mcp_env` from `hep_autoresearch.orchestrator_cli` after `_mcp_env` authority had already moved to `packages/hep-autoresearch/src/hep_autoresearch/toolkit/literature_gap.py`; current worktree now anchors the test on the live owner instead of reintroducing parser-level compatibility authority
+> - post-repair validation is green on the current worktree: `git diff --check`; `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m pytest -q packages/hep-autoresearch/tests/test_project_root_isolation.py`; `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m pytest -q packages/hep-autoresearch/tests`; `python3 -m pytest -q packages/hep-autoresearch/tests/test_public_cli_surface.py packages/hep-autoresearch/tests/test_orchestrator_computation_cli.py packages/hep-autoresearch/tests/test_run_card.py`; `node scripts/check-shell-boundary-anti-drift.mjs`; `pnpm --filter @autoresearch/hep-mcp test -- tests/docs/docToolDrift.test.ts`
+
 > **v1.9.50 Changelog**:
 > - current worktree closes Lane 1 of `meta/docs/prompts/prompt-2026-04-08-pipeline-a-residual-support-surfaces-sequenced-lanes.md` with delete-first semantics: `method-design` is fully removed from `packages/hep-autoresearch/src/hep_autoresearch/orchestrator_cli.py` internal parser surface (no compatibility shell/fallback retained), and its direct parser command tests are deleted with the surface
 > - front-door authority classification is re-aligned to that live deletion: `meta/front_door_authority_map_v1.json`, `scripts/lib/front-door-authority-map.mjs`, and `packages/hep-autoresearch/tests/test_public_cli_surface.py` no longer classify `method-design` as a surviving retired-public internal helper; the remaining `retired_public_support_commands` are now exactly `run-card` and `branch`
