@@ -137,7 +137,7 @@ def generate_ansatz(context, top_K_ideas, seed):
 - PyPI：`IdeaSearch==0.1.1`（框架层，`.idea` 文件对象、multi-island、prompt 模块化、(score, info)、Boltzmann choice 等）
 - PyPI：`ideasearch-fit==0.0.5.1`（fitter helper，fuzzy 生成、auto polish、unit validation、数值优化等）
 
-> 进度追踪 SSOT：把“仓库映射核对 + prompt 模板抽取”写入 `docs/plans/2026-02-12-implementation-plan-tracker.md`（不要在本文维护状态）。
+> 若后续产出影响稳定契约或架构边界，应写回架构规格 / schemas / 保留的质量文档；局部实施追踪与 next actions 留在本地 maintainer 材料。
 
 ### 2.1 关键工程特征（对我们最有用的）
 
@@ -319,7 +319,7 @@ OpenClaw 的“skills marketplace/扩展”在工程上很强，但对 evidence-
 
 为了把借鉴变成“可实现的设计”，建议把后续工作拆成 6 个研究/实现任务（每个任务都要产出可审计文档或原型代码，不能停在口头总结）。
 
-**进度追踪规则**：本文只描述任务与验收口径；状态与 next action 统一写入 SSOT：`docs/plans/2026-02-12-implementation-plan-tracker.md`。
+**文档边界规则**：本文只描述任务与验收口径；若后续结论升级为稳定契约或架构决策，应写回公开 authority 文档，其余 next actions 保留在本地 maintainer 材料。
 
 1. **Prompt 骨架抽取**：从 `IdeaSearch-fit` 的提示词（含 fuzzy 模式）抽出可迁移结构（prologue/examples/epilogue + extractor 模式），形成我们的 `PromptTemplateSpec v1`。
 2. **多岛策略映射**：把我们已有的 S1–S8（反常追踪/假设反转/对称性操作…）映射到 island taxonomy，明确每个岛的：

@@ -560,5 +560,5 @@ v0.3（下一步）：
 - 可执行“科学发现算子库”：`docs/plans/2026-02-12-executable-discovery-operators.md`
 - 深度调研（IdeaSearch + OpenClaw）：`docs/plans/2026-02-12-ideasearch-openclaw-deep-dive.md`
 - OpenCode 调研与生态兼容：`docs/plans/2026-02-12-opencode-hepar-compatibility.md`
-- 实施路线图（进度追踪 SSOT）：`docs/plans/2026-02-12-implementation-plan-tracker.md`
+- 稳定 authority 由本架构规格、相关质量/边界文档与 `schemas/` 共同构成；maintainer-only 实施追踪留在本地材料。
 - Long-running agent harness（Anthropic/Quickstarts）映射笔记：`docs/plans/2026-02-12-long-running-agent-harness-notes.md`

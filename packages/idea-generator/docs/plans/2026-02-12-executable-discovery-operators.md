@@ -260,7 +260,7 @@ IslandArchetype:
 
 ---
 
-## 4. 需要写回契约/实现的最小接口点（记录到 SSOT tracker）
+## 4. 需要写回契约/实现的最小接口点
 
 把本算子库接入 `idea-core`/hepar，需要至少补齐三类“可被实现侧读取”的接口：
 
@@ -271,4 +271,4 @@ IslandArchetype:
    - 当节点的瓶颈（从 `eval_info.failure_modes[]` 或 `RationaleDraft` 中提取）可映射到 `domain_pack.abstract_problem_registry` 中的标准问题类型时，SearchPolicy 应优先调度 `ProblemReduction` 算子（在其他生成算子之前），以避免在目标域内重新发明已有数学工具。
    - 此谓词不阻断其他算子（只调整优先级/预算分配权重）。
 
-进度与 next actions 统一写入：`docs/plans/2026-02-12-implementation-plan-tracker.md`（不要在本文另起 TODO）。
+若后续实现影响公开契约或架构边界，应写回架构规格 / schemas；局部实施 TODO 与 next actions 保留在本地 maintainer 材料。

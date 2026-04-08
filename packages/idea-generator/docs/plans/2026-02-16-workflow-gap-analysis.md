@@ -2,7 +2,6 @@
 
 Purpose: distill reusable workflow defects that must remain visible at the package level.  
 Scope: generic workflow / boundary / audit lessons only.  
-SSOT tracker: `docs/plans/2026-02-12-implementation-plan-tracker.md`.
 
 NOT_FOR_CITATION.
 

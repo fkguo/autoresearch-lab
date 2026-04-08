@@ -6,7 +6,7 @@
 >
 > 更新 (2026-02-12): 架构规格 SSOT 迁移到 `docs/plans/2026-02-12-idea-generator-architecture-spec.md`；IdeaSearch/OpenClaw 深读见 `docs/plans/2026-02-12-ideasearch-openclaw-deep-dive.md`；本文保留为 2026-02-11 会商综合报告。
 >
-> 更新 (2026-03-09): 本文为**历史会商报告**，不是当前 SSOT。稳定契约以 `docs/plans/2026-02-12-idea-generator-architecture-spec.md`、`docs/plans/2026-02-12-implementation-plan-tracker.md` 与 `schemas/` 为准；文中的领域/项目实例仅作历史示例，不定义 core scope。
+> 更新 (2026-03-09): 本文为**历史会商报告**，不是当前 SSOT。稳定 authority 以 `docs/plans/2026-02-12-idea-generator-architecture-spec.md`、保留的质量/边界文档与 `schemas/` 为准；文中的领域/项目实例仅作历史示例，不定义 core scope。
 
 ---
 
