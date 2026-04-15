@@ -343,6 +343,7 @@ function defaultState(): RunState {
     gate_satisfied: {},
     approval_history: [],
     artifacts: {},
+    workflow_outputs: {},
     notes: '',
   };
 }
