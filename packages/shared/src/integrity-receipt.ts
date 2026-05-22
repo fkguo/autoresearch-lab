@@ -185,6 +185,16 @@ export function writeIntegrityReceipt(
   modesSkipped: ReadonlyArray<{ mode: IntegrityMode; reason: string }> = [],
   opts: IntegrityWriteOptions = {},
 ): IntegrityReceipt {
+  // approvalId must be a non-empty string at the primitive layer too — the
+  // CLI parser already enforces this, but a programmatic caller writing an
+  // empty approval_id would persist a receipt that verifyIntegrityReceipt
+  // could never match (round-trip broken at the wrong layer).
+  if (typeof approvalId !== 'string' || approvalId.length === 0) {
+    throw new McpError('INVALID_PARAMS',
+      'approval_id must be a non-empty string.',
+      { approval_id: approvalId },
+    );
+  }
   if (modesChecked.length === 0) {
     throw new McpError('INVALID_PARAMS',
       'modes_checked must be non-empty — record explicit skips via modes_skipped if no mode applied.',

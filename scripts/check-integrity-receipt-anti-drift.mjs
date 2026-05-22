@@ -34,20 +34,15 @@ const APPROVAL_GATE_HANDLERS = [
 ];
 
 // Discovery pass: any file under `packages/orchestrator/src/` that defines
-// an `export ... function handleOrchRunApprove` MUST be in the tracked list.
-// Catches "approve handler moved without registering".
-const APPROVE_HANDLER_SYMBOL_RE = /export\s+async\s+function\s+handleOrchRunApprove\b/;
+// `handleOrchRunApprove` (either as `export async function ...` or as
+// `export const ... = async (...) => ...`) MUST be in the tracked list.
+// Catches "approve handler moved without registering" across both function
+// styles the repo might adopt in a future refactor.
+const APPROVE_HANDLER_SYMBOL_RE = /export\s+(?:async\s+function|const)\s+handleOrchRunApprove\b/;
 const ORCHESTRATOR_SRC_REL = 'packages/orchestrator/src';
 
 const IMPORT_PATTERN = /verifyIntegrityReceipt[^;]*from\s+['"]@autoresearch\/shared['"]/;
 const USAGE_PATTERN = /\bverifyIntegrityReceipt\s*\(/;
-
-function walkTs(dir, out) {
-  // eslint-disable-next-line no-undef
-  const { readdirSync } = require('node:fs');
-  // not used — replaced with synchronous walk below
-  void readdirSync;
-}
 
 async function walkTsAsync(dir) {
   const fs = await import('node:fs');

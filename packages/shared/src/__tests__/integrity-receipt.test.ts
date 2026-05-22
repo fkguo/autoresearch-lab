@@ -78,6 +78,18 @@ describe('writeIntegrityReceipt input validation', () => {
   beforeEach(() => { project = makeProject(); });
   afterEach(() => { fs.rmSync(project, { recursive: true, force: true }); });
 
+  it('rejects empty approval_id', () => {
+    expect(() =>
+      writeIntegrityReceipt(project, '', ['M1'], 'notes', []),
+    ).toThrow(/approval_id must be a non-empty string/);
+  });
+
+  it('rejects non-string approval_id', () => {
+    expect(() =>
+      writeIntegrityReceipt(project, undefined as unknown as string, ['M1'], 'notes', []),
+    ).toThrow(/approval_id must be a non-empty string/);
+  });
+
   it('rejects empty modes_checked', () => {
     expect(() =>
       writeIntegrityReceipt(project, 'A1-test', [], 'notes', []),
