@@ -112,9 +112,9 @@ venue, in the cited year, with the cited claim.
   no provider tool call.
 - Bibliography assembled from web-search snippets alone, never
   cross-checked against a bibliography auditor.
-- Citation key in BibTeX form is treated as proof the paper exists,
-  with no identifier (DOI / arXiv id / INSPIRE recid) actually
-  resolved.
+- A BibTeX entry like `Vaswani2017Attention` or `Smith:2023abc` is
+  accepted as proof the paper exists, with no DOI, arXiv ID, or
+  provider-graph resolution actually performed.
 
 **Minimum disconfirming check.** Route by the **discipline of the
 cited work**, not by tool name:
@@ -136,10 +136,14 @@ cited work**, not by tool name:
 
 2. **Verify the cited claim against the paper itself**, not its
    abstract or third-party summary.
-   - HEP source paper → `inspire_paper_source`.
-   - Any arXiv preprint → `arxiv_paper_source`.
-   - Anything else → `openalex_get` content payload, or
-     `pdf-mcp` parser on the downloaded PDF.
+   - Any arXiv preprint (any field) → `arxiv_paper_source`.
+   - HEP paper that you want INSPIRE/DOI URL enrichment for →
+     `inspire_paper_source` (handler internally resolves to arXiv,
+     so it also works for any arXiv-resolvable identifier; the
+     extra value over `arxiv_paper_source` is INSPIRE-side
+     metadata enrichment).
+   - Anything else (non-arXiv) → `openalex_get` content payload,
+     or `pdf-mcp` parser on the downloaded PDF.
 
 3. **HEP-only optional finishing step.** Once the paper is confirmed
    in INSPIRE and you have an INSPIRE `recid`, you may call
@@ -147,13 +151,22 @@ cited work**, not by tool name:
    Texkey and BibTeX. **This tool takes a `recid`, not a citekey
    string**; it does not verify that an existing bibtex key is real.
    It is irrelevant for non-HEP citations because non-HEP papers are
-   not in INSPIRE.
+   not in INSPIRE. There is no inverse `citekey → recid` lookup tool
+   either; if you only hold a BibTeX key, extract a DOI / arXiv ID
+   from the citation context and resolve via step 1, or use
+   `inspire_search` with `texkeys:<key>`.
 
 4. **Bulk bibliography hygiene.** Use
    `inspire_validate_bibliography` — despite the name, its default
-   mode audits *non-INSPIRE* entries (malformed entries, missing
-   identifiers, suspicious authors); INSPIRE cross-validation is an
-   optional opt-in mode. Apply it to bibliographies of any
+   mode (`scope='manual_only'`, `validate_against_inspire=false`)
+   audits *non-INSPIRE* entries for **locatability** only: each
+   entry must carry a DOI, an arXiv ID, or a complete
+   journal+volume+pages tuple, otherwise the tool emits a
+   `missing_locator` warning. It does **not** check BibTeX syntax
+   or author plausibility — pair it with a separate BibTeX
+   linter if you need those. INSPIRE cross-validation is an
+   optional opt-in mode (`validate_against_inspire=true`). Apply
+   the default locatability audit to bibliographies of any
    discipline.
 
 **Required evidence calls.** At least one resolver per cited paper
@@ -248,23 +261,28 @@ the edge in the citation graph. Web-search snippets are candidates,
 not authorities; they may be derivative summaries of derivative
 summaries. The graph itself is the authority. Route graph queries by
 the **discipline of the papers in the relationship**, not by tool
-name:
+name. As in M2, prefer the broadest provider first and fall back to
+a discipline-specific graph only when it adds something the broad
+provider cannot:
 
-- **HEP literature graph** (`hep-ph`, `hep-th`, `hep-ex`, `hep-lat`,
-  HEP collaborations, lattice QCD, phenomenology, etc.) →
-  INSPIRE-HEP citation graph is denser and more complete. Use
-  `inspire_literature(mode=get_citations)` / `(mode=get_references)`,
-  `inspire_find_connections`, `inspire_network_analysis`,
-  `inspire_classify_reviews`, `inspire_analyze_citation_stance`.
-  INSPIRE's review classification is HEP-domain-trained and is
-  the right tool when the relationship is between HEP papers.
+- **Cross-domain default graph** → OpenAlex. Use
+  `openalex_citations` / `openalex_references` for direct edges and
+  `openalex_search` + `openalex_filter` for typed queries. This is
+  the right starting point for non-HEP literature (ML, biomed,
+  cond-mat, math, social science, etc.) and is also a usable
+  fallback for HEP papers indexed in OpenAlex.
 
-- **Non-HEP literature graph** (ML, biomed, cond-mat, math,
-  social science, etc.) → OpenAlex is the cross-domain graph. Use
-  `openalex_citations` / `openalex_references` for direct edges,
-  `openalex_search` + `openalex_filter` for typed queries. The
-  INSPIRE graph will be sparse or empty for these papers and is
-  not the right tool.
+- **HEP-specialised graph** → INSPIRE. When both endpoints of the
+  relationship are HEP papers (e.g. `hep-ph`, `hep-th`, `hep-ex`,
+  `hep-lat`, lattice QCD, HEP collaborations, phenomenology), the
+  INSPIRE citation graph is denser and carries HEP-specific
+  metadata that OpenAlex lacks. Use
+  `inspire_literature(mode=get_citations)` /
+  `(mode=get_references)`, `inspire_find_connections`,
+  `inspire_network_analysis`, `inspire_classify_reviews`,
+  `inspire_analyze_citation_stance`. `inspire_classify_reviews`
+  operates on INSPIRE-resident papers; treat its judgments as
+  authoritative only for relationships fully inside HEP.
 
 - **Cross-discipline relationship** (HEP paper cited by an ML
   paper, biomed paper using statistical methods from physics, etc.)
@@ -458,10 +476,10 @@ the check *does*, not by the package it would live in):
   check is **not** HEP-bound — every discipline has tables and
   numbers; this belongs in this skill (M3), not in `hep-mcp`.
 - A generic "verify each cited paper resolves to a real record"
-  check is **not** HEP-bound — `inspire_validate_bibliography`
-  already audits non-INSPIRE entries by default, and OpenAlex /
-  arXiv resolvers are cross-domain by data. This belongs in this
-  skill (M2), not as a new `hep-mcp` tool.
+  check is **not** HEP-bound — `inspire_validate_bibliography`'s
+  default mode already audits non-INSPIRE entries for locatability,
+  and OpenAlex / arXiv resolvers are cross-domain by data. This
+  belongs in this skill (M2), not as a new `hep-mcp` tool.
 
 If a candidate future tool fails the criterion, it does not become
 HEP-bound by being implemented inside `hep-mcp`; it stays a generic
