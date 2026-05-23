@@ -61,6 +61,18 @@
  *    [a-z0-9_]; closing-backtick presence is not required. This handles
  *    cases like `\`inspire_literature(mode=get_citations)\`` correctly —
  *    we extract `inspire_literature` and ignore the `(mode=...)` tail.
+ *
+ * 5. Tool names declared OUTSIDE the canonical tool-names.ts files (e.g.
+ *    `DEEP_ANALYZE_INTERNAL_TOOL_NAME = 'inspire_deep_analyze_internal'`
+ *    in packages/hep-mcp/src/tools/research/latex/keyEquationIdentifier.ts
+ *    as of 2026-05-22) are NOT in the registry and will be flagged if a
+ *    skill references them. The fix is to either move the declaration
+ *    into a canonical tool-names.ts, or add the token to
+ *    ALLOWED_NONEXISTENT_TOKENS with a reason pointing at the declaration
+ *    site. Widening the data-source scan to grep every TS file under
+ *    packages/ for *_TOOL_NAME constants would be one option, but doing
+ *    so today would silently legitimize the irregular pattern; preferring
+ *    the explicit exemption keeps the registries honest.
  */
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
@@ -103,6 +115,26 @@ const ALLOWED_NONEXISTENT_TOKENS = new Map([
   // ['hep_pdg_drift_check', 'P3-A future-work placeholder (not yet implemented); see ars-borrowed-backlog'],
 ]);
 
+// Load-time validation: every exemption MUST carry a non-empty reason
+// string. Otherwise a future maintainer can silently add `['foo']` (no
+// value) or `['foo', '']` (empty reason) and Map.has() would still mask
+// the regression. The script aborts with a clear error rather than
+// running with a corrupted exemption map.
+for (const [token, reason] of ALLOWED_NONEXISTENT_TOKENS) {
+  if (typeof token !== 'string' || token.length === 0) {
+    throw new Error(
+      `ALLOWED_NONEXISTENT_TOKENS contains a non-string or empty token: ${JSON.stringify(token)}. ` +
+      `Each entry must be ['token', 'reason'] with both non-empty.`,
+    );
+  }
+  if (typeof reason !== 'string' || reason.trim().length === 0) {
+    throw new Error(
+      `ALLOWED_NONEXISTENT_TOKENS['${token}'] has an empty or non-string reason. ` +
+      `Each exemption must carry a non-empty justification so future readers can audit why.`,
+    );
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Real-tool extraction
 // ─────────────────────────────────────────────────────────────────────────────
@@ -135,15 +167,33 @@ function extractRealTools(sourceRel) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function listSkillFiles() {
+  // Walks `skills/<dir>/SKILL.md` and `skills/<group>/<dir>/SKILL.md`
+  // (e.g. `skills/.system/skill-creator/SKILL.md`). Each directory under
+  // SKILL_ROOTS is either a leaf skill (has its own SKILL.md) or a group
+  // container whose immediate children may be skills. We cover both shapes
+  // by checking the direct SKILL.md AND recursing one level when no direct
+  // SKILL.md is present (covers `.system/`-style namespaces without
+  // descending into arbitrary skill internals like `scripts/`).
   const out = [];
   for (const root of SKILL_ROOTS) {
     const rootAbs = path.join(repoRoot, root);
     if (!existsSync(rootAbs)) continue;
     for (const entry of readdirSync(rootAbs, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
-      const skillMd = path.join(rootAbs, entry.name, 'SKILL.md');
-      if (existsSync(skillMd) && statSync(skillMd).isFile()) {
-        out.push(path.relative(repoRoot, skillMd));
+      const dirAbs = path.join(rootAbs, entry.name);
+      const directMd = path.join(dirAbs, 'SKILL.md');
+      if (existsSync(directMd) && statSync(directMd).isFile()) {
+        out.push(path.relative(repoRoot, directMd));
+        continue;
+      }
+      // No direct SKILL.md → treat as group container; pick up immediate
+      // children with their own SKILL.md.
+      for (const child of readdirSync(dirAbs, { withFileTypes: true })) {
+        if (!child.isDirectory()) continue;
+        const nestedMd = path.join(dirAbs, child.name, 'SKILL.md');
+        if (existsSync(nestedMd) && statSync(nestedMd).isFile()) {
+          out.push(path.relative(repoRoot, nestedMd));
+        }
       }
     }
   }
