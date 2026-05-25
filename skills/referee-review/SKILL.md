@@ -21,16 +21,26 @@ measurement, methodology-not-in-artifacts, frame-lock, etc.) should not be
 the reviewer's BLOCKING items; this reviewer is for adjudication against
 the packet, not for catching omissions the author skipped.
 
-**Recording the pre-flight depends on whether a gate is open.** When an
-A1-A5 approval gate is open for this work, run `autoresearch integrity-record`
-against that gate's `approval_id`; the receipt is then the canonical
-machine record of the pre-flight and is fail-closed-enforced by
-`autoresearch approve`. When no gate is open (an ad-hoc draft submission),
-the M1-M7 walk should still happen, but recording it via
-`autoresearch integrity-record` is **advisory only**:
-`scripts/run_referee_review.py` does not read
-`.autoresearch/integrity_log.jsonl`, so the receipt for an ad-hoc draft is
-an audit trail for the next agent, not a gate this reviewer enforces.
+**Recording the pre-flight.** The M1-M7 walk is **always required**
+discipline before posting a draft to this reviewer — that obligation
+does not depend on whether an approval gate is open. The way the walk
+is recorded does depend on surrounding state:
+
+- **An A1-A5 approval gate is open for this work.** Run
+  `autoresearch integrity-record --approval-id <id> --modes <Mx,...> --notes "..."`
+  against that gate's `approval_id`. The receipt is the canonical
+  machine record of the pre-flight and is fail-closed-enforced by
+  `autoresearch approve` (missing receipt → `INTEGRITY_RECEIPT_REQUIRED`,
+  see `packages/shared/src/integrity-receipt.ts`).
+- **No gate is currently open (ad-hoc draft submission).** Use the same
+  `autoresearch integrity-record` command — it is the canonical way to
+  record the pre-flight regardless of gate state, and at write time
+  the CLI does not require an existing pending approval. The receipt
+  is *not* checked by this reviewer's pipeline
+  (`scripts/run_referee_review.py` does not read
+  `.autoresearch/integrity_log.jsonl`), but writing it produces a
+  uniform audit trail matching the gate-open case. Do not skip the
+  receipt just because the reviewer does not consume it.
 
 This reviewer remains generic and non-venue-specific; the pre-flight is
 the author-side discipline, not a venue requirement.
