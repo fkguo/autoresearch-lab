@@ -22,25 +22,29 @@ the reviewer's BLOCKING items; this reviewer is for adjudication against
 the packet, not for catching omissions the author skipped.
 
 **Recording the pre-flight.** The M1-M7 walk is **always required**
-discipline before posting a draft to this reviewer — that obligation
-does not depend on whether an approval gate is open. The way the walk
-is recorded does depend on surrounding state:
+before posting a draft to this reviewer. How the walk is recorded
+depends on whether an approval gate is open:
 
-- **An A1-A5 approval gate is open for this work.** Run
+- **A1-A5 gate open.** Run
   `autoresearch integrity-record --approval-id <id> --modes <Mx,...> --notes "..."`
   against that gate's `approval_id`. The receipt is the canonical
   machine record of the pre-flight and is fail-closed-enforced by
   `autoresearch approve` (missing receipt → `INTEGRITY_RECEIPT_REQUIRED`,
-  see `packages/shared/src/integrity-receipt.ts`).
-- **No gate is currently open (ad-hoc draft submission).** Use the same
-  `autoresearch integrity-record` command — it is the canonical way to
-  record the pre-flight regardless of gate state, and at write time
-  the CLI does not require an existing pending approval. The receipt
-  is *not* checked by this reviewer's pipeline
-  (`scripts/run_referee_review.py` does not read
-  `.autoresearch/integrity_log.jsonl`), but writing it produces a
-  uniform audit trail matching the gate-open case. Do not skip the
-  receipt just because the reviewer does not consume it.
+  see [`packages/shared/src/integrity-receipt.ts`](../../packages/shared/src/integrity-receipt.ts)).
+  This matches the gate-coupled "machine record" path documented in
+  [`skills/research-integrity/SKILL.md`](../research-integrity/SKILL.md)
+  §"Recording the check".
+- **No gate open (ad-hoc draft submission).** Record the M1-M7 modes
+  you walked **inline in your response or in the notebook entry that
+  accompanies the draft** — the narrative record from
+  `skills/research-integrity/` §"Recording the check" is the audit
+  trail here. Do *not* invent a synthetic `approval_id` to feed the
+  CLI: `autoresearch integrity-record` is parameterized on
+  `approval_id` precisely because the receipt is the
+  gate-coupling key, and a junk identifier pollutes
+  `.autoresearch/integrity_log.jsonl` without producing any
+  enforcement (this reviewer's pipeline does not consume the log —
+  `scripts/run_referee_review.py` does not read it).
 
 This reviewer remains generic and non-venue-specific; the pre-flight is
 the author-side discipline, not a venue requirement.
