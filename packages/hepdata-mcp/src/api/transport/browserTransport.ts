@@ -269,28 +269,76 @@ export class PlaywrightSolver implements BrowserSolver {
       }
 
       // Challenge cleared. Fetch the RAW response via the context's request API,
-      // which shares the cookie jar (cf_clearance) with the page. This yields the
+      // which shares the cookie jar (cf_clearance) with the page, yielding the
       // true network status/headers/bytes — not rendered DOM — so JSON is exact
       // and binary downloads are intact. `context.request` is NOT covered by the
-      // page route allow-list above, so re-check the FINAL URL host explicitly.
-      const apiResp = await context.request.get(url, {
-        maxRedirects: 5,
-        timeout: Math.max(1_000, deadline - Date.now()),
-      });
-      const finalUrl: string = typeof apiResp.url === 'function' ? apiResp.url() : url;
-      if (!isAllowedBrowserRequestUrl(finalUrl)) {
-        throw upstreamError(
-          `Browser transport blocked (final URL host not in allow-list): ${finalUrl}`,
-        );
-      }
-      const body = new Uint8Array(await apiResp.body());
-      return { status: apiResp.status(), headers: apiResp.headers(), body };
+      // page route allow-list above and auto-follows redirects, so we drive
+      // redirects MANUALLY (maxRedirects: 0) and validate every hop against the
+      // HEPData data host BEFORE issuing it — no intermediate hop can reach a
+      // disallowed host.
+      return await fetchRawFollowingRedirects(
+        (u, t) =>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          context.request.get(u, { maxRedirects: 0, timeout: t }) as Promise<RawApiResponse>,
+        url,
+        deadline,
+      );
     } finally {
       if (context) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await context.close().catch(() => {});
       }
     }
+  }
+}
+
+/** The subset of a Playwright `APIResponse` the raw-fetch helper depends on. */
+export interface RawApiResponse {
+  status(): number;
+  headers(): Record<string, string>;
+  body(): Promise<Uint8Array | ArrayBuffer | { buffer: ArrayBufferLike }>;
+}
+
+/** A redirect-disabled GET (maxRedirects: 0) the helper drives one hop at a time. */
+export type RawGetter = (url: string, timeoutMs: number) => Promise<RawApiResponse>;
+
+/**
+ * Fetch `startUrl` via `getter`, following redirects MANUALLY so every hop is
+ * validated against the HEPData DATA host (`www.hepdata.net`, https) BEFORE the
+ * request is issued. `getter` must be configured to NOT auto-follow redirects;
+ * otherwise an intermediate hop could reach a disallowed host before this code
+ * observes it (the SSRF gap Playwright's auto-follow would reopen). The data
+ * fetch is intentionally confined to the data host only — NOT the challenge
+ * platform, which is needed for page subresources but never for raw data.
+ *
+ * Exported for unit testing with a mock getter (no real browser required).
+ */
+export async function fetchRawFollowingRedirects(
+  getter: RawGetter,
+  startUrl: string,
+  deadline: number,
+  maxRedirects = 5,
+): Promise<BrowserSolveResult> {
+  let current = startUrl;
+  for (let hop = 0; ; hop++) {
+    assertHepdataUrl(current); // www.hepdata.net + https only — throws otherwise
+    const resp = await getter(current, Math.max(1_000, deadline - Date.now()));
+    const status = resp.status();
+    if (status >= 301 && status <= 308) {
+      if (hop >= maxRedirects) {
+        throw upstreamError(`Browser transport: too many redirects fetching ${startUrl}.`);
+      }
+      const location = resp.headers().location;
+      if (!location) {
+        throw upstreamError(`Browser transport: redirect missing Location header for ${current}.`);
+      }
+      current = new URL(location, current).toString(); // next iteration re-validates the host
+      continue;
+    }
+    const raw = await resp.body();
+    const body =
+      raw instanceof Uint8Array ? raw : new Uint8Array(raw instanceof ArrayBuffer ? raw : raw.buffer);
+    return { status, headers: resp.headers(), body };
   }
 }
 

@@ -5,9 +5,12 @@ import {
   type BrowserSolver,
   browserFetchEnabled,
   challengeOptOutError,
+  fetchRawFollowingRedirects,
   isAllowedBrowserRequestUrl,
   PlaywrightSolver,
   PlaywrightUnavailableError,
+  type RawApiResponse,
+  type RawGetter,
   resolveProxy,
   scrubSecrets,
   selectAndRun,
@@ -291,5 +294,95 @@ describe('PlaywrightSolver — host assertion (no real browser launched)', () =>
     await expect(
       solver.solve(URL, { userDataDir: '/tmp/x', timeoutMs: 1000 }),
     ).rejects.toBeInstanceOf(PlaywrightUnavailableError);
+  });
+});
+
+describe('fetchRawFollowingRedirects — manual, host-validated redirect following', () => {
+  const HEP = 'https://www.hepdata.net';
+  const deadline = (): number => Date.now() + 60_000;
+
+  function mockApiResponse(opts: {
+    status: number;
+    headers?: Record<string, string>;
+    body?: Uint8Array;
+  }): RawApiResponse {
+    return {
+      status: () => opts.status,
+      headers: () => opts.headers ?? {},
+      body: async () => opts.body ?? new Uint8Array(),
+    };
+  }
+
+  function queueGetter(responses: RawApiResponse[]): { getter: RawGetter; urls: string[] } {
+    const urls: string[] = [];
+    let i = 0;
+    const getter: RawGetter = async (url) => {
+      urls.push(url);
+      const r = responses[i++];
+      if (!r) throw new Error('queueGetter: no more mock responses');
+      return r;
+    };
+    return { getter, urls };
+  }
+
+  it('returns raw bytes + status + headers for a direct 200', async () => {
+    const { getter, urls } = queueGetter([
+      mockApiResponse({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: enc('{"ok":1}'),
+      }),
+    ]);
+    const res = await fetchRawFollowingRedirects(getter, `${HEP}/record/1?format=json`, deadline());
+    expect(res.status).toBe(200);
+    expect(dec(res.body)).toBe('{"ok":1}');
+    expect(res.headers['content-type']).toBe('application/json');
+    expect(urls).toEqual([`${HEP}/record/1?format=json`]);
+  });
+
+  it('follows a same-host redirect and returns the final response', async () => {
+    const { getter, urls } = queueGetter([
+      mockApiResponse({ status: 302, headers: { location: `${HEP}/download/x/final` } }),
+      mockApiResponse({ status: 200, body: enc('DATA') }),
+    ]);
+    const res = await fetchRawFollowingRedirects(getter, `${HEP}/download/x`, deadline());
+    expect(dec(res.body)).toBe('DATA');
+    expect(urls).toEqual([`${HEP}/download/x`, `${HEP}/download/x/final`]);
+  });
+
+  it('BLOCKS a redirect to a disallowed host (SSRF) before issuing the next request', async () => {
+    const { getter, urls } = queueGetter([
+      mockApiResponse({ status: 302, headers: { location: 'https://169.254.169.254/latest/meta-data' } }),
+      mockApiResponse({ status: 200, body: enc('SHOULD-NOT-REACH') }),
+    ]);
+    await expect(
+      fetchRawFollowingRedirects(getter, `${HEP}/download/x`, deadline()),
+    ).rejects.toThrow(/host not in allow-list/);
+    // The metadata host was never requested.
+    expect(urls).toEqual([`${HEP}/download/x`]);
+  });
+
+  it('blocks a redirect to a non-https target (downgrade)', async () => {
+    const { getter } = queueGetter([
+      mockApiResponse({ status: 301, headers: { location: 'http://www.hepdata.net/x' } }),
+    ]);
+    await expect(fetchRawFollowingRedirects(getter, `${HEP}/x`, deadline())).rejects.toThrow(
+      /non-https scheme/,
+    );
+  });
+
+  it('throws on a redirect without a Location header', async () => {
+    const { getter } = queueGetter([mockApiResponse({ status: 302, headers: {} })]);
+    await expect(fetchRawFollowingRedirects(getter, `${HEP}/x`, deadline())).rejects.toThrow(
+      /missing Location/,
+    );
+  });
+
+  it('throws after exceeding the redirect budget', async () => {
+    const loop: RawGetter = async () =>
+      mockApiResponse({ status: 302, headers: { location: `${HEP}/next` } });
+    await expect(
+      fetchRawFollowingRedirects(loop, `${HEP}/start`, deadline(), 3),
+    ).rejects.toThrow(/too many redirects/);
   });
 });

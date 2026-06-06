@@ -291,7 +291,18 @@ class HEPDataRateLimiter {
         body: new TextDecoder().decode(solved.body),
       });
     }
-    return new Response(solved.body, { status: solved.status, headers: solvedHeaders });
+    // 101/204/205/304 forbid a body; `new Response(bytes, …)` would throw even
+    // for empty bytes. Post-clearance data fetches are 2xx in practice, but guard
+    // defensively (mirrors reconstructResponse).
+    const nullBodyStatus =
+      solved.status === 101 ||
+      solved.status === 204 ||
+      solved.status === 205 ||
+      solved.status === 304;
+    return new Response(nullBodyStatus ? null : solved.body, {
+      status: solved.status,
+      headers: solvedHeaders,
+    });
   }
 }
 
