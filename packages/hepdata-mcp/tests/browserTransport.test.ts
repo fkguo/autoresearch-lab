@@ -385,4 +385,11 @@ describe('fetchRawFollowingRedirects — manual, host-validated redirect followi
       fetchRawFollowingRedirects(loop, `${HEP}/start`, deadline(), 3),
     ).rejects.toThrow(/too many redirects/);
   });
+
+  it('does NOT treat 304 Not Modified as a redirect (returns it as-is)', async () => {
+    const { getter, urls } = queueGetter([mockApiResponse({ status: 304, headers: {} })]);
+    const res = await fetchRawFollowingRedirects(getter, `${HEP}/record/1?format=json`, deadline());
+    expect(res.status).toBe(304);
+    expect(urls).toHaveLength(1); // no Location lookup, no extra hop
+  });
 });

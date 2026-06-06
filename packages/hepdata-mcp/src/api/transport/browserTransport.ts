@@ -324,7 +324,8 @@ export async function fetchRawFollowingRedirects(
     assertHepdataUrl(current); // www.hepdata.net + https only — throws otherwise
     const resp = await getter(current, Math.max(1_000, deadline - Date.now()));
     const status = resp.status();
-    if (status >= 301 && status <= 308) {
+    // Real redirects only — exclude 304 Not Modified (and reserved/unused 306).
+    if (status === 301 || status === 302 || status === 303 || status === 307 || status === 308) {
       if (hop >= maxRedirects) {
         throw upstreamError(`Browser transport: too many redirects fetching ${startUrl}.`);
       }
