@@ -24,6 +24,8 @@ function challengeResponse(): Response {
   });
 }
 
+const enc = (s: string): Uint8Array => new TextEncoder().encode(s);
+
 async function loadFresh() {
   const transport = await import('../src/api/transport/browserTransport.js');
   const limiter = await import('../src/api/rateLimiter.js');
@@ -216,7 +218,7 @@ describe('rateLimiter — Cloudflare challenge handling', () => {
         return {
           status: 200,
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ recid: 123, record: {} }),
+          body: enc(JSON.stringify({ recid: 123, record: {} })),
         };
       },
     };
@@ -239,7 +241,7 @@ describe('rateLimiter — Cloudflare challenge handling', () => {
     transport.setBrowserSolver({
       async solve() {
         solveCount += 1;
-        return { status: 200, headers: {}, body: '{"v":1}' };
+        return { status: 200, headers: { 'content-type': 'application/json' }, body: enc('{"v":1}') };
       },
     });
 
@@ -250,6 +252,35 @@ describe('rateLimiter — Cloudflare challenge handling', () => {
 
     expect(solveCount).toBe(1);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('challenge + opt-IN: a browser-solved BINARY download returns intact bytes and is NOT cached', async () => {
+    process.env.HEPDATA_BROWSER_FETCH = '1';
+    // A ZIP that contains non-UTF-8 bytes: if the browser path stringified it
+    // (or cached it as text) the download would be corrupted.
+    const zipBytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0xff, 0xfe, 0x00, 0x80, 0x81]);
+    // Fresh challenge Response per call: both fetches must see an unread body.
+    fetchSpy.mockImplementation(async () => challengeResponse());
+
+    const { transport, limiter } = await loadFresh();
+    const cache = new UrlCache(8);
+    transport.setUrlCache(cache);
+    let solveCount = 0;
+    transport.setBrowserSolver({
+      async solve() {
+        solveCount += 1;
+        return { status: 200, headers: { 'content-type': 'application/zip' }, body: zipBytes };
+      },
+    });
+
+    const res = await limiter.hepdataFetch('/download/submission/1/original');
+    const out = new Uint8Array(await res.arrayBuffer());
+    expect(Array.from(out)).toEqual(Array.from(zipBytes)); // bytes intact
+    expect(cache.size).toBe(0); // binary content type → not cached
+
+    // Not cached → a second challenged call re-solves rather than replaying text.
+    await limiter.hepdataFetch('/download/submission/1/original');
+    expect(solveCount).toBe(2);
   });
 
   it('challenge + opt-IN + playwright absent → precise "npm i playwright" error', async () => {

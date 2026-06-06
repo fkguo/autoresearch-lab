@@ -270,11 +270,28 @@ class HEPDataRateLimiter {
     }
 
     // Cloudflare Managed Challenge: plain HTTP cannot pass it. `selectAndRun`
-    // enforces the opt-in (HEPDATA_BROWSER_FETCH), runs the (injectable) browser
-    // solver through this same gated method, caches success, and otherwise
-    // throws a precise remedy-bearing error.
-    const solved = await selectAndRun(url, headers);
-    return reconstructResponse(solved.body, solved.status, new Headers(solved.headers));
+    // enforces the opt-in (HEPDATA_BROWSER_FETCH) and runs the (injectable)
+    // browser solver, returning the raw response bytes; on opt-out / missing
+    // Playwright it throws a precise remedy-bearing error. The outer request
+    // timeout abort signal is threaded in so a hung solve is cancellable.
+    const solved = await selectAndRun(url, headers, signal);
+    const solvedHeaders = new Headers(solved.headers);
+    // Cache browser-solved results under the SAME text-safe policy as the plain
+    // path: a binary download solved via the browser is returned as bytes but is
+    // never stringified into the cache.
+    if (
+      isGetRequest(init) &&
+      solved.status >= 200 &&
+      solved.status < 300 &&
+      isTextCacheable(solvedHeaders)
+    ) {
+      getUrlCache().set(url, {
+        status: solved.status,
+        headers: solved.headers,
+        body: new TextDecoder().decode(solved.body),
+      });
+    }
+    return new Response(solved.body, { status: solved.status, headers: solvedHeaders });
   }
 }
 

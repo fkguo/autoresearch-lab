@@ -4,36 +4,61 @@
  * When a plain HTTP request is met with a Cloudflare Managed Challenge (see
  * `challengeDetect.ts`), the *same* request can be retried through a real
  * headless browser (Playwright/Chromium) whose JS engine solves the challenge.
- * The browser returns the final page status/headers/body, which the rate
- * limiter wraps into a synthetic `Response` so the rest of the code is unchanged.
+ * After the interstitial clears, the RAW response is fetched through the browser
+ * context's request API — which carries the freshly-issued `cf_clearance`
+ * cookie — so the caller receives the true network bytes (exact JSON, intact
+ * binary), NOT serialized DOM. The rate limiter wraps that into a synthetic
+ * `Response`, so the rest of the code is unchanged.
  *
  * Everything here is CONFINED TO THE FETCH LAYER. No caller knows a browser was
  * involved.
  *
  * Design constraints honored:
- *   - `playwright` is an OPTIONAL peer dependency. It is loaded via a dynamic
- *     `import('playwright')` typed loosely as `any`, so this package builds and
- *     runs WITHOUT playwright (or its Chromium) installed. The dependency is
- *     only touched when `HEPDATA_BROWSER_FETCH` is opted in AND a challenge is hit.
+ *   - `playwright` is an OPTIONAL peer dependency, loaded via a runtime-built
+ *     dynamic import so the package builds and runs WITHOUT playwright (or its
+ *     Chromium) installed. It is only touched when `HEPDATA_BROWSER_FETCH` is
+ *     opted in AND a challenge is hit.
  *   - The solver is INJECTABLE (module-level setter) so unit tests substitute a
  *     mock and never launch a real browser or hit the network.
- *   - Only `www.hepdata.net` URLs may be navigated (host assertion).
+ *   - SSRF confinement: in-browser requests are restricted to the HEPData host
+ *     and the Cloudflare challenge platform; the final raw fetch is host-checked.
  */
 
+import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { upstreamError } from '@autoresearch/shared';
 import { isCloudflareChallenge } from './challengeDetect.js';
-import { type CachedResponse, defaultUrlCache, type UrlCache } from './urlCache.js';
+import { defaultUrlCache, type UrlCache } from './urlCache.js';
 
-/** The only host the browser transport is permitted to navigate to. */
+/** The only data host the browser transport may navigate to / fetch from. */
 const HEPDATA_ALLOWED_HOST = 'www.hepdata.net';
+
+/**
+ * Cloudflare serves the Managed Challenge widget/JS from this host (see the
+ * challenge page CSP: `script-src https://challenges.cloudflare.com`). The
+ * browser must be allowed to load it to SOLVE the challenge; every other host
+ * is blocked so the headless browser cannot be steered into an SSRF.
+ */
+const CHALLENGE_PLATFORM_HOST = 'challenges.cloudflare.com';
 
 /** Default budget for the whole browser solve (launch + navigate + clear poll). */
 const DEFAULT_SOLVE_TIMEOUT_MS = 60_000;
 
-/** Confined Chromium profile dir; persists cf_clearance cookie within a process. */
-const USER_DATA_DIR = path.join(os.tmpdir(), 'hep-mcp-cf-profile');
+/**
+ * Per-process Chromium profile dir, created lazily on first use. A unique
+ * `mkdtemp` directory (instead of a fixed shared path) avoids cross-process
+ * collisions and scopes any persisted `cf_clearance` cookie to this process. It
+ * is reused across solves WITHIN the process so a once-solved clearance is not
+ * needlessly re-fetched.
+ */
+let userDataDirMemo: string | undefined;
+function getUserDataDir(): string {
+  if (userDataDirMemo === undefined) {
+    userDataDirMemo = fs.mkdtempSync(path.join(os.tmpdir(), 'hep-mcp-cf-'));
+  }
+  return userDataDirMemo;
+}
 
 /**
  * Dynamically load `playwright` WITHOUT a compile-time module dependency.
@@ -70,14 +95,14 @@ export function setPlaywrightImporter(fn?: () => Promise<unknown>): void {
 }
 
 /**
- * Result of a browser solve: the final response observed after the challenge
- * cleared. `body` is the page text (HEPData JSON endpoints render the JSON as
- * the document body once the challenge is passed).
+ * Result of a browser solve: the final network response observed AFTER the
+ * challenge cleared, as raw bytes so JSON is byte-exact and binary payloads are
+ * not corrupted.
  */
 export interface BrowserSolveResult {
   status: number;
   headers: Record<string, string>;
-  body: string;
+  body: Uint8Array;
 }
 
 /** Options handed to a solver for a single navigation. */
@@ -88,6 +113,8 @@ export interface BrowserSolveOptions {
   userDataDir: string;
   /** Overall solve budget in milliseconds. */
   timeoutMs: number;
+  /** Optional cancellation signal (the rate limiter's request-timeout abort). */
+  signal?: AbortSignal;
 }
 
 /**
@@ -118,6 +145,24 @@ function assertHepdataUrl(url: string): void {
 }
 
 /**
+ * Whether the headless browser may issue a request to `rawUrl`. Only the
+ * HEPData data host and the Cloudflare challenge platform, both over https, are
+ * permitted; everything else is aborted to preserve the SSRF confinement the
+ * plain `rateLimiter.ts` path enforces via its redirect allow-list. Exported for
+ * unit testing.
+ */
+export function isAllowedBrowserRequestUrl(rawUrl: string): boolean {
+  let u: URL;
+  try {
+    u = new URL(rawUrl);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== 'https:') return false;
+  return u.hostname === HEPDATA_ALLOWED_HOST || u.hostname === CHALLENGE_PLATFORM_HOST;
+}
+
+/**
  * Thrown (as an Error) by `PlaywrightSolver` when `import('playwright')` fails,
  * so `selectAndRun` can surface a precise "npm i playwright" remedy.
  */
@@ -136,7 +181,9 @@ export class PlaywrightUnavailableError extends Error {
 
 /**
  * Default browser backend. Uses Playwright's persistent Chromium context to
- * solve the Cloudflare interstitial.
+ * solve the Cloudflare interstitial, then re-fetches the target URL through the
+ * context's request API (carrying the issued cf_clearance cookie) to obtain the
+ * raw response body.
  *
  * `playwright` is imported dynamically and typed as `any` so this file compiles
  * with no `@types/playwright` and no `playwright` install. The import is only
@@ -169,10 +216,17 @@ export class PlaywrightSolver implements BrowserSolver {
         proxy: opts.proxy ? { server: opts.proxy } : undefined,
       });
 
+      // SSRF confinement: abort any in-browser request outside the allow-list
+      // (HEPData host + Cloudflare challenge platform). This mirrors the manual
+      // same-host redirect policy the plain fetch path enforces.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await context.route(/.*/, (route: any) => {
+        if (isAllowedBrowserRequestUrl(route.request().url())) route.continue();
+        else route.abort();
+      });
+
       const page = await context.newPage();
 
-      // Navigate and let the network settle, then poll until the challenge
-      // interstitial is gone (cf_clearance issued) or we run out of budget.
       const deadline = Date.now() + opts.timeoutMs;
       const navTimeout = Math.max(1_000, Math.min(opts.timeoutMs, 30_000));
 
@@ -182,21 +236,19 @@ export class PlaywrightSolver implements BrowserSolver {
         timeout: navTimeout,
       });
 
-      // Poll: re-read the document body and headers; if it still looks like a
-      // challenge, wait briefly and re-evaluate. Chromium auto-solves the
-      // Managed Challenge and reloads, so the live `page` content converges to
-      // the real response.
+      // Poll until the challenge interstitial is gone (Chromium auto-solves the
+      // Managed Challenge and reloads) or the budget runs out.
       // eslint-disable-next-line no-constant-condition
       while (true) {
+        if (opts.signal?.aborted) {
+          throw upstreamError(`Browser transport aborted (request timeout) for ${url}.`);
+        }
         const status: number = lastResponse?.status?.() ?? 200;
         const headerMap: Record<string, string> =
           typeof lastResponse?.headers === 'function' ? lastResponse.headers() : {};
-        const headers = new Headers(headerMap);
         const bodyText: string = await page.content();
 
-        if (!isCloudflareChallenge(status, headers, bodyText)) {
-          return { status, headers: headerMap, body: extractDocumentText(bodyText) };
-        }
+        if (!isCloudflareChallenge(status, new Headers(headerMap), bodyText)) break;
 
         if (Date.now() >= deadline) {
           throw upstreamError(
@@ -205,8 +257,6 @@ export class PlaywrightSolver implements BrowserSolver {
           );
         }
 
-        // Wait for the next navigation the challenge triggers, bounded by the
-        // remaining budget; fall through to re-poll on timeout.
         const remaining = deadline - Date.now();
         try {
           lastResponse = await page.waitForNavigation({
@@ -214,10 +264,27 @@ export class PlaywrightSolver implements BrowserSolver {
             timeout: Math.max(500, Math.min(remaining, 5_000)),
           });
         } catch {
-          // No navigation within the slice; re-evaluate current page state.
           lastResponse = null;
         }
       }
+
+      // Challenge cleared. Fetch the RAW response via the context's request API,
+      // which shares the cookie jar (cf_clearance) with the page. This yields the
+      // true network status/headers/bytes — not rendered DOM — so JSON is exact
+      // and binary downloads are intact. `context.request` is NOT covered by the
+      // page route allow-list above, so re-check the FINAL URL host explicitly.
+      const apiResp = await context.request.get(url, {
+        maxRedirects: 5,
+        timeout: Math.max(1_000, deadline - Date.now()),
+      });
+      const finalUrl: string = typeof apiResp.url === 'function' ? apiResp.url() : url;
+      if (!isAllowedBrowserRequestUrl(finalUrl)) {
+        throw upstreamError(
+          `Browser transport blocked (final URL host not in allow-list): ${finalUrl}`,
+        );
+      }
+      const body = new Uint8Array(await apiResp.body());
+      return { status: apiResp.status(), headers: apiResp.headers(), body };
     } finally {
       if (context) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -225,37 +292,6 @@ export class PlaywrightSolver implements BrowserSolver {
       }
     }
   }
-}
-
-/**
- * HEPData's JSON endpoints, when fetched in a browser, are rendered inside the
- * document. `page.content()` returns full HTML; for a raw JSON document Chromium
- * wraps it as `<html><head>...</head><body><pre>{...}</pre></body></html>`.
- * Extract the text content of the `<pre>` (or body) so downstream `.json()`
- * works. If no wrapper is detected, the body is returned unchanged (already
- * JSON/text).
- */
-function extractDocumentText(html: string): string {
-  // Fast path: looks like a bare JSON/text document already.
-  const trimmed = html.trim();
-  if (trimmed.startsWith('{') || trimmed.startsWith('[')) return html;
-
-  // Chromium JSON viewer wraps the payload in a single <pre>.
-  const preMatch = /<pre[^>]*>([\s\S]*?)<\/pre>/i.exec(html);
-  if (preMatch) return decodeEntities(preMatch[1]);
-
-  // Otherwise hand back the raw HTML body (callers that wanted HTML/text get it).
-  return html;
-}
-
-/** Decode the minimal set of HTML entities the JSON viewer escapes. */
-function decodeEntities(s: string): string {
-  return s
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -275,7 +311,7 @@ export function setUrlCache(cache?: UrlCache): void {
   activeCache = cache ?? defaultUrlCache;
 }
 
-/** Current URL cache — used by the rate limiter for the pre-fetch lookup. */
+/** Current URL cache — used by the rate limiter for the pre-fetch lookup + writes. */
 export function getUrlCache(): UrlCache {
   return activeCache;
 }
@@ -300,6 +336,14 @@ export function resolveProxy(): string | undefined {
 }
 
 /**
+ * Redact credentials embedded in a URL (e.g. a proxy `http://user:pass@host`)
+ * before the string is placed in a surfaced error message.
+ */
+export function scrubSecrets(msg: string): string {
+  return msg.replace(/([a-z][a-z0-9+.-]*:\/\/)[^/@\s]+@/gi, '$1***@');
+}
+
+/**
  * Build the precise, actionable error thrown when a Cloudflare challenge is hit
  * but the browser fallback is NOT opted in. Includes the `cf-ray` id when
  * present so the user can correlate with Cloudflare logs / support.
@@ -318,7 +362,7 @@ export function challengeOptOutError(url: string, headers: Headers): ReturnType<
 }
 
 /**
- * Selection + cache + error policy for a detected Cloudflare challenge.
+ * Selection + error policy for a detected Cloudflare challenge.
  *
  * Preconditions: the caller has already read the plain-fetch body, run
  * `isCloudflareChallenge`, and confirmed it IS a challenge. This function:
@@ -326,48 +370,40 @@ export function challengeOptOutError(url: string, headers: Headers): ReturnType<
  *   2. If opted IN → runs the active `BrowserSolver`. On `import('playwright')`
  *      failure (surfaced as `PlaywrightUnavailableError`) → throws a precise
  *      "install playwright" upstream error.
- *   3. On solver success → caches the result (when 2xx) and returns it.
+ *   3. On solver success → returns the raw `BrowserSolveResult`.
  *
- * Returns the `BrowserSolveResult` for the rate limiter to wrap in a Response.
+ * Caching is intentionally NOT done here: the rate limiter applies the same
+ * text-safe cache policy to browser-solved results as to plain ones (so a binary
+ * download solved via the browser is never stringified into the cache).
  */
 export async function selectAndRun(
   url: string,
   challengeHeaders: Headers,
+  signal?: AbortSignal,
 ): Promise<BrowserSolveResult> {
   if (!browserFetchEnabled()) {
     throw challengeOptOutError(url, challengeHeaders);
   }
 
-  let result: BrowserSolveResult;
   try {
-    result = await activeSolver.solve(url, {
+    return await activeSolver.solve(url, {
       proxy: resolveProxy(),
-      userDataDir: USER_DATA_DIR,
+      userDataDir: getUserDataDir(),
       timeoutMs: DEFAULT_SOLVE_TIMEOUT_MS,
+      signal,
     });
   } catch (err) {
     if (err instanceof PlaywrightUnavailableError) {
       throw upstreamError(err.message);
     }
-    // Re-throw McpErrors (already precise) unchanged; wrap anything else.
+    // Re-throw McpErrors (already precise) unchanged; wrap anything else, with
+    // any embedded proxy credentials scrubbed from the message.
     if (err && typeof err === 'object' && 'code' in err) throw err;
     throw upstreamError(
-      `Browser transport failed to solve the Cloudflare challenge for ${url}: ` +
-        `${err instanceof Error ? err.message : String(err)}`,
+      scrubSecrets(
+        `Browser transport failed to solve the Cloudflare challenge for ${url}: ` +
+          `${err instanceof Error ? err.message : String(err)}`,
+      ),
     );
   }
-
-  if (result.status >= 200 && result.status < 300) {
-    const payload: CachedResponse = {
-      status: result.status,
-      headers: result.headers,
-      body: result.body,
-    };
-    activeCache.set(url, payload);
-  }
-
-  return result;
 }
-
-/** Exposed for documentation/tests: the confined Chromium profile directory. */
-export const __userDataDir = USER_DATA_DIR;

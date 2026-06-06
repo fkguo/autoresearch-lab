@@ -5,9 +5,11 @@ import {
   type BrowserSolver,
   browserFetchEnabled,
   challengeOptOutError,
+  isAllowedBrowserRequestUrl,
   PlaywrightSolver,
   PlaywrightUnavailableError,
   resolveProxy,
+  scrubSecrets,
   selectAndRun,
   setBrowserSolver,
   setPlaywrightImporter,
@@ -16,6 +18,9 @@ import {
 import { UrlCache } from '../src/api/transport/urlCache.js';
 
 const URL = 'https://www.hepdata.net/record/123?format=json';
+
+const enc = (s: string): Uint8Array => new TextEncoder().encode(s);
+const dec = (b: Uint8Array): string => new TextDecoder().decode(b);
 
 // A mock solver that records its inputs and returns a canned result.
 function mockSolver(result: BrowserSolveResult): { solver: BrowserSolver; calls: Array<{ url: string; opts: BrowserSolveOptions }> } {
@@ -96,6 +101,44 @@ describe('resolveProxy — env precedence', () => {
   });
 });
 
+describe('scrubSecrets — redact credentials before surfacing in errors', () => {
+  it('redacts user:pass in a proxy URL', () => {
+    expect(scrubSecrets('solve failed via http://user:s3cret@127.0.0.1:7890 now')).toBe(
+      'solve failed via http://***@127.0.0.1:7890 now',
+    );
+  });
+
+  it('leaves a credential-free URL untouched', () => {
+    expect(scrubSecrets('http://127.0.0.1:7890 and https://www.hepdata.net/x')).toBe(
+      'http://127.0.0.1:7890 and https://www.hepdata.net/x',
+    );
+  });
+});
+
+describe('isAllowedBrowserRequestUrl — SSRF allow-list for in-browser requests', () => {
+  it('allows the HEPData data host over https', () => {
+    expect(isAllowedBrowserRequestUrl('https://www.hepdata.net/record/1?format=json')).toBe(true);
+  });
+
+  it('allows the Cloudflare challenge platform over https', () => {
+    expect(isAllowedBrowserRequestUrl('https://challenges.cloudflare.com/turnstile/v0/api.js')).toBe(
+      true,
+    );
+  });
+
+  it('rejects any other host (incl. cloud metadata)', () => {
+    expect(isAllowedBrowserRequestUrl('https://evil.example.com/x')).toBe(false);
+    expect(isAllowedBrowserRequestUrl('https://169.254.169.254/latest/meta-data')).toBe(false);
+    expect(isAllowedBrowserRequestUrl('https://hepdata.net.evil.com/x')).toBe(false);
+  });
+
+  it('rejects non-https and unparseable URLs', () => {
+    expect(isAllowedBrowserRequestUrl('http://www.hepdata.net/x')).toBe(false);
+    expect(isAllowedBrowserRequestUrl('file:///etc/passwd')).toBe(false);
+    expect(isAllowedBrowserRequestUrl('not a url')).toBe(false);
+  });
+});
+
 describe('challengeOptOutError — precise actionable message', () => {
   it('names the challenge, includes cf-ray, and lists all three remedies', () => {
     const headers = new Headers({ 'cf-ray': 'abc123-LHR' });
@@ -120,7 +163,7 @@ describe('challengeOptOutError — precise actionable message', () => {
 
 describe('selectAndRun — transport selection policy', () => {
   it('challenge + opt-OUT → throws the precise opt-out error; never calls a solver', async () => {
-    const { solver, calls } = mockSolver({ status: 200, headers: {}, body: '{}' });
+    const { solver, calls } = mockSolver({ status: 200, headers: {}, body: enc('{}') });
     setBrowserSolver(solver);
     // HEPDATA_BROWSER_FETCH is unset (opt-out)
 
@@ -130,54 +173,50 @@ describe('selectAndRun — transport selection policy', () => {
     expect(calls).toHaveLength(0);
   });
 
-  it('challenge + opt-IN → runs the mock solver and returns its result', async () => {
+  it('challenge + opt-IN → runs the mock solver and returns its raw bytes', async () => {
     process.env.HEPDATA_BROWSER_FETCH = '1';
     const { solver, calls } = mockSolver({
       status: 200,
       headers: { 'content-type': 'application/json' },
-      body: '{"total":1}',
+      body: enc('{"total":1}'),
     });
     setBrowserSolver(solver);
 
     const result = await selectAndRun(URL, new Headers());
     expect(result.status).toBe(200);
-    expect(result.body).toBe('{"total":1}');
+    expect(dec(result.body)).toBe('{"total":1}');
     expect(calls).toHaveLength(1);
     expect(calls[0].url).toBe(URL);
   });
 
-  it('challenge + opt-IN passes the resolved proxy + confined userDataDir to the solver', async () => {
+  it('challenge + opt-IN passes the resolved proxy + confined userDataDir + signal to the solver', async () => {
     process.env.HEPDATA_BROWSER_FETCH = '1';
     process.env.HEPDATA_PROXY = 'http://127.0.0.1:7890';
-    const { solver, calls } = mockSolver({ status: 200, headers: {}, body: '{}' });
+    const { solver, calls } = mockSolver({ status: 200, headers: {}, body: enc('{}') });
     setBrowserSolver(solver);
+    const ac = new AbortController();
 
-    await selectAndRun(URL, new Headers());
+    await selectAndRun(URL, new Headers(), ac.signal);
     expect(calls[0].opts.proxy).toBe('http://127.0.0.1:7890');
-    expect(calls[0].opts.userDataDir).toMatch(/hep-mcp-cf-profile$/);
+    expect(calls[0].opts.userDataDir).toMatch(/hep-mcp-cf-/);
     expect(calls[0].opts.timeoutMs).toBeGreaterThan(0);
+    expect(calls[0].opts.signal).toBe(ac.signal);
   });
 
-  it('challenge + opt-IN caches a 2xx result so a later cache lookup hits', async () => {
+  it('does NOT cache here — caching is the rate limiter’s text-safe responsibility', async () => {
     process.env.HEPDATA_BROWSER_FETCH = '1';
     const cache = new UrlCache(8);
     setUrlCache(cache);
-    const { solver } = mockSolver({ status: 200, headers: { server: 'cloudflare' }, body: 'OK' });
+    const { solver } = mockSolver({
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+      body: enc('{"v":1}'),
+    });
     setBrowserSolver(solver);
 
     await selectAndRun(URL, new Headers());
-    expect(cache.get(URL)).toEqual({ status: 200, headers: { server: 'cloudflare' }, body: 'OK' });
-  });
-
-  it('challenge + opt-IN does NOT cache a non-2xx solver result', async () => {
-    process.env.HEPDATA_BROWSER_FETCH = '1';
-    const cache = new UrlCache(8);
-    setUrlCache(cache);
-    const { solver } = mockSolver({ status: 500, headers: {}, body: 'err' });
-    setBrowserSolver(solver);
-
-    await selectAndRun(URL, new Headers());
-    expect(cache.has(URL)).toBe(false);
+    // selectAndRun no longer writes the cache (the limiter does, under its gate).
+    expect(cache.size).toBe(0);
   });
 
   it('challenge + opt-IN + playwright import FAILS → precise "npm i playwright" error', async () => {
@@ -201,6 +240,24 @@ describe('selectAndRun — transport selection policy', () => {
 
     await expect(selectAndRun(URL, new Headers())).rejects.toThrow(/chromium crashed/);
     await expect(selectAndRun(URL, new Headers())).rejects.toThrow(/Browser transport failed/);
+  });
+
+  it('scrubs proxy credentials out of a wrapped solver error', async () => {
+    process.env.HEPDATA_BROWSER_FETCH = '1';
+    setBrowserSolver({
+      async solve() {
+        throw new Error('connect failed to http://user:s3cret@127.0.0.1:7890');
+      },
+    });
+
+    const err = await selectAndRun(URL, new Headers()).then(
+      () => {
+        throw new Error('expected rejection');
+      },
+      (e: unknown) => e as Error,
+    );
+    expect(err.message).toContain('http://***@127.0.0.1:7890');
+    expect(err.message).not.toContain('s3cret');
   });
 });
 
